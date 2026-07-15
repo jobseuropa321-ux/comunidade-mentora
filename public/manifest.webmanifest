@@ -1,0 +1,20 @@
+{
+  "name": "Amentora",
+  "short_name": "Amentora",
+  "description": "Área de membros, mentorias ao vivo e ferramentas para criar conteúdo que viraliza.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF7E6",
+  "theme_color": "#FFF7E6",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/logo-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

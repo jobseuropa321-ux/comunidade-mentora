@@ -1,0 +1,586 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Brand — Premium Mentorship (Cores que Transformam) */
+    /* #BE0D3E deep red · #94002D red-ink · #F6B43A orange · #ECA6BB / #F6D6DC soft pinks · #FFF9EE creme · #1E1B11 ink · #5B4041 warm gray */
+
+    --background: 41 100% 95%;             /* #FFF7E6 clean creme */
+    --foreground: 45 28% 9%;              /* #1E1B11 ink */
+
+    --card: 0 0% 100%;                    /* white */
+    --card-foreground: 45 28% 9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 45 28% 9%;
+
+    --primary: 343 87% 40%;              /* #BE0D3E deep red */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 39 91% 60%;             /* #F6B43A orange */
+    --secondary-foreground: 41 100% 14%; /* dark amber ink */
+
+    --muted: 40 56% 91%;                 /* #F5EDDC surface-container */
+    --muted-foreground: 358 17% 30%;     /* #5B4041 warm gray */
+
+    --accent: 39 91% 60%;                /* orange accent */
+    --accent-foreground: 41 100% 14%;
+
+    --destructive: 0 75% 42%;            /* #BA1A1A */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 357 40% 82%;               /* #E3BDBF soft outline */
+    --input: 0 0% 100%;
+    --ring: 343 87% 40%;
+
+    --radius: 1rem;
+
+    --gradient-viral: linear-gradient(135deg, #BE0D3E 0%, #94002D 100%);
+    --gradient-viral-lime: linear-gradient(135deg, #BE0D3E 0%, #F6B43A 100%);
+    --shadow-card: 0 4px 16px rgba(148,0,45,0.07);
+    --shadow-glow: 0 4px 18px rgba(190,13,62,0.20);
+
+    --sidebar-background: 39 100% 97%;
+    --sidebar-foreground: 45 28% 9%;
+    --sidebar-primary: 343 87% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 40 56% 91%;
+    --sidebar-accent-foreground: 45 28% 9%;
+    --sidebar-border: 357 40% 82%;
+    --sidebar-ring: 343 87% 40%;
+  }
+
+  .dark {
+    --background: 39 100% 97%;
+    --foreground: 45 28% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 45 28% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 45 28% 9%;
+    --primary: 343 87% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 39 91% 60%;
+    --secondary-foreground: 41 100% 14%;
+    --muted: 40 56% 91%;
+    --muted-foreground: 358 17% 30%;
+    --accent: 39 91% 60%;
+    --accent-foreground: 41 100% 14%;
+    --destructive: 0 75% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 357 40% 82%;
+    --input: 0 0% 100%;
+    --ring: 343 87% 40%;
+    --sidebar-background: 39 100% 97%;
+    --sidebar-foreground: 45 28% 9%;
+    --sidebar-primary: 343 87% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 40 56% 91%;
+    --sidebar-accent-foreground: 45 28% 9%;
+    --sidebar-border: 357 40% 82%;
+    --sidebar-ring: 343 87% 40%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    background-color: #FFF7E6;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #FFF7E6;
+  }
+
+  /* Títulos usam o serif editorial da marca */
+  h1, h2, h3, h4 {
+    font-family: 'Libre Caslon Text', Georgia, 'Times New Roman', serif;
+  }
+
+  button, a, input, [tabindex] {
+    outline: none !important;
+  }
+
+  button:focus, button:active, button:focus-visible {
+    outline: none !important;
+  }
+
+  /* ─── Bloqueio de seleção de texto em mobile (feel de app nativo) ─── */
+  /* @media (pointer: coarse) — dispositivos de toque: celular, tablet */
+  @media (pointer: coarse) {
+    * {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    input,
+    textarea,
+    [contenteditable="true"] {
+      -webkit-user-select: text;
+      user-select: text;
+      -webkit-touch-callout: default;
+    }
+  }
+}
+
+@layer components {
+  /* ── PAGE TITLE — serif editorial, vermelho profundo ── */
+  .page-title {
+    font-family: 'Libre Caslon Text', Georgia, serif;
+    font-weight: 700;
+    font-size: 26px;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: #94002D;
+  }
+
+  /* ── TAG / LABEL — sub-header da marca (uppercase, tracking) ── */
+  .label-caps {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #94002D;
+  }
+
+  /* ── GRADIENTS ── */
+  .gradient-viral {
+    background: var(--gradient-viral);
+  }
+
+  .gradient-viral-lime {
+    background: var(--gradient-viral-lime);
+  }
+
+  .gradient-text {
+    background: var(--gradient-viral);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Legacy compat aliases */
+  .gradient-instagram { background: var(--gradient-viral); }
+  .gradient-story { background: var(--gradient-viral); }
+  .btn-instagram {
+    background: #BE0D3E;
+    @apply text-white font-semibold py-3 px-6 rounded-full transition-all duration-200 hover:opacity-95 hover:shadow-lg active:scale-95 border-0;
+    box-shadow: 0 6px 18px rgba(190,13,62,0.22);
+  }
+  .btn-instagram-outline {
+    @apply border-2 border-primary bg-transparent text-primary font-semibold py-3 px-6 rounded-full transition-all duration-200 hover:bg-primary/10 active:scale-95;
+  }
+  .input-instagram {
+    @apply bg-white border border-[#ECA6BB] rounded-xl px-4 py-3 text-[#1E1B11] placeholder:text-[#5B4041]/55 focus:border-[#BE0D3E] focus:shadow-[0_0_0_3px_rgba(190,13,62,0.10)] transition-all outline-none;
+  }
+
+  /* ── NAV FLUTUANTE — LIQUID GLASS (creme translúcido, cristalino) ── */
+  .nav-glass-liquid {
+    position: relative;
+    background:
+      linear-gradient(135deg,
+        rgba(255,255,255,0.60) 0%,
+        rgba(255,249,238,0.52) 40%,
+        rgba(246,214,220,0.42) 70%,
+        rgba(255,255,255,0.55) 100%);
+    backdrop-filter: blur(26px) saturate(180%);
+    -webkit-backdrop-filter: blur(26px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.55);
+    box-shadow:
+      0 14px 34px -8px rgba(148,0,45,0.20),
+      0 4px 14px -2px rgba(190,13,62,0.10),
+      inset 0 1.5px 2px rgba(255,255,255,0.95),
+      inset 0 -2px 3px rgba(236,166,187,0.28),
+      inset 0 0 0 1px rgba(255,255,255,0.10);
+  }
+
+  /* Realce especular sutil no topo */
+  .nav-glass-liquid::before {
+    content: '';
+    position: absolute;
+    inset: 1px 10% auto 10%;
+    height: 40%;
+    border-radius: 999px;
+    background: linear-gradient(to bottom,
+      rgba(255,255,255,0.55) 0%,
+      rgba(255,255,255,0.10) 60%,
+      transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow rosé quente na base */
+  .nav-glass-liquid::after {
+    content: '';
+    position: absolute;
+    inset: auto 15% 1px 15%;
+    height: 30%;
+    border-radius: 999px;
+    background: radial-gradient(ellipse at center,
+      rgba(236,166,187,0.40) 0%,
+      transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(6px);
+  }
+
+  /* ── BOTÃO CENTRAL — LIQUID GLASS vermelho translúcido ── */
+  .nav-glass-pink {
+    position: relative;
+    background:
+      linear-gradient(135deg,
+        rgba(224,107,133,0.82) 0%,
+        rgba(190,13,62,0.88) 45%,
+        rgba(148,0,45,0.90) 100%);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.45);
+    box-shadow:
+      0 12px 28px -6px rgba(148,0,45,0.42),
+      0 4px 14px -2px rgba(190,13,62,0.20),
+      inset 0 1.5px 2px rgba(255,255,255,0.55),
+      inset 0 -2px 3px rgba(148,0,45,0.30),
+      inset 0 0 0 1px rgba(255,255,255,0.12);
+  }
+  /* gloss especular sutil (topo) */
+  .nav-glass-pink::before {
+    content: '';
+    position: absolute;
+    inset: 1px 20% auto 20%;
+    height: 40%;
+    border-radius: 999px;
+    background: linear-gradient(to bottom,
+      rgba(255,255,255,0.45) 0%,
+      rgba(255,255,255,0.08) 60%,
+      transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* brilho rosé translúcido (base) */
+  .nav-glass-pink::after {
+    content: '';
+    position: absolute;
+    inset: auto 20% 1px 20%;
+    height: 30%;
+    border-radius: 999px;
+    background: radial-gradient(ellipse at center,
+      rgba(255,180,200,0.40) 0%,
+      transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(6px);
+  }
+
+  /* ── TOAST — creme fosco legível ── */
+  .toast-glass-liquid {
+    position: relative;
+    background: rgba(255,249,238,0.97);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid #E3BDBF;
+    box-shadow:
+      0 12px 30px -10px rgba(148,0,45,0.18),
+      inset 0 1px 1px rgba(255,255,255,0.85);
+  }
+
+  /* ── BOTÕES ── */
+  .glass-btn-pink {
+    background: linear-gradient(180deg, #D11A4C 0%, #BE0D3E 55%, #A30B34 100%);
+    box-shadow:
+      0 4px 14px -3px rgba(190,13,62,0.3),
+      inset 0 1px 0 rgba(255,255,255,0.18);
+  }
+
+  .glass-btn-lime {
+    background: linear-gradient(180deg, #FBC85F 0%, #F6B43A 55%, #E09A1F 100%);
+    box-shadow:
+      0 4px 14px -3px rgba(246,180,58,0.35),
+      inset 0 1px 0 rgba(255,255,255,0.35);
+  }
+
+  /* ── CARDS — flat, borda rosa suave, sombra tonal leve ── */
+  .card-glass-liquid {
+    position: relative;
+    background: #FFFFFF;
+    border: 1px solid #F6D6DC;
+    box-shadow: 0 4px 16px -6px rgba(148,0,45,0.08);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .card-glass-liquid::before { content: none; }
+  .card-glass-liquid::after { content: none; }
+
+  .card-glass-liquid > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Variante danger (botão de logout) — flat, borda vermelha suave */
+  .card-glass-liquid-danger {
+    position: relative;
+    background: #FFFFFF;
+    border: 1px solid rgba(190,13,62,0.22);
+    box-shadow: 0 4px 16px -6px rgba(190,13,62,0.12);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .card-glass-liquid-danger > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Variante laranja (destaque) */
+  .card-glass-liquid-lime {
+    position: relative;
+    background: linear-gradient(135deg, #FDBB40 0%, #F6B43A 100%);
+    border: 1px solid rgba(255,255,255,0.5);
+    box-shadow:
+      0 8px 22px -10px rgba(246,180,58,0.5),
+      inset 0 1px 2px rgba(255,255,255,0.55);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .card-glass-liquid-lime::before {
+    content: '';
+    position: absolute;
+    top: 1px;
+    left: 4%;
+    width: 92%;
+    height: 40%;
+    border-radius: 999px;
+    background: linear-gradient(to bottom,
+      rgba(255,255,255,0.5) 0%,
+      rgba(255,255,255,0.12) 60%,
+      transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .card-glass-liquid-lime::after {
+    content: none;
+  }
+
+  .card-glass-liquid-lime > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Variante vermelha (destaque) */
+  .card-glass-liquid-pink {
+    position: relative;
+    background: linear-gradient(135deg, #BE0D3E 0%, #94002D 100%);
+    border: 1px solid rgba(255,255,255,0.35);
+    box-shadow:
+      0 8px 22px -10px rgba(148,0,45,0.5),
+      inset 0 1px 2px rgba(255,255,255,0.35);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .card-glass-liquid-pink::before {
+    content: '';
+    position: absolute;
+    top: 1px;
+    left: 4%;
+    width: 92%;
+    height: 40%;
+    border-radius: 999px;
+    background: linear-gradient(to bottom,
+      rgba(255,255,255,0.28) 0%,
+      rgba(255,255,255,0.06) 60%,
+      transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .card-glass-liquid-pink::after {
+    content: none;
+  }
+
+  .card-glass-liquid-pink > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Variante danger (logout) */
+  .card-glass-liquid-danger {
+    position: relative;
+    background: #FFFFFF;
+    border: 1px solid #F5C6C6;
+    box-shadow: 0 4px 16px -6px rgba(186,26,26,0.14);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .card-glass-liquid-danger::before { content: none; }
+
+  .card-glass-liquid-danger > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── ORB (botão de nav ativo) — vermelho profundo ── */
+  /* Realce ativo — vermelho "acremado": rosé suave e acolhedor */
+  .orb-liquid {
+    background: linear-gradient(180deg, #FBE3E8 0%, #F3C7D1 100%);
+    box-shadow:
+      0 4px 12px -3px rgba(190,13,62,0.15),
+      inset 0 1px 0 rgba(255,255,255,0.7);
+  }
+
+  /* ── CARDS ── */
+  .viral-card {
+    @apply bg-white border border-[#F6D6DC] rounded-2xl;
+    box-shadow: 0 4px 16px rgba(148,0,45,0.05);
+  }
+
+  .viral-card-dark {
+    @apply bg-[#FBF3E2] border border-[#F6D6DC] rounded-2xl;
+  }
+
+  /* ── HEADER ── */
+  .header-glass {
+    background: rgba(255,249,238,0.8);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border-bottom: 1px solid rgba(148,0,45,0.1);
+  }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 z-50;
+    padding-bottom: env(safe-area-inset-bottom);
+    background: transparent;
+  }
+
+  /* ── ROBÔS DO ESTÚDIO DE CRIAÇÃO — piscada dos olhos ── */
+  .robot-eye {
+    animation: robot-blink 4.6s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  @keyframes robot-blink {
+    0%, 91%, 100% { transform: scaleY(1); }
+    94%, 96% { transform: scaleY(0.08); }
+  }
+
+  /* ── COUNTDOWN GRAVACAO ── */
+  .countdown-pop {
+    animation: countdown-pop 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  @keyframes countdown-pop {
+    0%   { opacity: 0; transform: translateZ(0) scale(0.4); }
+    25%  { opacity: 1; transform: translateZ(0) scale(1); }
+    100% { opacity: 0; transform: translateZ(0) scale(1.6); }
+  }
+
+  /* ── KANBAN ── */
+  .kanban-column {
+    @apply bg-white border border-[#F6D6DC] rounded-2xl p-4 min-h-[200px];
+    box-shadow: 0 4px 16px rgba(148,0,45,0.04);
+  }
+
+  .kanban-card {
+    @apply bg-[#FBF3E2] border border-[#F6D6DC] rounded-xl p-4 mb-3 cursor-grab active:cursor-grabbing transition-all duration-200;
+    touch-action: none;
+  }
+
+  .kanban-card:hover {
+    @apply border-[#BE0D3E]/35 shadow-[0_0_0_3px_rgba(190,13,62,0.08)];
+  }
+
+  .kanban-card.dragging {
+    @apply opacity-60 scale-105;
+  }
+
+  /* ── CALENDAR ── */
+  .calendar-day {
+    @apply aspect-square flex flex-col items-center justify-center rounded-xl transition-all duration-200 cursor-pointer relative border border-transparent;
+  }
+
+  .calendar-day:hover:not(.disabled) {
+    @apply bg-[#F5EDDC] border-[#BE0D3E]/20;
+  }
+
+  .calendar-day.today {
+    box-shadow: 0 0 0 3px rgba(190,13,62,0.14), inset 0 0 8px rgba(190,13,62,0.06);
+    border: 1.5px solid rgba(190,13,62,0.55);
+    @apply bg-[#BE0D3E]/10;
+  }
+
+  .calendar-day.picked {
+    @apply bg-[#BE0D3E]/15 border-2 border-[#BE0D3E];
+  }
+
+  .calendar-day.disabled {
+    @apply opacity-40 cursor-not-allowed;
+  }
+
+  /* ── STAT CARD ── */
+  .stat-card {
+    @apply viral-card p-5 transition-all duration-200 hover:border-[#BE0D3E]/35;
+  }
+
+  /* ── SCROLLBAR ── */
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ── SAFE BOTTOM ── */
+  .safe-bottom {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 90px);
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: var(--gradient-viral);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glow-primary {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .font-viral {
+    font-family: 'Libre Caslon Text', Georgia, serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .font-lilita {
+    font-family: 'Libre Caslon Text', Georgia, serif;
+    font-weight: 700;
+  }
+}
+
+/* Brilho que percorre o botao (Calendario de Alerta) — mantem o skew no ciclo todo */
+@keyframes shimmer {
+  0%   { transform: translateX(-150%) skewX(25deg); }
+  100% { transform: translateX(150%) skewX(25deg); }
+}
+
+/* Banner responsivo: no desktop mostra banner inteiro */
+@media (min-width: 768px) {
+  .banner-carousel-container img {
+    height: auto !important;
+    max-height: 500px;
+    object-fit: contain;
+  }
+}

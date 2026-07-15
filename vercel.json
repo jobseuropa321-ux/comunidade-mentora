@@ -1,0 +1,52 @@
+{
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                { "key": "X-Frame-Options", "value": "DENY" },
+                { "key": "X-Content-Type-Options", "value": "nosniff" },
+                { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+                { "key": "Permissions-Policy", "value": "geolocation=()" },
+                { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+                { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; media-src 'self' https: blob:; connect-src 'self' https://*.supabase.co https://*.supabase.in wss://*.supabase.co; frame-src https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'" }
+            ]
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ],
+    "redirects": [
+        { "source": "/package.json", "destination": "/404", "statusCode": 404 },
+        { "source": "/package-lock.json", "destination": "/404", "statusCode": 404 },
+        { "source": "/yarn.lock", "destination": "/404", "statusCode": 404 },
+        { "source": "/pnpm-lock.yaml", "destination": "/404", "statusCode": 404 },
+        { "source": "/bun.lockb", "destination": "/404", "statusCode": 404 },
+        { "source": "/bun.lock", "destination": "/404", "statusCode": 404 },
+        { "source": "/tsconfig.json", "destination": "/404", "statusCode": 404 },
+        { "source": "/vite.config.ts", "destination": "/404", "statusCode": 404 },
+        { "source": "/vite.config.js", "destination": "/404", "statusCode": 404 },
+        { "source": "/tailwind.config.ts", "destination": "/404", "statusCode": 404 },
+        { "source": "/tailwind.config.js", "destination": "/404", "statusCode": 404 },
+        { "source": "/postcss.config.js", "destination": "/404", "statusCode": 404 },
+        { "source": "/components.json", "destination": "/404", "statusCode": 404 },
+        { "source": "/vercel.json", "destination": "/404", "statusCode": 404 },
+        { "source": "/.env", "destination": "/404", "statusCode": 404 },
+        { "source": "/.env.local", "destination": "/404", "statusCode": 404 },
+        { "source": "/.env.production", "destination": "/404", "statusCode": 404 },
+        { "source": "/.env.development", "destination": "/404", "statusCode": 404 },
+        { "source": "/.env.example", "destination": "/404", "statusCode": 404 },
+        { "source": "/.git/:path*", "destination": "/404", "statusCode": 404 },
+        { "source": "/.DS_Store", "destination": "/404", "statusCode": 404 },
+        { "source": "/wp-config.php", "destination": "/404", "statusCode": 404 },
+        { "source": "/config.php", "destination": "/404", "statusCode": 404 },
+        { "source": "/config.json", "destination": "/404", "statusCode": 404 },
+        { "source": "/backup.sql", "destination": "/404", "statusCode": 404 },
+        { "source": "/dump.sql", "destination": "/404", "statusCode": 404 },
+        { "source": "/database.sql", "destination": "/404", "statusCode": 404 },
+        { "source": "/credentials.json", "destination": "/404", "statusCode": 404 },
+        { "source": "/secrets.json", "destination": "/404", "statusCode": 404 }
+    ]
+}

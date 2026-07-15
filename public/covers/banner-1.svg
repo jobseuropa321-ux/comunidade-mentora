@@ -1,0 +1,21 @@
+<svg width="900" height="360" viewBox="0 0 900 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bem-vindo à Amentora">
+  <defs>
+    <linearGradient id="b1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#BE0D3E"/>
+      <stop offset="1" stop-color="#94002D"/>
+    </linearGradient>
+    <radialGradient id="b1glow" cx="0.8" cy="0.15" r="0.9">
+      <stop offset="0" stop-color="#F6B43A" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#F6B43A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="360" fill="url(#b1)"/>
+  <rect width="900" height="360" fill="url(#b1glow)"/>
+  <circle cx="760" cy="70" r="120" fill="#ffffff" fill-opacity="0.06"/>
+  <circle cx="120" cy="320" r="90" fill="#ffffff" fill-opacity="0.05"/>
+  <!-- estrela de 4 pontas da marca -->
+  <path d="M812 210 C816 232 826 242 848 246 C826 250 816 260 812 282 C808 260 798 250 776 246 C798 242 808 232 812 210 Z" fill="#F6B43A" fill-opacity="0.85"/>
+  <text x="60" y="140" font-family="'Be Vietnam Pro','Segoe UI',sans-serif" font-size="20" font-weight="700" letter-spacing="6" fill="#ffffff" fill-opacity="0.72">BEM-VINDO À</text>
+  <text x="56" y="240" font-family="'Libre Caslon Text','Georgia',serif" font-size="104" font-weight="700" letter-spacing="0" fill="#ffffff">AMENTORA</text>
+  <text x="60" y="300" font-family="'Be Vietnam Pro','Segoe UI',sans-serif" font-size="25" font-weight="500" fill="#ffffff" fill-opacity="0.9">Conteúdo que transforma começa aqui.</text>
+</svg>
