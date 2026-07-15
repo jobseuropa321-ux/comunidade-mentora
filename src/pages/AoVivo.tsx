@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play, Clock, MonitorPlay, X } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useLiveStatus } from '@/hooks/useLiveStatus';
 import { getUpcomingLives } from '@/data/liveSchedule';
+import { supabase } from '@/integrations/supabase/client';
 
 const cardSpring = { type: 'spring', stiffness: 220, damping: 24 } as const;
 
@@ -128,10 +129,23 @@ const AoVivo: React.FC = () => {
   const isLive = status.is_active && !!status.stream_url;
   const youtubeEmbedUrl = isLive ? buildYouTubeEmbedUrl(status.stream_url) : null;
 
-  // Replays vêm do Supabase (ver docs/backend/). Sem backend → lista vazia
-  // (mostra o estado "Em breve, replays aqui"). Quando ligar o Supabase, buscar aqui.
-  const [replays] = useState<Replay[]>([]);
+  // Replays publicados (Supabase). Admin gerencia em /admin → aba Ao Vivo.
+  const [replays, setReplays] = useState<Replay[]>([]);
   const [playingReplay, setPlayingReplay] = useState<Replay | null>(null);
+
+  useEffect(() => {
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase
+        .from('live_replays')
+        .select('id, title, description, video_url, cover_url, duration_label, recorded_at')
+        .eq('is_published', true)
+        .order('position', { ascending: false })
+        .order('recorded_at', { ascending: false, nullsFirst: false });
+      if (!cancel && data) setReplays(data as Replay[]);
+    })();
+    return () => { cancel = true; };
+  }, []);
 
   const upcoming = getUpcomingLives();
 

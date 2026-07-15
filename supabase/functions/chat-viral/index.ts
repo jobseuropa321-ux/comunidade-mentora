@@ -7,7 +7,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const MODEL = 'gpt-5.4-mini';            // modelo OpenAI usado nas respostas
 const REASONING_EFFORT = 'low';          // 'low' | 'medium' | 'high'
 const MAX_COMPLETION_TOKENS = 6000;      // teto de tokens por resposta
-const MAX_MESSAGES_PER_SESSION = 10;     // máx de mensagens do usuário por conversa
+const MAX_MESSAGES_PER_SESSION = 50;     // teto anti-abuso por conversa (esteira: apostila/roteirista usam várias mensagens; ninguém legítimo chega em 50)
 /* O LIMITE DIÁRIO de conversas fica no banco (função consume_ai_quota —
    ver BACKEND_SETUP.md). Os PROMPTS dos agentes ficam na tabela viral_models. */
 

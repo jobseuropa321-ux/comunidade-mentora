@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, Send, RotateCcw, Mic,
   Library as LibraryIcon, Save, Check, Loader2, X,
+  Blocks, Layers, ChevronRight, Sparkles,
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { supabase, SUPABASE_READY } from '@/integrations/supabase/client';
@@ -34,6 +35,11 @@ const TXT = {
   save_to_library: 'Salvar na Biblioteca',
   save_modal_label: 'Dê um nome pra encontrar depois',
   save_modal_placeholder: 'Ex: Esqueleto do curso de confeitaria',
+  save_course_label: 'Nome do curso',
+  exit_title: 'Salvar antes de sair?',
+  exit_desc: 'Você gerou um esqueleto que ainda não foi salvo. Quer guardar na Biblioteca antes de sair?',
+  exit_discard: 'Sair sem salvar',
+  exit_save: 'Salvar e sair',
   cancel: 'Cancelar',
   saving: 'Salvando...',
   toast_name_required: 'Dá um nome antes de salvar',
@@ -412,7 +418,7 @@ const FormatsGrid: React.FC = () => {
 /* ─────────────────────────────────────────────
    CHAT
 ───────────────────────────────────────────── */
-interface Message { role: 'user' | 'ia'; content: string }
+interface Message { role: 'user' | 'ia'; content: string; display?: string }
 
 const INITIAL_MSG = (agent: Agent) => agent.openingMessage ?? defaultOpening(agent.name);
 
@@ -442,7 +448,7 @@ const Bubble: React.FC<{
             background: 'linear-gradient(135deg, #BE0D3E 0%, #BE0D3E 100%)',
           } : {}}
         >
-          {isIA ? renderBold(msg.content) : msg.content}
+          {isIA ? renderBold(msg.content) : (msg.display ?? msg.content)}
         </div>
         {isIA && onSave && (
           <button
@@ -477,6 +483,295 @@ const Typing: React.FC = () => (
   </div>
 );
 
+/* ═════════════════════════════════════════════
+   FORMULÁRIO-WIZARD DO ARQUITETO (agente-1)
+   As perguntas que ele faz viram um formulário guiado.
+   As respostas são compiladas na 1ª mensagem enviada à IA.
+═════════════════════════════════════════════ */
+const ARCHITECT_QUESTIONS: {
+  key: string; label: string; hint: string; placeholder: string; required: boolean; multiline: boolean;
+}[] = [
+  { key: 'sobre', label: 'Sobre você e sua técnica', hint: 'Quem é você, sua experiência e o diferencial do seu método.', placeholder: 'Ex.: Sou cabeleireiro há 14 anos, especialista em mechas...', required: true, multiline: true },
+  { key: 'produto', label: 'Que tipo de produto você quer criar?', hint: 'Formato, quantos módulos e quantas aulas por módulo, profundidade.', placeholder: 'Ex.: Um curso completo mas direto, no máximo 4 módulos...', required: true, multiline: true },
+  { key: 'nome', label: 'Nome provisório do produto', hint: 'Se já tiver um nome em mente. Vira o nome padrão ao salvar (pode deixar em branco).', placeholder: 'Ex.: Morena Iluminada das Gringas', required: false, multiline: false },
+  { key: 'dor', label: 'Qual a dor principal que ele resolve?', hint: 'O problema que o seu aluno vive hoje.', placeholder: 'Ex.: O medo de manchar o cabelo da cliente...', required: true, multiline: true },
+  { key: 'ideia', label: 'Qual a ideia central do produto?', hint: 'A essência do curso. Pode incluir preço e tempo de consumo.', placeholder: 'Ex.: Um curso low ticket, direto ao ponto, assistível em 1 ou 2 dias...', required: true, multiline: true },
+  { key: 'aprender', label: 'O que o aluno precisa aprender a fazer?', hint: 'As habilidades e resultados que ele leva.', placeholder: 'Ex.: Fazer as mechas estratégicas, matização, correção de cor...', required: true, multiline: true },
+  { key: 'transformacao', label: 'Qual a transformação final?', hint: 'Onde o aluno chega ao terminar o curso.', placeholder: 'Ex.: Estar preparado para fazer uma morena iluminada de excelência em qualquer cabelo...', required: true, multiline: true },
+  { key: 'estrutura', label: 'Já tem ideia de estrutura?', hint: 'Se sim, descreva o que imagina. Se não, deixe em branco que eu monto do zero.', placeholder: 'Ex.: Não tenho ideia ainda...', required: false, multiline: true },
+];
+
+const compileBriefing = (a: Record<string, string>) => {
+  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
+  return `Aqui estão as informações do meu produto:
+
+1. Sobre mim e minha técnica: ${g('sobre')}
+2. Tipo de produto: ${g('produto')}
+3. Nome provisório: ${g('nome', '(ainda sem nome definido)')}
+4. Dor principal que resolve: ${g('dor')}
+5. Ideia central: ${g('ideia')}
+6. O que o meu aluno precisa aprender: ${g('aprender')}
+7. Transformação final: ${g('transformacao')}
+8. Já tenho ideia de estrutura: ${g('estrutura', 'Não tenho ideia, pode montar do zero')}
+
+Monte o esqueleto completo do meu curso com base nisso.`;
+};
+
+/* ═════════════════════════════════════════════
+   FORMULÁRIO DA APOSTILA (agente-3) — 5 perguntas próprias.
+   Independente do esqueleto: o Apostila monta a própria estrutura.
+═════════════════════════════════════════════ */
+const APOSTILA_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
+  { key: 'expert', label: 'Nome da expert ou autora do método', hint: 'Quem assina a apostila (o método leva esse nome).', placeholder: 'Ex.: Método Ana Souza', required: true, multiline: false },
+  { key: 'tecnica', label: 'Nome da técnica, curso ou profissão', hint: 'O que a apostila vai ensinar. Vira o nome padrão ao salvar.', placeholder: 'Ex.: Morena Iluminada das Gringas', required: true, multiline: true },
+  { key: 'conteudo', label: 'Explique em detalhes o que quer ensinar', hint: 'Quanto mais detalhe, mais completa a apostila. Pode escrever bastante.', placeholder: 'Ex.: Ensinar morena iluminada à mão livre e com papel, correção de cor e matização...', required: true, multiline: true },
+  { key: 'nivel', label: 'Para qual nível?', hint: 'Iniciantes, intermediários, avançados ou todos os níveis.', placeholder: 'Ex.: Todos os níveis', required: true, multiline: false },
+  { key: 'estilo', label: 'Que estilo de apostila?', hint: 'Mais técnica, mais simples, mais premium ou equilibrada.', placeholder: 'Ex.: Premium e equilibrada', required: true, multiline: false },
+];
+
+const compileApostila = (a: Record<string, string>) => {
+  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
+  return `Informações para a apostila (as 5 respostas já preenchidas):
+
+1. Nome da expert/autora do método: ${g('expert')}
+2. Nome da técnica/curso/profissão: ${g('tecnica')}
+3. O que ensinar (detalhado): ${g('conteudo')}
+4. Nível: ${g('nivel')}
+5. Estilo desejado: ${g('estilo')}
+
+Use essas respostas e comece a apostila direto pela PARTE 1 DE 4. Não faça perguntas.`;
+};
+
+/* ── Formulário do PESQUISA DE MERCADO (agente-4) — também independente ── */
+const PESQUISA_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
+  { key: 'nicho', label: 'Qual nicho você quer atuar?', hint: 'O mercado ou tema do seu produto.', placeholder: 'Ex.: Alongamento de unhas em gel', required: true, multiline: false },
+  { key: 'publico', label: 'Quem é o seu público-alvo?', hint: 'Idade, gênero, profissão, nível de conhecimento e o que mais souber (localização: Brasil).', placeholder: 'Ex.: Mulheres 20-40, manicures iniciantes querendo se especializar...', required: true, multiline: true },
+  { key: 'ensina', label: 'O que você sabe ensinar de melhor?', hint: 'Sua principal habilidade ou entrega.', placeholder: 'Ex.: Molde F1 com acabamento perfeito...', required: true, multiline: true },
+  { key: 'ajudou', label: 'Já ajudou alguém com isso?', hint: 'Resultados ou histórias, se tiver (pode deixar em branco).', placeholder: 'Ex.: Já formei 30 alunas presencialmente...', required: false, multiline: true },
+  { key: 'diferencial', label: 'Tem algum diferencial?', hint: 'O que te separa dos concorrentes.', placeholder: 'Ex.: Método próprio de aplicação sem bolhas...', required: false, multiline: true },
+];
+
+const compilePesquisa = (a: Record<string, string>) => {
+  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
+  return `Sou uma pessoa interessada em criar um produto digital campeão de vendas. Atue como meu analista de mercado com base nestas informações:
+
+- Nicho que desejo atuar: ${g('nicho')}
+- Público-alvo (localização: Brasil): ${g('publico')}
+- O que eu sei ensinar de melhor: ${g('ensina')}
+- Já ajudei alguém com isso: ${g('ajudou')}
+- Meu diferencial: ${g('diferencial')}
+
+Faça a pesquisa aprofundada e me entregue os 5 pontos (dores do público, principais buscas no Google, produtos digitais já existentes, oportunidades/falhas dos concorrentes e de 3 a 7 ideias de produto).`;
+};
+
+/* Configuração de cada "entrevista" (formulário) por agente. */
+interface IntakeConfig {
+  questions: typeof ARCHITECT_QUESTIONS;
+  subtitle: string;
+  submitLabel: string;
+  compile: (a: Record<string, string>) => { briefing: string; courseName: string };
+}
+const INTAKE: Record<string, IntakeConfig> = {
+  'agente-1': {
+    questions: ARCHITECT_QUESTIONS,
+    subtitle: 'Vamos montar o esqueleto do seu curso',
+    submitLabel: 'Gerar esqueleto',
+    compile: a => ({ briefing: compileBriefing(a), courseName: (a['nome'] ?? '').trim() }),
+  },
+  'agente-3': {
+    questions: APOSTILA_QUESTIONS,
+    subtitle: 'Vamos montar a sua apostila',
+    submitLabel: 'Gerar apostila',
+    compile: a => ({ briefing: compileApostila(a), courseName: (a['tecnica'] ?? '').trim() }),
+  },
+  'agente-4': {
+    questions: PESQUISA_QUESTIONS,
+    subtitle: 'Vamos pesquisar o seu mercado',
+    submitLabel: 'Pesquisar mercado',
+    compile: a => ({ briefing: compilePesquisa(a), courseName: `Pesquisa — ${(a['nicho'] ?? '').trim()}`.trim() }),
+  },
+};
+
+const AgentIntakeForm: React.FC<{
+  agent: Agent; config: IntakeConfig; reduce: boolean; onBack: () => void;
+  onSubmit: (briefing: string, courseName: string) => void;
+}> = ({ agent, config, reduce, onBack, onSubmit }) => {
+  const kind = agent.category as RobotKind;
+  const acc = ACCENT[kind];
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const q = config.questions[step];
+  const total = config.questions.length;
+  const val = answers[q.key] ?? '';
+  const canNext = !q.required || val.trim().length > 0;
+  const isLast = step === total - 1;
+
+  const goNext = () => {
+    if (!canNext) return;
+    if (isLast) { const { briefing, courseName } = config.compile(answers); onSubmit(briefing, courseName); }
+    else setStep(s => s + 1);
+  };
+  const goBack = () => (step === 0 ? onBack() : setStep(s => s - 1));
+
+  return (
+    <div className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      {/* Palco do robô */}
+      <div className="shrink-0 relative overflow-hidden" style={{ background: agent.gradient }}>
+        <button onClick={goBack} className="absolute top-3 left-3 z-10 w-8 h-8 flex items-center justify-center text-white/90" style={{ WebkitTapHighlightColor: 'transparent' }}>
+          <ArrowLeft size={18} />
+        </button>
+        <div className="relative px-4 pt-3 pb-4 flex flex-col items-center">
+          <Robot kind={kind} reduce={reduce} />
+          <p className="text-white text-[15px] font-black mt-1">{agent.name}</p>
+          <p className="text-white/80 text-[11px]">{config.subtitle}</p>
+        </div>
+      </div>
+
+      {/* Progresso */}
+      <div className="shrink-0 px-4 pt-4">
+        <div className="flex items-center gap-1.5">
+          {config.questions.map((_, i) => (
+            <div key={i} className="h-1.5 flex-1 rounded-full transition-colors" style={{ background: i <= step ? acc.main : '#F6D6DC' }} />
+          ))}
+        </div>
+        <p className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50 mt-2">Pergunta {step + 1} de {total}</p>
+      </div>
+
+      {/* Pergunta atual */}
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        <h2 className="text-[20px] font-black text-[#1E1B11] leading-tight">
+          {q.label}
+          {!q.required && <span className="text-[#5B4041]/40 text-[12px] font-medium"> · opcional</span>}
+        </h2>
+        <p className="text-[12px] text-[#5B4041]/70 mt-1.5 mb-4">{q.hint}</p>
+        {q.multiline ? (
+          <textarea
+            key={q.key}
+            value={val}
+            onChange={e => setAnswers(p => ({ ...p, [q.key]: e.target.value }))}
+            placeholder={q.placeholder}
+            autoFocus
+            rows={5}
+            className="w-full bg-white border-2 border-[#BE0D3E]/20 focus:border-[#BE0D3E] rounded-2xl px-4 py-3 text-[14px] text-[#1E1B11] outline-none transition-colors resize-none leading-relaxed"
+          />
+        ) : (
+          <input
+            key={q.key}
+            type="text"
+            value={val}
+            onChange={e => setAnswers(p => ({ ...p, [q.key]: e.target.value }))}
+            placeholder={q.placeholder}
+            autoFocus
+            className="w-full bg-white border-2 border-[#BE0D3E]/20 focus:border-[#BE0D3E] rounded-2xl px-4 py-3 text-[14px] text-[#1E1B11] outline-none transition-colors"
+          />
+        )}
+      </div>
+
+      {/* Ações */}
+      <div className="shrink-0 px-4 py-3 border-t border-[#BE0D3E]/10 flex gap-2" style={{ background: 'rgba(255,247,230,0.95)', backdropFilter: 'blur(20px)' }}>
+        <button onClick={goBack} className="px-5 py-3 rounded-2xl text-[12px] font-black uppercase tracking-widest bg-[#F6D6DC] text-[#5B4041]" style={{ WebkitTapHighlightColor: 'transparent' }}>
+          {step === 0 ? 'Sair' : 'Voltar'}
+        </button>
+        <button
+          onClick={goNext}
+          disabled={!canNext}
+          className="flex-1 py-3 rounded-2xl text-[12px] font-black uppercase tracking-widest text-white flex items-center justify-center gap-1.5 disabled:opacity-30 transition-opacity"
+          style={{ background: 'linear-gradient(135deg, #BE0D3E, #E06B85)', WebkitTapHighlightColor: 'transparent' }}
+        >
+          {isLast ? <><Sparkles size={14} /> {config.submitLabel}</> : <>Próxima <ArrowRight size={14} /></>}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/* ═════════════════════════════════════════════
+   PICKER DE ESQUELETOS (agente-2 / Roteirista)
+   Lista os esqueletos que o Arquiteto (agente-1) salvou.
+═════════════════════════════════════════════ */
+interface SkeletonItem { id: string; title: string; ai_response: string; created_at: string | null }
+
+const SkeletonPicker: React.FC<{
+  agent: Agent; userId?: string; reduce: boolean;
+  onBack: () => void; onPick: (it: SkeletonItem) => void; onCreate: () => void;
+}> = ({ agent, userId, reduce, onBack, onPick, onCreate }) => {
+  const kind = agent.category as RobotKind;
+  const [items, setItems] = useState<SkeletonItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!userId || !SUPABASE_READY) { setLoading(false); return; }
+    let cancel = false;
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from('saved_viral_outputs')
+        .select('id, title, ai_response, created_at')
+        .eq('user_id', userId)
+        .eq('model_slug', 'agente-1')
+        .order('created_at', { ascending: false });
+      if (cancel) return;
+      setItems((data ?? []) as SkeletonItem[]);
+      setLoading(false);
+    })();
+    return () => { cancel = true; };
+  }, [userId]);
+
+  return (
+    <div className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      {/* Palco do robô */}
+      <div className="shrink-0 relative overflow-hidden" style={{ background: agent.gradient }}>
+        <button onClick={onBack} className="absolute top-3 left-3 z-10 w-8 h-8 flex items-center justify-center text-white/90" style={{ WebkitTapHighlightColor: 'transparent' }}>
+          <ArrowLeft size={18} />
+        </button>
+        <div className="relative px-4 pt-3 pb-4 flex flex-col items-center">
+          <Robot kind={kind} reduce={reduce} />
+          <p className="text-white text-[15px] font-black mt-1">{agent.name}</p>
+          <p className="text-white/80 text-[11px]">Escolha o esqueleto pra criar as aulas</p>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-5">
+        {loading ? (
+          <div className="flex justify-center pt-10"><Loader2 className="w-6 h-6 text-[#BE0D3E] animate-spin" /></div>
+        ) : items.length === 0 ? (
+          <div className="text-center pt-10 px-6">
+            <div className="w-14 h-14 rounded-2xl bg-[#F6D6DC] flex items-center justify-center mx-auto mb-4"><Layers className="text-[#BE0D3E]" size={24} /></div>
+            <h3 className="text-[16px] font-black text-[#1E1B11]">Nenhum esqueleto salvo ainda</h3>
+            <p className="text-[12px] text-[#5B4041]/70 mt-1.5 mb-5">Crie e salve um esqueleto no <b>Arquiteto do Curso</b> primeiro. Depois volte aqui pra escrever as aulas.</p>
+            <button onClick={onCreate} className="inline-flex items-center gap-1.5 px-5 py-3 rounded-2xl text-[12px] font-black uppercase tracking-widest text-white" style={{ background: 'linear-gradient(135deg, #BE0D3E, #E06B85)', WebkitTapHighlightColor: 'transparent' }}>
+              <Blocks size={14} /> Ir pro Arquiteto
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-1">
+              {items.length} esqueleto{items.length > 1 ? 's' : ''} salvo{items.length > 1 ? 's' : ''}
+            </p>
+            {items.map(it => (
+              <button
+                key={it.id}
+                onClick={() => onPick(it)}
+                className="w-full text-left bg-white border border-[#BE0D3E]/15 hover:border-[#BE0D3E]/40 rounded-2xl p-4 transition-all active:scale-[0.99]"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="shrink-0 w-9 h-9 rounded-xl bg-[#F6D6DC] flex items-center justify-center mt-0.5"><Layers size={16} className="text-[#BE0D3E]" /></div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[14px] font-bold text-[#1E1B11] truncate">{it.title}</p>
+                    <p className="text-[11px] text-[#5B4041]/60 line-clamp-2 mt-0.5">{it.ai_response.replace(/[#*_>`-]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120)}</p>
+                  </div>
+                  <ChevronRight size={16} className="text-[#BE0D3E]/40 shrink-0 mt-2" />
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -501,6 +796,14 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   const [saveTitle, setSaveTitle] = useState('');
   const [saving, setSaving] = useState(false);
 
+  // Esteira Arquiteto→Roteirista: etapa da tela, nome do curso e modo "salvar ao sair"
+  const reduce = !!useReducedMotion();
+  const [stage, setStage] = useState<'form' | 'picker' | 'chat'>(
+    agent?.slug === 'agente-2' ? 'picker' : (agent && INTAKE[agent.slug]) ? 'form' : 'chat'
+  );
+  const [courseName, setCourseName] = useState('');
+  const [exitMode, setExitMode] = useState(false);
+
   const { isRecording, recordingTime, error: recorderError, startRecording, stopRecording, cancelRecording } = useAudioRecorder();
   const [transcribing, setTranscribing] = useState(false);
 
@@ -512,13 +815,11 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  const send = async () => {
-    const text = input.trim();
-    if (!text || loading) return;
-    const next: Message[] = [...messages, { role: 'user', content: text }];
+  // Núcleo de geração: recebe a mensagem do usuário + a base de conversa a usar.
+  // Passar `base` explicitamente evita ler `messages` desatualizado (formulário/picker).
+  const runGeneration = async (userMsg: Message, base: Message[]) => {
+    const next: Message[] = [...base, userMsg];
     setMessages(next);
-    setInput('');
-    if (textareaRef.current) textareaRef.current.style.height = 'auto';
     // Sem Supabase configurado ainda → resposta amigável, sem chamar a function
     if (!SUPABASE_READY) {
       setMessages(prev => [...prev, { role: 'ia', content: TXT.backend_pending }]);
@@ -529,7 +830,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       const { data, error } = await supabase.functions.invoke('chat-viral', {
         body: {
           formatSlug,
-          messages: next,
+          messages: next.map(m => ({ role: m.role, content: m.content })),
           sessionId: sessionIdRef.current,
           segment: agent?.category,
         },
@@ -557,20 +858,34 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     }
   };
 
+  const send = () => {
+    const text = input.trim();
+    if (!text || loading) return;
+    setInput('');
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+    runGeneration({ role: 'user', content: text }, messages);
+  };
+
   const reset = () => {
     if (!agent) return;
-    setMessages([{ role: 'ia', content: INITIAL_MSG(agent) }]);
     setInput('');
     setSavedIdx(new Set());
+    if (agent.slug === 'agente-2') { setMessages([]); setStage('picker'); return; }
+    if (INTAKE[agent.slug]) { setMessages([]); setStage('form'); return; }
+    setMessages([{ role: 'ia', content: INITIAL_MSG(agent) }]);
   };
 
   const openSaveModal = (idx: number) => {
     const iaMsg = messages[idx];
     const userMsg = messages.slice(0, idx).reverse().find(m => m.role === 'user');
     if (!iaMsg || !userMsg) return;
-    // Título default: primeiros 60 caracteres do briefing
-    const defaultTitle = userMsg.content.replace(/\s+/g, ' ').trim().slice(0, 60);
+    // Título default: nome do curso (esteira) ou primeiros 60 caracteres do briefing
+    const defaultTitle =
+      agent?.slug === 'agente-2' && courseName ? `${courseName} — aula`
+      : courseName && INTAKE[agent?.slug ?? ''] ? courseName
+      : userMsg.content.replace(/\s+/g, ' ').trim().slice(0, 60);
     setSaveTitle(defaultTitle);
+    setExitMode(false);
     setSaveModalIdx(idx);
   };
 
@@ -603,8 +918,46 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       return;
     }
     setSavedIdx(prev => new Set(prev).add(saveModalIdx));
+    const wasExit = exitMode;
     setSaveModalIdx(null);
+    setExitMode(false);
     toast({ title: TXT.toast_saved });
+    if (wasExit) navigate('/chat');
+  };
+
+  const closeSaveModal = () => { setSaveModalIdx(null); setExitMode(false); };
+
+  // Formulário do Arquiteto concluído → gera o esqueleto a partir do briefing.
+  const handleFormSubmit = (briefing: string, name: string) => {
+    setCourseName(name);
+    setStage('chat');
+    runGeneration({ role: 'user', content: briefing }, []);
+  };
+
+  // Esqueleto escolhido no Roteirista → injeta como base e pede a 1ª aula.
+  const handlePickSkeleton = (it: SkeletonItem) => {
+    setCourseName(it.title);
+    setStage('chat');
+    const injected = `Esqueleto validado do curso "${it.title}":\n\n${it.ai_response}\n\nComece escrevendo a primeira aula (Aula 1) com base nesse esqueleto.`;
+    const display = `📋 Curso escolhido: "${it.title}".\nVamos começar pelas aulas!`;
+    runGeneration({ role: 'user', content: injected, display }, []);
+  };
+
+  // Voltar: no Arquiteto, se houver esqueleto não salvo, oferece salvar antes de sair.
+  const handleBackPress = () => {
+    if (agent?.slug === 'agente-1' && stage === 'chat') {
+      let idx = -1;
+      for (let i = messages.length - 1; i > 0; i--) {
+        if (messages[i].role === 'ia' && !savedIdx.has(i)) { idx = i; break; }
+      }
+      if (idx !== -1) {
+        setSaveTitle(courseName || 'Esqueleto do meu curso');
+        setExitMode(true);
+        setSaveModalIdx(idx);
+        return;
+      }
+    }
+    navigate('/chat');
   };
 
   const isTouch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
@@ -672,6 +1025,24 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
 
   if (!agent) return null;
 
+  // Etapa 1 dos agentes com entrevista própria (Arquiteto, Apostila): formulário-wizard
+  if (stage === 'form' && INTAKE[agent.slug]) {
+    return <AgentIntakeForm agent={agent} config={INTAKE[agent.slug]} reduce={reduce} onBack={() => navigate('/chat')} onSubmit={handleFormSubmit} />;
+  }
+  // Etapa 1 do Roteirista: escolher o esqueleto salvo
+  if (stage === 'picker') {
+    return (
+      <SkeletonPicker
+        agent={agent}
+        userId={user?.id}
+        reduce={reduce}
+        onBack={() => navigate('/chat')}
+        onPick={handlePickSkeleton}
+        onCreate={() => navigate('/chat/agente-1')}
+      />
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
@@ -679,7 +1050,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       <div className="shrink-0 border-b border-[#BE0D3E]/10 px-4 pt-3 pb-3 flex items-center gap-3"
         style={{ background: 'rgba(255,247,230,0.95)', backdropFilter: 'blur(20px)' }}>
         <button
-          onClick={() => navigate('/chat')}
+          onClick={handleBackPress}
           className="w-8 h-8 flex items-center justify-center text-[#5B4041] shrink-0"
           style={{ WebkitTapHighlightColor: 'transparent' }}
         >
@@ -790,11 +1161,11 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
         )}
       </div>
 
-      {/* Modal de salvar na biblioteca */}
+      {/* Modal de salvar na biblioteca (também usado no "salvar antes de sair") */}
       {saveModalIdx !== null && (
         <div
           className="fixed inset-0 z-[100] bg-[#1E1B11]/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
-          onClick={() => setSaveModalIdx(null)}
+          onClick={closeSaveModal}
         >
           <div
             className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-[0_-8px_40px_rgba(0,0,0,0.2)]"
@@ -803,10 +1174,10 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <LibraryIcon size={18} className="text-[#BE0D3E]" />
-                <h3 className="text-[16px] font-black text-[#1E1B11]">{TXT.save_to_library}</h3>
+                <h3 className="text-[16px] font-black text-[#1E1B11]">{exitMode ? TXT.exit_title : TXT.save_to_library}</h3>
               </div>
               <button
-                onClick={() => setSaveModalIdx(null)}
+                onClick={closeSaveModal}
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-[#FFF7E6] text-[#5B4041]"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
@@ -814,8 +1185,12 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
               </button>
             </div>
 
+            {exitMode && (
+              <p className="text-[12px] text-[#5B4041]/80 mb-3 leading-relaxed">{TXT.exit_desc}</p>
+            )}
+
             <p className="text-[10px] font-black text-[#5B4041] uppercase tracking-widest mb-2">
-              {TXT.save_modal_label}
+              {exitMode ? TXT.save_course_label : TXT.save_modal_label}
             </p>
             <input
               type="text"
@@ -828,11 +1203,11 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
 
             <div className="flex gap-2">
               <button
-                onClick={() => setSaveModalIdx(null)}
+                onClick={exitMode ? () => { closeSaveModal(); navigate('/chat'); } : closeSaveModal}
                 className="flex-1 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest bg-[#F6D6DC] text-[#5B4041]"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                {TXT.cancel}
+                {exitMode ? TXT.exit_discard : TXT.cancel}
               </button>
               <button
                 onClick={confirmSave}
@@ -840,7 +1215,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
                 className="flex-1 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest bg-gradient-to-r from-[#BE0D3E] to-[#E06B85] text-white shadow-[0_4px_12px_rgba(190,13,62,0.3)] disabled:opacity-40 flex items-center justify-center gap-1.5"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                {saving ? <><Loader2 size={12} className="animate-spin" /> {TXT.saving}</> : <><Save size={12} /> {TXT.save}</>}
+                {saving ? <><Loader2 size={12} className="animate-spin" /> {TXT.saving}</> : <><Save size={12} /> {exitMode ? TXT.exit_save : TXT.save}</>}
               </button>
             </div>
           </div>
@@ -858,7 +1233,8 @@ const Chat: React.FC = () => {
   // Só monta o chat se o slug existir em AGENTS — slug desconhecido
   // (bookmark antigo, slug renomeado) volta pra grade em vez de quebrar.
   if (formatSlug && AGENTS.some(a => a.slug === formatSlug)) {
-    return <ChatScreen formatSlug={formatSlug} />;
+    // key força remontar (reinicia etapa/mensagens) ao trocar de agente
+    return <ChatScreen key={formatSlug} formatSlug={formatSlug} />;
   }
   return <FormatsGrid />;
 };
