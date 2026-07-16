@@ -165,12 +165,12 @@ const BottomNav: React.FC = () => {
                       style={{ WebkitTapHighlightColor: 'transparent' }}
                     >
                       <span
-                        className="w-[26px] h-[26px] rounded-full flex items-center justify-center shadow-[0_4px_10px_-2px_rgba(37,211,102,0.55)]"
-                        style={{ background: '#25D366' }}
+                        className="w-[26px] h-[26px] rounded-full flex items-center justify-center shadow-[0_4px_10px_-2px_rgba(190,13,62,0.45)]"
+                        style={{ background: 'linear-gradient(135deg, #BE0D3E, #E06B85)' }}
                       >
                         <WhatsAppIcon />
                       </span>
-                      <span className="text-[10px] leading-none font-bold tracking-tight whitespace-nowrap mt-1" style={{ color: '#12864B' }}>
+                      <span className="text-[10px] leading-none font-bold tracking-tight whitespace-nowrap mt-1" style={{ color: '#BE0D3E' }}>
                         grupo
                       </span>
                     </a>
