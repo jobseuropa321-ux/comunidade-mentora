@@ -26,6 +26,7 @@
  * ═══════════════════════════════════════════════════════════════════════ */
 import {
   Blocks, Clapperboard, BookOpen, BarChart3,
+  Tag, Megaphone, Anchor, Mic, GalleryHorizontalEnd,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -35,6 +36,12 @@ export const CATEGORIES = [
   { id: 'roteiro',   label: 'Roteiros',   color: 'text-[#C77E14]', dot: 'bg-[#F6B43A]' },
   { id: 'apostila',  label: 'Apostila',   color: 'text-[#D06A85]', dot: 'bg-[#ECA6BB]' },
   { id: 'pesquisa',  label: 'Pesquisa',   color: 'text-[#94002D]', dot: 'bg-[#94002D]' },
+  { id: 'nome',      label: 'Naming',     color: 'text-[#BE0D3E]', dot: 'bg-[#BE0D3E]' },
+  { id: 'promessa',  label: 'Copy',       color: 'text-[#D06A85]', dot: 'bg-[#E06B85]' },
+  // bônus de viralização — lime + rosa choque (id visual "Viral em 1 Minuto")
+  { id: 'ganchos',   label: 'Ganchos',    color: 'text-[#E8226C]', dot: 'bg-[#FF2D7A]' },
+  { id: 'narrado',   label: 'Narrado',    color: 'text-[#6E8B00]', dot: 'bg-[#C8F000]' },
+  { id: 'carrossel', label: 'Carrossel',  color: 'text-[#E8226C]', dot: 'bg-[#FF2D7A]' },
 ];
 
 /* Gradientes prontos pros palcos dos robôs — família de cores da marca. */
@@ -45,6 +52,10 @@ export const GRAD = {
   rose:    'linear-gradient(150deg, #C25A76 0%, #E06B85 60%, #ECA6BB 100%)',
   sunset:  'linear-gradient(150deg, #BE0D3E 0%, #E06B85 55%, #F6B43A 100%)',
   brand:   'linear-gradient(150deg, #BE0D3E 0%, #E06B85 50%, #F6B43A 100%)',
+  // bônus de viralização (lime #C8F000 + rosa choque #FF2D7A)
+  viralPink: 'linear-gradient(150deg, #C8005A 0%, #FF2D7A 55%, #FF8FBE 100%)',
+  viralLime: 'linear-gradient(150deg, #7FA000 0%, #C8F000 60%, #E4FF7A 100%)',
+  viralMix:  'linear-gradient(150deg, #FF2D7A 0%, #FF6BA5 45%, #C8F000 100%)',
 };
 
 export interface Agent {
@@ -54,6 +65,8 @@ export interface Agent {
   category: string;
   icon: LucideIcon;
   gradient: string;
+  /** true = agente BÔNUS (viralização) — recebe destaque lime/rosa no Estúdio. */
+  bonus?: boolean;
   /** Mensagem inicial customizada da IA. Se não tiver, usa a default genérica. */
   openingMessage?: string;
 }
@@ -99,6 +112,54 @@ export const AGENTS: Agent[] = [
     gradient: GRAD.wine,
     openingMessage:
       'Olá! Eu sou o **Pesquisa de Mercado** 🔎\n\nEu investigo o seu nicho: **concorrentes, dores da audiência e oportunidades** de posicionamento.\n\nMe conta:\n\n1. Qual é o seu **nicho**?\n2. Quem é a sua **cliente ideal**?',
+  },
+  {
+    slug: 'agente-5',
+    name: 'Nome Potente',
+    desc: 'Cria nomes fortes e vendedores pro seu produto.',
+    category: 'nome',
+    icon: Tag,
+    gradient: GRAD.sunset,
+    openingMessage: 'Olá! Eu sou o **Nome Potente** 🏷️\n\nEu crio nomes fortes, claros e memoráveis pro seu produto.',
+  },
+  {
+    slug: 'agente-6',
+    name: 'Promessa Irresistível',
+    desc: 'Escreve promessas SMART pra headline da sua oferta.',
+    category: 'promessa',
+    icon: Megaphone,
+    gradient: GRAD.rose,
+    openingMessage: 'Olá! Eu sou a **Promessa Irresistível** 📣\n\nEu crio promessas fortes e específicas pra sua oferta.',
+  },
+  {
+    slug: 'agente-7',
+    name: 'Ganchos Virais',
+    desc: 'Gera 20 ganchos de alta retenção pros seus vídeos.',
+    category: 'ganchos',
+    icon: Anchor,
+    gradient: GRAD.viralPink,
+    bonus: true,
+    openingMessage: 'Olá! Eu sou os **Ganchos Virais** 🪝\n\nEu crio 20 ganchos que fazem a pessoa parar de rolar a tela.',
+  },
+  {
+    slug: 'agente-8',
+    name: 'Narrado Técnico',
+    desc: 'Roteiros narrados técnicos de até 90s pra viralizar.',
+    category: 'narrado',
+    icon: Mic,
+    gradient: GRAD.viralLime,
+    bonus: true,
+    openingMessage: 'Olá! Eu sou o **Narrado Técnico** 🎙️\n\nEu crio roteiros técnicos, fortes e fáceis de gravar.',
+  },
+  {
+    slug: 'agente-9',
+    name: 'Carrossel Viral',
+    desc: 'Monta carrosséis de 10 slides que prendem e convertem.',
+    category: 'carrossel',
+    icon: GalleryHorizontalEnd,
+    gradient: GRAD.viralMix,
+    bonus: true,
+    openingMessage: 'Olá! Eu sou o **Carrossel Viral** 🎠\n\nEu monto carrosséis estratégicos, slide a slide.',
   },
 ];
 

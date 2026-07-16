@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, Send, RotateCcw, Mic,
   Library as LibraryIcon, Save, Check, Loader2, X,
-  Blocks, Layers, ChevronRight, Sparkles,
+  Blocks, Layers, ChevronRight, Sparkles, Zap,
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { supabase, SUPABASE_READY } from '@/integrations/supabase/client';
@@ -12,13 +12,14 @@ import { useToast } from '@/hooks/use-toast';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { readFnError } from '@/lib/functionsError';
 import { AGENTS, CATEGORIES, defaultOpening, type Agent } from '@/data/agents';
+import VoiceField from '@/components/VoiceField';
 
 /* ─────────────────────────────────────────────
    TEXTOS DA TELA (toda a "escrita" daqui)
 ───────────────────────────────────────────── */
 const TXT = {
   grid_title: 'Estúdio de Criação',
-  grid_subtitle: 'Crie seu curso em minutos usando IA. Quatro agentes, um pra cada etapa do seu curso.',
+  grid_subtitle: 'Crie seu curso em minutos usando IA. Um agente pra cada etapa — e bônus de viralização.',
   your_models: 'Seus Roteiros',
   library: 'Biblioteca',
   create_btn: 'Começar',
@@ -74,13 +75,22 @@ const newSessionId = () =>
    ESTÚDIO DE CRIAÇÃO — hub dos 4 agentes
    (robôs SVG personalizados + cenas animadas)
 ═════════════════════════════════════════════ */
-type RobotKind = 'estrutura' | 'roteiro' | 'apostila' | 'pesquisa';
+type RobotKind =
+  | 'estrutura' | 'roteiro' | 'apostila' | 'pesquisa'
+  | 'nome' | 'promessa' | 'ganchos' | 'narrado' | 'carrossel';
 
 const ACCENT: Record<RobotKind, { main: string; deep: string; soft: string; cta: string }> = {
   estrutura: { main: '#BE0D3E', deep: '#7C0026', soft: '#F6D6DC', cta: '#BE0D3E' },
   roteiro:   { main: '#F6B43A', deep: '#B96F0E', soft: '#FBE3BC', cta: '#C77E14' },
   apostila:  { main: '#E06B85', deep: '#B04967', soft: '#F6D6DC', cta: '#D06A85' },
   pesquisa:  { main: '#94002D', deep: '#5E001C', soft: '#ECA6BB', cta: '#94002D' },
+  // oferta (marca)
+  nome:      { main: '#C81F5C', deep: '#94002D', soft: '#F6D6DC', cta: '#BE0D3E' },
+  promessa:  { main: '#E06B85', deep: '#B04967', soft: '#F6D6DC', cta: '#D06A85' },
+  // bônus de viralização (lime + rosa choque)
+  ganchos:   { main: '#FF2D7A', deep: '#C8005A', soft: '#FFD1E4', cta: '#E8226C' },
+  narrado:   { main: '#C8F000', deep: '#7FA000', soft: '#EEFFC0', cta: '#6E8B00' },
+  carrossel: { main: '#FF2D7A', deep: '#C8005A', soft: '#FFD1E4', cta: '#E8226C' },
 };
 
 /* ── O robô: base comum + ferramenta/rosto próprios de cada profissão ── */
@@ -183,6 +193,43 @@ const Robot: React.FC<{ kind: RobotKind; reduce: boolean }> = ({ kind, reduce })
           <line x1="60" y1="95" x2="60" y2="104" stroke={a.deep} strokeWidth="1.2" opacity="0.6" />
         </>
       )}
+      {/* Nome Potente — etiqueta de marca */}
+      {kind === 'nome' && (
+        <g transform="rotate(-16 89 91)">
+          <path d="M81 86 h11 a3 3 0 0 1 3 3 v6 a3 3 0 0 1 -3 3 h-11 l-4 -6 z" fill="#FFFDF7" stroke={a.deep} strokeWidth="1.8" />
+          <circle cx="82.5" cy="92" r="1.5" fill={a.deep} />
+        </g>
+      )}
+      {/* Promessa — megafone */}
+      {kind === 'promessa' && (
+        <g transform="rotate(-18 90 90)">
+          <rect x="79" y="88" width="5" height="6" rx="1.5" fill={a.deep} />
+          <path d="M84 87 L96 83 L96 99 L84 95 Z" fill="#FFFDF7" stroke={a.deep} strokeWidth="1.8" strokeLinejoin="round" />
+          <path d="M99 87 q3 4 0 8" stroke={a.deep} strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        </g>
+      )}
+      {/* Ganchos — anzol */}
+      {kind === 'ganchos' && (
+        <g>
+          <path d="M90 83 L90 93 a4.2 4.2 0 0 1 -8.4 0 a4.2 4.2 0 0 1 4.2 -4.2" fill="none" stroke={a.deep} strokeWidth="2.4" strokeLinecap="round" />
+          <path d="M86 88.5 l-2 -3 l4 0 z" fill={a.deep} />
+        </g>
+      )}
+      {/* Narrado Técnico — microfone */}
+      {kind === 'narrado' && (
+        <g transform="rotate(20 88 90)">
+          <rect x="84.5" y="81" width="7" height="12" rx="3.5" fill="#FFFDF7" stroke={a.deep} strokeWidth="1.8" />
+          <line x1="88" y1="93" x2="88" y2="99" stroke={a.deep} strokeWidth="1.8" />
+          <line x1="84.5" y1="99" x2="91.5" y2="99" stroke={a.deep} strokeWidth="1.8" strokeLinecap="round" />
+        </g>
+      )}
+      {/* Carrossel — pilha de slides */}
+      {kind === 'carrossel' && (
+        <g transform="rotate(-10 89 91)">
+          <rect x="83" y="85" width="12" height="11" rx="2" fill={a.deep} opacity="0.45" />
+          <rect x="80.5" y="87" width="12" height="11" rx="2" fill="#FFFDF7" stroke={a.deep} strokeWidth="1.6" />
+        </g>
+      )}
     </svg>
   );
 };
@@ -253,7 +300,7 @@ const SceneFX: React.FC<{ kind: RobotKind; reduce: boolean }> = ({ kind, reduce 
       </>
     );
   }
-  // pesquisa
+  if (kind === 'pesquisa') {
   return (
     <>
       {/* radar */}
@@ -276,6 +323,21 @@ const SceneFX: React.FC<{ kind: RobotKind; reduce: boolean }> = ({ kind, reduce 
           style={{ left: 10 + i * 10 }}
           animate={reduce ? { height: h } : { height: [4, h, 4] }}
           transition={{ duration: 2.4, repeat: Infinity, delay: i * 0.3, ease: 'easeInOut' }}
+        />
+      ))}
+    </>
+  );
+  }
+  // genérico (agentes de oferta + bônus): partículas flutuantes brancas
+  return (
+    <>
+      {[0, 1, 2, 3, 4].map(i => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full bg-white/70"
+          style={{ width: 4 + (i % 3), height: 4 + (i % 3), left: 10 + ((i * 21) % 44), top: 12 + ((i * 27) % 62) }}
+          animate={reduce ? undefined : { y: [0, -7, 0], opacity: [0.25, 0.85, 0.25] }}
+          transition={{ duration: 2.6 + i * 0.35, repeat: Infinity, delay: i * 0.4, ease: 'easeInOut' }}
         />
       ))}
     </>
@@ -322,7 +384,7 @@ const AgentCard: React.FC<{ agent: Agent; index: number; reduce: boolean; onOpen
         <div className="flex items-center gap-1.5 mb-1">
           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cat?.dot ?? ''}`} />
           <span className={`text-[8px] font-black uppercase tracking-[0.18em] ${cat?.color ?? ''}`}>
-            {TXT.agent_word} {num} · {cat?.label}
+            {agent.bonus ? 'BÔNUS' : `${TXT.agent_word} ${num}`} · {cat?.label}
           </span>
         </div>
         <h3 className="text-[17px] leading-tight font-bold text-[#1E1B11] mb-1">{agent.name}</h3>
@@ -346,6 +408,17 @@ const AgentCard: React.FC<{ agent: Agent; index: number; reduce: boolean; onOpen
 const Connector: React.FC = () => (
   <motion.div variants={cardVariants} className="flex justify-center py-1" aria-hidden="true">
     <div className="h-5 border-l-2 border-dashed border-[#BE0D3E]/25" />
+  </motion.div>
+);
+
+/* ── Divisor da seção BÔNUS (viralização — lime + rosa choque) ── */
+const BonusDivider: React.FC = () => (
+  <motion.div variants={cardVariants} className="flex items-center gap-2 py-4">
+    <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#FF2D7A]/45" />
+    <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: '#E8226C' }}>
+      <Zap size={11} className="fill-[#C8F000] text-[#C8F000]" /> Bônus · Viralização
+    </span>
+    <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#C8F000]/70" />
   </motion.div>
 );
 
@@ -392,24 +465,27 @@ const FormatsGrid: React.FC = () => {
         </motion.button>
       </div>
 
-      {/* Esteira dos 4 agentes */}
+      {/* Agentes: criação do curso + bônus de viralização */}
       <motion.div
         className="px-4"
         variants={{ show: { transition: { staggerChildren: 0.11, delayChildren: 0.15 } } }}
         initial={reduce ? 'show' : 'hidden'}
         animate="show"
       >
-        {AGENTS.map((agent, i) => (
-          <React.Fragment key={agent.slug}>
-            {i > 0 && <Connector />}
-            <AgentCard
-              agent={agent}
-              index={i}
-              reduce={reduce}
-              onOpen={() => navigate(`/chat/${agent.slug}`)}
-            />
-          </React.Fragment>
-        ))}
+        {AGENTS.map((agent, i) => {
+          const firstBonus = !!agent.bonus && (i === 0 || !AGENTS[i - 1].bonus);
+          return (
+            <React.Fragment key={agent.slug}>
+              {firstBonus ? <BonusDivider /> : i > 0 ? <Connector /> : null}
+              <AgentCard
+                agent={agent}
+                index={i}
+                reduce={reduce}
+                onOpen={() => navigate(`/chat/${agent.slug}`)}
+              />
+            </React.Fragment>
+          );
+        })}
       </motion.div>
     </div>
   );
@@ -564,6 +640,109 @@ const compilePesquisa = (a: Record<string, string>) => {
 Faça a pesquisa aprofundada e me entregue os 5 pontos (dores do público, principais buscas no Google, produtos digitais já existentes, oportunidades/falhas dos concorrentes e de 3 a 7 ideias de produto).`;
 };
 
+/* ── Nome Potente (agente-5) ── */
+const NOME_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
+  { key: 'tipo', label: 'Que tipo de produto é?', hint: 'Curso, mentoria, ebook, desafio...', placeholder: 'Ex.: Curso', required: true, multiline: false },
+  { key: 'nome_prov', label: 'Nome provisório (se tiver)', hint: 'Se já tem um nome em mente. Pode deixar em branco.', placeholder: 'Ex.: Molde F1 do zero', required: false, multiline: false },
+  { key: 'tema', label: 'Tema principal do produto', hint: 'O que ele ensina de fato.', placeholder: 'Ex.: Ensinar a fazer o primeiro molde F1', required: true, multiline: true },
+  { key: 'publico', label: 'Público-alvo específico', hint: 'Pra quem é.', placeholder: 'Ex.: Nail designers iniciantes', required: true, multiline: false },
+  { key: 'transformacao', label: 'Transformação que entrega', hint: 'O resultado que o aluno terá.', placeholder: 'Ex.: Fazer o primeiro alongamento em molde F1', required: true, multiline: true },
+  { key: 'diferencial', label: 'Diferencial (se tiver)', hint: 'O que te destaca. Pode deixar em branco.', placeholder: 'Ex.: A pessoa aprende em pouco tempo', required: false, multiline: true },
+  { key: 'linguagem', label: 'Linguagem desejada pro nome', hint: 'O tom do nome.', placeholder: 'Ex.: Informal', required: true, multiline: false },
+];
+const compileNome = (a: Record<string, string>) => {
+  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
+  return `Informações do produto (para criar o nome):
+
+- Tipo de produto: ${g('tipo')}
+- Nome provisório: ${g('nome_prov', '(não tem)')}
+- Tema principal: ${g('tema')}
+- Público-alvo: ${g('publico')}
+- Transformação que entrega: ${g('transformacao')}
+- Diferencial: ${g('diferencial', '(não informado)')}
+- Linguagem desejada pro nome: ${g('linguagem')}
+
+Crie as sugestões de nome com base nisso.`;
+};
+
+/* ── Promessa Irresistível (agente-6) ── */
+const PROMESSA_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
+  { key: 'nome', label: 'Nome do produto', hint: 'O nome escolhido ou provisório.', placeholder: 'Ex.: Molde F1 das Gringas', required: true, multiline: false },
+  { key: 'tipo', label: 'Tipo de produto', hint: 'Curso, mentoria, ebook, desafio, planilha...', placeholder: 'Ex.: Curso online', required: true, multiline: false },
+  { key: 'tema', label: 'Tema central do produto', hint: 'Sobre o que é.', placeholder: 'Ex.: Unhas em molde F1', required: true, multiline: false },
+  { key: 'publico', label: 'Público-alvo específico', hint: 'Pra quem é.', placeholder: 'Ex.: Manicures iniciantes sem tempo', required: true, multiline: true },
+  { key: 'transformacao', label: 'Transformação após o produto', hint: 'O que o aluno consegue depois.', placeholder: 'Ex.: Fazer a primeira unha em molde F1', required: true, multiline: true },
+  { key: 'tempo', label: 'Resultado em quanto tempo?', hint: 'O prazo da transformação.', placeholder: 'Ex.: 7 dias', required: true, multiline: false },
+  { key: 'diferencial', label: 'Diferencial que acelera (se tiver)', hint: 'Método validado, com IA, prático... Pode deixar em branco.', placeholder: 'Ex.: Método validado por 200 alunas', required: false, multiline: true },
+];
+const compilePromessa = (a: Record<string, string>) => {
+  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
+  return `Informações do produto (para criar a promessa):
+
+- Nome do produto: ${g('nome')}
+- Tipo de produto: ${g('tipo')}
+- Tema central: ${g('tema')}
+- Público-alvo: ${g('publico')}
+- Transformação após o produto: ${g('transformacao')}
+- Resultado esperado em: ${g('tempo')}
+- Diferencial que acelera: ${g('diferencial', '(não informado)')}
+
+Crie as promessas SMART com base nisso.`;
+};
+
+/* ── Ganchos Virais (agente-7 · bônus) ── */
+const GANCHOS_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
+  { key: 'nicho', label: 'Qual é o seu nicho?', hint: 'O mercado onde você atua.', placeholder: 'Ex.: Nail designer', required: true, multiline: false },
+  { key: 'ensina', label: 'O que você ensina, vende ou entrega?', hint: 'Explique com detalhes.', placeholder: 'Ex.: Ensino manicures a fazer molde F1 com acabamento profissional...', required: true, multiline: true },
+  { key: 'nivel', label: 'Com qual nível de pessoa quer falar?', hint: 'Iniciante, intermediário, avançado ou todos.', placeholder: 'Ex.: Iniciante', required: true, multiline: false },
+  { key: 'objetivo', label: 'Qual o objetivo dos ganchos?', hint: 'Atrair clientes, vender curso, crescer no Instagram, autoridade, engajamento...', placeholder: 'Ex.: Atrair alunas pro curso', required: true, multiline: false },
+  { key: 'dor', label: 'Alguma dor ou desejo específico?', hint: 'Se não souber, deixe em branco que eu defino.', placeholder: 'Ex.: Medo de não conseguir clientes', required: false, multiline: true },
+];
+const compileGanchos = (a: Record<string, string>) => {
+  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
+  return `Informações para os ganchos:
+
+1. Nicho: ${g('nicho')}
+2. O que ensina/vende/entrega: ${g('ensina')}
+3. Nível do público: ${g('nivel')}
+4. Objetivo dos ganchos: ${g('objetivo')}
+5. Dor/desejo específico: ${g('dor', 'pode definir sozinho')}
+
+Agora gere os 20 ganchos, seguindo exatamente o formato definido.`;
+};
+
+/* ── Narrado Técnico (agente-8 · bônus) ── */
+const NARRADO_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
+  { key: 'entrada', label: 'Qual seu nicho OU um gancho pronto?', hint: 'Mande só o nicho (que eu escolho o tema) OU cole um gancho que você já tem.', placeholder: 'Ex.: Nail designer  —ou—  "o erro que faz o molde F1 descolar"', required: true, multiline: true },
+];
+const compileNarrado = (a: Record<string, string>) => {
+  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
+  return `Nicho ou gancho informado pelo usuário: ${g('entrada')}
+
+Identifique se é um NICHO ou um GANCHO pronto e crie o roteiro narrado técnico, no formato exato definido.`;
+};
+
+/* ── Carrossel Viral (agente-9 · bônus) ── */
+const CARROSSEL_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
+  { key: 'nicho', label: 'Qual é o seu nicho?', hint: 'O mercado onde você atua.', placeholder: 'Ex.: Nail designer', required: true, multiline: false },
+  { key: 'faz', label: 'O que você faz nesse nicho?', hint: 'Explique com detalhes.', placeholder: 'Ex.: Ensino e faço alongamento em molde F1...', required: true, multiline: true },
+  { key: 'tema', label: 'Tema, gancho ou ideia (se tiver)', hint: 'Se já tem um tema pro carrossel. Deixe em branco que eu crio.', placeholder: 'Ex.: 5 erros no molde F1', required: false, multiline: true },
+  { key: 'foco', label: 'Foco do carrossel', hint: 'Viralização, autoridade, ensino técnico, conversão, conexão ou misto.', placeholder: 'Ex.: Autoridade', required: true, multiline: false },
+  { key: 'cta', label: 'CTA final', hint: 'Seguir, comentar, compartilhar, salvar, direct, curso, mentoria, atendimento...', placeholder: 'Ex.: Seguir', required: true, multiline: false },
+];
+const compileCarrossel = (a: Record<string, string>) => {
+  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
+  return `Informações para o carrossel:
+
+1. Nicho: ${g('nicho')}
+2. O que faz no nicho: ${g('faz')}
+3. Tema/gancho/ideia: ${g('tema', '(não tem — pode criar do zero)')}
+4. Foco: ${g('foco')}
+5. CTA final: ${g('cta')}
+
+Agora monte o carrossel completo no formato exato definido, com análise estratégica e 3 variações.`;
+};
+
 /* Configuração de cada "entrevista" (formulário) por agente. */
 interface IntakeConfig {
   questions: typeof ARCHITECT_QUESTIONS;
@@ -589,6 +768,36 @@ const INTAKE: Record<string, IntakeConfig> = {
     subtitle: 'Vamos pesquisar o seu mercado',
     submitLabel: 'Pesquisar mercado',
     compile: a => ({ briefing: compilePesquisa(a), courseName: `Pesquisa — ${(a['nicho'] ?? '').trim()}`.trim() }),
+  },
+  'agente-5': {
+    questions: NOME_QUESTIONS,
+    subtitle: 'Vamos criar um nome potente',
+    submitLabel: 'Gerar nomes',
+    compile: a => ({ briefing: compileNome(a), courseName: ((a['nome_prov'] || a['tema']) ?? '').trim() }),
+  },
+  'agente-6': {
+    questions: PROMESSA_QUESTIONS,
+    subtitle: 'Vamos criar sua promessa',
+    submitLabel: 'Gerar promessas',
+    compile: a => ({ briefing: compilePromessa(a), courseName: ((a['nome'] || a['tema']) ?? '').trim() }),
+  },
+  'agente-7': {
+    questions: GANCHOS_QUESTIONS,
+    subtitle: 'Vamos criar seus ganchos',
+    submitLabel: 'Gerar 20 ganchos',
+    compile: a => ({ briefing: compileGanchos(a), courseName: `Ganchos — ${(a['nicho'] ?? '').trim()}`.trim() }),
+  },
+  'agente-8': {
+    questions: NARRADO_QUESTIONS,
+    subtitle: 'Vamos criar seu roteiro',
+    submitLabel: 'Gerar roteiro',
+    compile: a => ({ briefing: compileNarrado(a), courseName: `Roteiro — ${(a['entrada'] ?? '').trim().slice(0, 40)}`.trim() }),
+  },
+  'agente-9': {
+    questions: CARROSSEL_QUESTIONS,
+    subtitle: 'Vamos criar seu carrossel',
+    submitLabel: 'Gerar carrossel',
+    compile: a => ({ briefing: compileCarrossel(a), courseName: `Carrossel — ${(a['nicho'] ?? '').trim()}`.trim() }),
   },
 };
 
@@ -644,27 +853,18 @@ const AgentIntakeForm: React.FC<{
           {!q.required && <span className="text-[#5B4041]/40 text-[12px] font-medium"> · opcional</span>}
         </h2>
         <p className="text-[12px] text-[#5B4041]/70 mt-1.5 mb-4">{q.hint}</p>
-        {q.multiline ? (
-          <textarea
-            key={q.key}
-            value={val}
-            onChange={e => setAnswers(p => ({ ...p, [q.key]: e.target.value }))}
-            placeholder={q.placeholder}
-            autoFocus
-            rows={5}
-            className="w-full bg-white border-2 border-[#BE0D3E]/20 focus:border-[#BE0D3E] rounded-2xl px-4 py-3 text-[14px] text-[#1E1B11] outline-none transition-colors resize-none leading-relaxed"
-          />
-        ) : (
-          <input
-            key={q.key}
-            type="text"
-            value={val}
-            onChange={e => setAnswers(p => ({ ...p, [q.key]: e.target.value }))}
-            placeholder={q.placeholder}
-            autoFocus
-            className="w-full bg-white border-2 border-[#BE0D3E]/20 focus:border-[#BE0D3E] rounded-2xl px-4 py-3 text-[14px] text-[#1E1B11] outline-none transition-colors"
-          />
-        )}
+        <VoiceField
+          key={q.key}
+          multiline={q.multiline}
+          value={val}
+          onChange={v => setAnswers(p => ({ ...p, [q.key]: v }))}
+          placeholder={q.placeholder}
+          autoFocus
+          rows={5}
+        />
+        <p className="text-[10px] text-[#5B4041]/45 mt-2 flex items-center gap-1">
+          <Mic size={11} className="text-[#BE0D3E]" /> Toque no microfone pra responder falando.
+        </p>
       </div>
 
       {/* Ações */}
