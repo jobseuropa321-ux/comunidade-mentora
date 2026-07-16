@@ -9,6 +9,7 @@ import BannerCarousel from '@/components/BannerCarousel';
 // Opcional: `href` pra deixar o banner clicável.
 const HOME_BANNERS = [
   { src: '/covers/banner-1.webp', alt: 'Comunidade Digital — do atendimento ao digital' },
+  { src: '/covers/banner-2.webp', alt: 'Comunidade Digital — nossa comunidade' },
 ];
 
 /* ── PLACEHOLDER DE IMAGEM ──
