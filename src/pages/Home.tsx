@@ -2,16 +2,13 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, Image as ImageIcon } from 'lucide-react';
 import { useAllModules, type Module } from '@/hooks/useCourses';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import BannerCarousel from '@/components/BannerCarousel';
 
-// Pra adicionar/trocar banner: jogue o arquivo na pasta `public/covers/`.
-// Slots sem arquivo correspondente somem do carrossel automaticamente
-// (BannerCarousel filtra 404). Troque pelos seus próprios banners/links.
+// Pra adicionar/trocar banner: jogue o .webp em `public/covers/` e adicione aqui.
+// Slots sem arquivo somem do carrossel (BannerCarousel filtra 404).
+// Opcional: `href` pra deixar o banner clicável.
 const HOME_BANNERS = [
-  { src: '/covers/banner-1.svg', alt: 'Bem-vindo à Amentora' },
-  { src: '/covers/banner-2.svg', alt: 'Mentoria ao vivo toda semana' },
-  { src: '/covers/banner-3.svg', alt: 'Novos módulos toda semana' },
+  { src: '/covers/banner-1.webp', alt: 'Comunidade Digital — do atendimento ao digital' },
 ];
 
 /* ── PLACEHOLDER DE IMAGEM ──
@@ -86,8 +83,7 @@ const Home: React.FC = () => {
       {/* Banner — placeholder vazio por enquanto (full bleed).
           Pra reativar o carrossel real, troque pela linha comentada abaixo. */}
       <section className="mb-5 -mt-1">
-        <ImagePlaceholder className="w-full h-[180px] md:h-[360px]" iconSize={44} label="Banner" />
-        {/* <BannerCarousel banners={HOME_BANNERS} autoRotateMs={6000} height={180} heightDesktop={360} /> */}
+        <BannerCarousel banners={HOME_BANNERS} autoRotateMs={6000} height={180} heightDesktop={360} />
       </section>
 
       {loading ? (
