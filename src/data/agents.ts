@@ -27,6 +27,7 @@
 import {
   Blocks, Clapperboard, BookOpen, BarChart3,
   Tag, Megaphone, Anchor, Mic, GalleryHorizontalEnd,
+  Target, GraduationCap,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -38,6 +39,9 @@ export const CATEGORIES = [
   { id: 'pesquisa',  label: 'Pesquisa',   color: 'text-[#94002D]', dot: 'bg-[#94002D]' },
   { id: 'nome',      label: 'Naming',     color: 'text-[#BE0D3E]', dot: 'bg-[#BE0D3E]' },
   { id: 'promessa',  label: 'Copy',       color: 'text-[#D06A85]', dot: 'bg-[#E06B85]' },
+  // anúncios (azul) — tráfego pago
+  { id: 'anuncioPS',   label: 'Anúncio',   color: 'text-[#1D4ED8]', dot: 'bg-[#2563EB]' },
+  { id: 'anuncioAula', label: 'Mini-Aula', color: 'text-[#0369A1]', dot: 'bg-[#0EA5E9]' },
   // bônus de viralização — lime + rosa choque (id visual "Viral em 1 Minuto")
   { id: 'ganchos',   label: 'Ganchos',    color: 'text-[#E8226C]', dot: 'bg-[#FF2D7A]' },
   { id: 'narrado',   label: 'Narrado',    color: 'text-[#6E8B00]', dot: 'bg-[#C8F000]' },
@@ -52,6 +56,9 @@ export const GRAD = {
   rose:    'linear-gradient(150deg, #C25A76 0%, #E06B85 60%, #ECA6BB 100%)',
   sunset:  'linear-gradient(150deg, #BE0D3E 0%, #E06B85 55%, #F6B43A 100%)',
   brand:   'linear-gradient(150deg, #BE0D3E 0%, #E06B85 50%, #F6B43A 100%)',
+  // anúncios (azul) — tráfego pago
+  adBlue: 'linear-gradient(150deg, #1E3A8A 0%, #2563EB 55%, #60A5FA 100%)',
+  adSky:  'linear-gradient(150deg, #075985 0%, #0EA5E9 55%, #67E8F9 100%)',
   // bônus de viralização (lime #C8F000 + rosa choque #FF2D7A)
   viralPink: 'linear-gradient(150deg, #C8005A 0%, #FF2D7A 55%, #FF8FBE 100%)',
   viralLime: 'linear-gradient(150deg, #7FA000 0%, #C8F000 60%, #E4FF7A 100%)',
@@ -71,8 +78,27 @@ export interface Agent {
   openingMessage?: string;
 }
 
-/* ── OS 4 AGENTES — a esteira do curso, na ordem ── */
+/* ── OS AGENTES — a esteira do curso, na ordem ── */
 export const AGENTS: Agent[] = [
+  {
+    slug: 'agente-4',
+    name: 'Pesquisa de Mercado',
+    desc: 'Mapeia concorrentes, dores e oportunidades do seu nicho.',
+    category: 'pesquisa',
+    icon: BarChart3,
+    gradient: GRAD.wine,
+    openingMessage:
+      'Olá! Eu sou o **Pesquisa de Mercado** 🔎\n\nEu investigo o seu nicho: **concorrentes, dores da audiência e oportunidades** de posicionamento.\n\nMe conta:\n\n1. Qual é o seu **nicho**?\n2. Quem é a sua **cliente ideal**?',
+  },
+  {
+    slug: 'agente-5',
+    name: 'Nome Potente',
+    desc: 'Cria nomes fortes e vendedores pro seu produto.',
+    category: 'nome',
+    icon: Tag,
+    gradient: GRAD.sunset,
+    openingMessage: 'Olá! Eu sou o **Nome Potente** 🏷️\n\nEu crio nomes fortes, claros e memoráveis pro seu produto.',
+  },
   {
     slug: 'agente-1',
     name: 'Arquiteto do Curso',
@@ -94,6 +120,15 @@ export const AGENTS: Agent[] = [
       'Olá! Eu sou a **Roteirista de Aulas** 🎬\n\nEu transformo cada aula num **roteiro pronto pra gravar** — com abertura, desenvolvimento e fechamento.\n\nMe manda:\n\n1. O **tema da aula** (ou cole o esqueleto que o Arquiteto montou)\n2. O **nível** das suas alunas (iniciantes, intermediárias...)',
   },
   {
+    slug: 'agente-6',
+    name: 'Promessa Irresistível',
+    desc: 'Escreve promessas SMART pra headline da sua oferta.',
+    category: 'promessa',
+    icon: Megaphone,
+    gradient: GRAD.rose,
+    openingMessage: 'Olá! Eu sou a **Promessa Irresistível** 📣\n\nEu crio promessas fortes e específicas pra sua oferta.',
+  },
+  {
     slug: 'agente-3',
     name: 'Apostila Técnica',
     desc: 'Cria a apostila do curso, o material de apoio das alunas.',
@@ -104,32 +139,24 @@ export const AGENTS: Agent[] = [
       'Olá! Eu sou a **Apostila Técnica** 📘\n\nEu escrevo o **material de apoio** do seu curso, capítulo por capítulo, em linguagem clara.\n\nMe conta:\n\n1. O **tema ou módulo** da apostila\n2. O **nível** das suas alunas',
   },
   {
-    slug: 'agente-4',
-    name: 'Pesquisa de Mercado',
-    desc: 'Mapeia concorrentes, dores e oportunidades do seu nicho.',
-    category: 'pesquisa',
-    icon: BarChart3,
-    gradient: GRAD.wine,
+    slug: 'agente-10',
+    name: 'Anúncio Problema/Solução',
+    desc: 'Cria 5 anúncios que expõem a dor e entregam a solução.',
+    category: 'anuncioPS',
+    icon: Target,
+    gradient: GRAD.adBlue,
     openingMessage:
-      'Olá! Eu sou o **Pesquisa de Mercado** 🔎\n\nEu investigo o seu nicho: **concorrentes, dores da audiência e oportunidades** de posicionamento.\n\nMe conta:\n\n1. Qual é o seu **nicho**?\n2. Quem é a sua **cliente ideal**?',
+      'Olá! Eu sou o **Anúncio Problema/Solução** 🎯\n\nEu crio **5 anúncios** que expõem a dor da sua cliente e entregam a solução na lata.\n\nPra começar, me conta:\n\n1. Qual é o seu **produto**?\n2. Quem é o **expert** por trás dele?\n3. Qual é o seu **nicho**?',
   },
   {
-    slug: 'agente-5',
-    name: 'Nome Potente',
-    desc: 'Cria nomes fortes e vendedores pro seu produto.',
-    category: 'nome',
-    icon: Tag,
-    gradient: GRAD.sunset,
-    openingMessage: 'Olá! Eu sou o **Nome Potente** 🏷️\n\nEu crio nomes fortes, claros e memoráveis pro seu produto.',
-  },
-  {
-    slug: 'agente-6',
-    name: 'Promessa Irresistível',
-    desc: 'Escreve promessas SMART pra headline da sua oferta.',
-    category: 'promessa',
-    icon: Megaphone,
-    gradient: GRAD.rose,
-    openingMessage: 'Olá! Eu sou a **Promessa Irresistível** 📣\n\nEu crio promessas fortes e específicas pra sua oferta.',
+    slug: 'agente-11',
+    name: 'Anúncio Mini-Aula',
+    desc: 'Cria 5 anúncios que ensinam um passo e abrem pro próximo nível.',
+    category: 'anuncioAula',
+    icon: GraduationCap,
+    gradient: GRAD.adSky,
+    openingMessage:
+      'Olá! Eu sou o **Anúncio Mini-Aula** 🎓\n\nEu crio **5 anúncios** que ensinam um passo na prática e abrem a porta pro próximo nível.\n\nPra começar, me conta:\n\n1. Qual é o seu **produto**?\n2. Quem é o **expert** por trás dele?\n3. Qual é o seu **nicho**?',
   },
   {
     slug: 'agente-7',

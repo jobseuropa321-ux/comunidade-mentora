@@ -78,6 +78,7 @@ const Home: React.FC = () => {
 
   const inicio = modules.filter(m => m.home_section === 'inicio');
   const main = modules.filter(m => m.home_section === 'modulos');
+  const materiais = modules.filter(m => m.home_section === 'materiais');
 
   return (
     <div className="pb-28">
@@ -108,6 +109,15 @@ const Home: React.FC = () => {
                 <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">Módulos</h2>
               </div>
               <HorizontalCardList modules={main} />
+            </section>
+          )}
+
+          {materiais.length > 0 && (
+            <section className="mb-4">
+              <div className="px-4 mb-3">
+                <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">Materiais</h2>
+              </div>
+              <HorizontalCardList modules={materiais} />
             </section>
           )}
         </>

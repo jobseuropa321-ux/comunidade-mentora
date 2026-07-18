@@ -77,7 +77,8 @@ const newSessionId = () =>
 ═════════════════════════════════════════════ */
 type RobotKind =
   | 'estrutura' | 'roteiro' | 'apostila' | 'pesquisa'
-  | 'nome' | 'promessa' | 'ganchos' | 'narrado' | 'carrossel';
+  | 'nome' | 'promessa' | 'ganchos' | 'narrado' | 'carrossel'
+  | 'anuncioPS' | 'anuncioAula';
 
 const ACCENT: Record<RobotKind, { main: string; deep: string; soft: string; cta: string }> = {
   estrutura: { main: '#BE0D3E', deep: '#7C0026', soft: '#F6D6DC', cta: '#BE0D3E' },
@@ -91,6 +92,9 @@ const ACCENT: Record<RobotKind, { main: string; deep: string; soft: string; cta:
   ganchos:   { main: '#FF2D7A', deep: '#C8005A', soft: '#FFD1E4', cta: '#E8226C' },
   narrado:   { main: '#C8F000', deep: '#7FA000', soft: '#EEFFC0', cta: '#6E8B00' },
   carrossel: { main: '#FF2D7A', deep: '#C8005A', soft: '#FFD1E4', cta: '#E8226C' },
+  // anúncios (resposta direta) — tons de azul
+  anuncioPS:   { main: '#2563EB', deep: '#1E3A8A', soft: '#DBEAFE', cta: '#1D4ED8' },
+  anuncioAula: { main: '#0EA5E9', deep: '#075985', soft: '#E0F2FE', cta: '#0369A1' },
 };
 
 /* ── O robô: base comum + ferramenta/rosto próprios de cada profissão ── */
@@ -230,6 +234,22 @@ const Robot: React.FC<{ kind: RobotKind; reduce: boolean }> = ({ kind, reduce })
           <rect x="80.5" y="87" width="12" height="11" rx="2" fill="#FFFDF7" stroke={a.deep} strokeWidth="1.6" />
         </g>
       )}
+      {/* Anúncio Problema/Solução — alvo/bullseye (tráfego, resposta direta) */}
+      {kind === 'anuncioPS' && (
+        <g>
+          <circle cx="89" cy="90" r="8" fill="#FFFDF7" stroke={a.deep} strokeWidth="1.8" />
+          <circle cx="89" cy="90" r="5" fill="none" stroke={a.deep} strokeWidth="1.6" />
+          <circle cx="89" cy="90" r="2" fill={a.deep} />
+        </g>
+      )}
+      {/* Anúncio Mini-Aula — lousa com giz (ensina um passo) */}
+      {kind === 'anuncioAula' && (
+        <g transform="rotate(-8 88 90)">
+          <rect x="80" y="84" width="17" height="13" rx="2" fill={a.deep} stroke="#FFFDF7" strokeWidth="1.6" />
+          <line x1="83" y1="88.5" x2="93.5" y2="88.5" stroke="#FFFFFF" strokeWidth="1.4" strokeLinecap="round" opacity="0.92" />
+          <line x1="83" y1="92.5" x2="90" y2="92.5" stroke="#FFFFFF" strokeWidth="1.4" strokeLinecap="round" opacity="0.75" />
+        </g>
+      )}
     </svg>
   );
 };
@@ -327,6 +347,46 @@ const SceneFX: React.FC<{ kind: RobotKind; reduce: boolean }> = ({ kind, reduce 
       ))}
     </>
   );
+  }
+  if (kind === 'anuncioPS') {
+    return (
+      <>
+        {/* ondas de resposta direta expandindo do alvo */}
+        {[0, 1, 2].map(i => (
+          <motion.div
+            key={i}
+            className="absolute left-3 top-3 w-4 h-4 rounded-full border-2 border-white/55"
+            animate={reduce ? undefined : { scale: [1, 3], opacity: [0.65, 0] }}
+            transition={{ duration: 2.8, repeat: Infinity, delay: i * 0.9, ease: 'easeOut' }}
+          />
+        ))}
+        <div className="absolute left-[17px] top-[17px] w-1.5 h-1.5 rounded-full bg-white/90" />
+      </>
+    );
+  }
+  if (kind === 'anuncioAula') {
+    return (
+      <>
+        {/* passos da mini-aula sendo escritos na lousa */}
+        {[30, 22, 34].map((w, i) => (
+          <motion.div
+            key={i}
+            className="absolute left-3 h-[3px] rounded-full bg-white/80"
+            style={{ top: 12 + i * 9 }}
+            animate={reduce ? { width: w } : { width: [0, w, w, 0] }}
+            transition={{ duration: 3.6, times: [0, 0.35, 0.9, 1], repeat: Infinity, delay: i * 0.5 }}
+          />
+        ))}
+        {/* seta pro próximo nível */}
+        <motion.div
+          className="absolute bottom-3 right-3 text-white/85"
+          animate={reduce ? undefined : { x: [0, 4, 0] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <ArrowRight size={12} strokeWidth={3} />
+        </motion.div>
+      </>
+    );
   }
   // genérico (agentes de oferta + bônus): partículas flutuantes brancas
   return (

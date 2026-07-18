@@ -350,8 +350,8 @@ const ModuleEditor: React.FC<{
         {/* Seção da Home */}
         <div>
           <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">Seção da Home</label>
-          <div className="grid grid-cols-3 gap-1 mt-1.5">
-            {([{ value: 'inicio', label: 'Comece por aqui' }, { value: 'modulos', label: 'Módulos' }, { value: null, label: 'Não exibir' }] as const).map(opt => (
+          <div className="grid grid-cols-2 gap-1 mt-1.5">
+            {([{ value: 'inicio', label: 'Comece por aqui' }, { value: 'modulos', label: 'Módulos' }, { value: 'materiais', label: 'Materiais' }, { value: null, label: 'Não exibir' }] as const).map(opt => (
               <button key={String(opt.value)} type="button" onClick={() => setDraft({ ...draft, home_section: opt.value })}
                 className={`text-[9px] font-bold uppercase tracking-wider py-2 rounded-lg transition-colors ${draft.home_section === opt.value ? 'bg-[#BE0D3E] text-white' : 'bg-[#F6D6DC] text-[#5B4041]'}`}>
                 {opt.label}

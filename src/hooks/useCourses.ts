@@ -26,7 +26,7 @@ export interface Module {
   position: number;
   is_published: boolean;
   cover_url: string | null;
-  home_section: 'inicio' | 'modulos' | null;
+  home_section: 'inicio' | 'modulos' | 'materiais' | null;
   created_at?: string;
   updated_at?: string;
 }
