@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Clock, ChevronDown, ChevronUp, Loader2, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Play, Clock, ChevronDown, ChevronUp, Loader2, CheckCircle2, FolderOpen, ExternalLink, Download } from 'lucide-react';
 import { useModuleBySlug, useLessonProgress, type Lesson } from '@/hooks/useCourses';
 
 /* ── AULA ROW ── */
@@ -96,6 +96,9 @@ const ModuleDetail: React.FC = () => {
   const concluidas = modulo.lessons.filter(l => completed.has(l.id)).length;
   const progressPct = totalAulas > 0 ? Math.round((concluidas / totalAulas) * 100) : 0;
 
+  // Módulos da seção "Materiais" não têm aulas: abrem direto num link (Drive) pra ver/baixar.
+  const isMateriais = modulo.home_section === 'materiais';
+
   return (
     <div className="pb-28 max-w-lg mx-auto">
 
@@ -120,13 +123,13 @@ const ModuleDetail: React.FC = () => {
         )}
 
         <div className="relative z-10 pt-14 pb-4 px-5">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 mb-1">Módulo</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 mb-1">{isMateriais ? 'Material' : 'Módulo'}</p>
           <h1 className="text-[42px] font-black leading-[0.85] tracking-tighter text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
             {modulo.title1}<br />{modulo.title2}
           </h1>
           <p className="text-[11px] text-white/60 mt-3">{modulo.instructor}</p>
           <div className="flex items-center gap-2 mt-3 flex-wrap">
-            {[`${totalAulas} aulas`, modulo.duracao, modulo.nivel].filter(Boolean).map(p => (
+            {[isMateriais ? 'Material de apoio' : `${totalAulas} aulas`, modulo.duracao, modulo.nivel].filter(Boolean).map(p => (
               <span key={p} className="text-[9px] font-black uppercase tracking-widest bg-white/10 text-white/70 px-2.5 py-1 rounded-full border border-white/10">
                 {p}
               </span>
@@ -143,45 +146,82 @@ const ModuleDetail: React.FC = () => {
           <p className="text-[12px] text-[#5B4041]/80 leading-relaxed">{modulo.descricao}</p>
         </div>
 
-        {/* PROGRESSO */}
-        <div className="bg-[#FFFFFF] border border-[#BE0D3E]/15 rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50">Seu progresso</h3>
-            <span className="text-[10px] font-black text-emerald-600">{progressPct}%</span>
+        {isMateriais ? (
+          /* MATERIAIS — abre o link (Drive) pra ver e baixar */
+          <div>
+            <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">Material</h3>
+            {modulo.material_url ? (
+              <a
+                href={modulo.material_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-2xl p-4 text-white"
+                style={{ background: `linear-gradient(135deg, #BE0D3E, ${modulo.cor_acento})`, boxShadow: `0 8px 24px ${modulo.cor_acento}33` }}
+              >
+                <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                  <FolderOpen size={20} className="text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-black leading-tight">Ver e baixar material</p>
+                  <p className="text-[10px] text-white/75 mt-0.5">Abre no Google Drive</p>
+                </div>
+                <ExternalLink size={16} className="text-white/80 shrink-0" />
+              </a>
+            ) : (
+              <div className="rounded-2xl border-2 border-dashed border-[#BE0D3E]/20 bg-[#FFF7E6]/40 p-6 flex items-center gap-4">
+                <div className="shrink-0 w-12 h-12 rounded-xl bg-white border border-[#BE0D3E]/15 flex items-center justify-center">
+                  <Download size={18} className="text-[#BE0D3E]/60" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-black text-[#1E1B11] mb-0.5">Material em breve</p>
+                  <p className="text-[10px] text-[#5B4041] leading-relaxed">Assim que estiver pronto, o link pra baixar aparece aqui.</p>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="h-2 bg-[#BE0D3E]/8 rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${progressPct}%`,
-                background: 'linear-gradient(90deg, #10B981, #059669)',
-              }}
-            />
-          </div>
-          <p className="text-[11px] text-[#5B4041]/70 mt-2">
-            {concluidas} de {totalAulas} aulas concluídas
-          </p>
-        </div>
+        ) : (
+          <>
+            {/* PROGRESSO */}
+            <div className="bg-[#FFFFFF] border border-[#BE0D3E]/15 rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50">Seu progresso</h3>
+                <span className="text-[10px] font-black text-emerald-600">{progressPct}%</span>
+              </div>
+              <div className="h-2 bg-[#BE0D3E]/8 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${progressPct}%`,
+                    background: 'linear-gradient(90deg, #10B981, #059669)',
+                  }}
+                />
+              </div>
+              <p className="text-[11px] text-[#5B4041]/70 mt-2">
+                {concluidas} de {totalAulas} aulas concluídas
+              </p>
+            </div>
 
-        {/* AULAS */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50">Aulas</h3>
-            <span className="text-[9px] text-[#5B4041]/30">{totalAulas} aulas</span>
-          </div>
-          <div className="space-y-2">
-            {modulo.lessons.map((aula, i) => (
-              <AulaRow
-                key={aula.id}
-                aula={aula}
-                acento={modulo.cor_acento}
-                index={i}
-                moduleSlug={modulo.slug}
-                completed={completed.has(aula.id)}
-              />
-            ))}
-          </div>
-        </div>
+            {/* AULAS */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50">Aulas</h3>
+                <span className="text-[9px] text-[#5B4041]/30">{totalAulas} aulas</span>
+              </div>
+              <div className="space-y-2">
+                {modulo.lessons.map((aula, i) => (
+                  <AulaRow
+                    key={aula.id}
+                    aula={aula}
+                    acento={modulo.cor_acento}
+                    index={i}
+                    moduleSlug={modulo.slug}
+                    completed={completed.has(aula.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          </>
+        )}
 
       </div>
     </div>

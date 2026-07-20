@@ -229,7 +229,7 @@ const ModuleEditor: React.FC<{
       slug: finalSlug, title1: draft.title1, title2: draft.title2, tag: draft.tag, tag_color: draft.tag_color,
       descricao: draft.descricao, instructor: draft.instructor, duracao: draft.duracao, nivel: draft.nivel,
       cor_acento: draft.cor_acento, cor_fundo: draft.cor_fundo, is_published: draft.is_published,
-      home_section: draft.home_section, cover_url: draft.cover_url,
+      home_section: draft.home_section, cover_url: draft.cover_url, material_url: draft.material_url,
     }).eq('id', mod.id).select('*').single();
     setSaving(false);
     if (error) { toast.error('Erro', { description: error.message }); return; }
@@ -359,6 +359,16 @@ const ModuleEditor: React.FC<{
             ))}
           </div>
         </div>
+
+        {/* Link do material (só faz sentido pra seção Materiais) */}
+        {draft.home_section === 'materiais' && (
+          <Field
+            label="Link do material (Google Drive)"
+            value={draft.material_url ?? ''}
+            onChange={v => setDraft({ ...draft, material_url: v || null })}
+            hint="a aluna abre este link pra ver e baixar"
+          />
+        )}
 
         {/* Publicado */}
         <div className="flex items-center justify-between bg-[#FFF7E6] rounded-xl p-3">
