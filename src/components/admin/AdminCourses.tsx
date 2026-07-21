@@ -3,8 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
   Plus, ArrowLeft, ArrowUp, ArrowDown, Pencil, Trash2, Save, Eye, EyeOff,
-  Loader2, Video, FileText, BookOpen, CheckSquare, ExternalLink, Upload, X,
+  Loader2, Video, FileText, BookOpen, CheckSquare, ExternalLink, Upload, X, Film,
 } from 'lucide-react';
+import PandaVideoPicker from '@/components/admin/PandaVideoPicker';
 import type { Module, Lesson, LessonMaterial } from '@/hooks/useCourses';
 
 /* ══════════════════════════════════════════════════════════════
@@ -431,6 +432,7 @@ const LessonEditor: React.FC<{
   const [loadingMats, setLoadingMats] = useState(true);
   const [editingMat, setEditingMat] = useState<LessonMaterial | null>(null);
   const [deleteMatTarget, setDeleteMatTarget] = useState<LessonMaterial | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => { setDraft(lesson); }, [lesson]);
 
@@ -493,9 +495,14 @@ const LessonEditor: React.FC<{
 
         <div>
           <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">URL do vídeo (embed)</label>
-          <input value={draft.video_url ?? ''} onChange={e => setDraft({ ...draft, video_url: e.target.value || null })}
-            placeholder="cole a URL de embed (YouTube, Panda, Vimeo...)"
-            className="mt-1 w-full bg-[#FFF7E6] border border-[#BE0D3E]/15 text-[#1E1B11] text-[12px] rounded-xl px-3 py-2 focus:border-[#BE0D3E]/50 focus:outline-none" />
+          <div className="mt-1 flex gap-2">
+            <input value={draft.video_url ?? ''} onChange={e => setDraft({ ...draft, video_url: e.target.value || null })}
+              placeholder="cole a URL ou clique 'Escolher da Panda'"
+              className="flex-1 min-w-0 bg-[#FFF7E6] border border-[#BE0D3E]/15 text-[#1E1B11] text-[12px] rounded-xl px-3 py-2 focus:border-[#BE0D3E]/50 focus:outline-none" />
+            <button type="button" onClick={() => setPickerOpen(true)} className={`${accentBtn} shrink-0`}>
+              <Film size={12} /> Escolher da Panda
+            </button>
+          </div>
           <p className="text-[9px] text-[#5B4041]/60 mt-0.5">É a URL de player que vai tocar no iframe da aula (não é upload de arquivo).</p>
         </div>
 
@@ -543,6 +550,15 @@ const LessonEditor: React.FC<{
         <Confirm title="Excluir material?" desc={`"${deleteMatTarget.nome}" será excluído.`}
           onCancel={() => setDeleteMatTarget(null)} onConfirm={deleteMaterial} />
       )}
+
+      <PandaVideoPicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onPick={(url) => {
+          setDraft(d => ({ ...d, video_url: url }));
+          setPickerOpen(false);
+        }}
+      />
     </div>
   );
 };
