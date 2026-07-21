@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, User as UserIcon, Loader2, Sparkles } from 'lucide-react';
+import { Mail, Lock, Loader2, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { isAccessDenied } from '@/lib/subscription';
 
-type Mode = 'login' | 'signup';
-
+/* Só login. Conta não se cria aqui: quem compra na Hubla recebe a conta
+   pronta (com senha) por email — ver supabase/functions/hubla-webhook. */
 const Auth: React.FC = () => {
   const navigate = useNavigate();
-  const { signIn, signUp } = useAuth();
-  const [mode, setMode] = useState<Mode>('login');
-  const [fullName, setFullName] = useState('');
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,17 +17,17 @@ const Auth: React.FC = () => {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!email || !password || (mode === 'signup' && !fullName)) {
+    if (!email || !password) {
       setError('Preencha todos os campos.');
       return;
     }
     setLoading(true);
-    const res = mode === 'login'
-      ? await signIn(email, password)
-      : await signUp(email, password, fullName);
+    const res = await signIn(email, password);
     setLoading(false);
     if (res.error) {
-      setError('Não foi possível entrar. Tente novamente.');
+      // Acesso negado pelo gate de assinatura → mostra o motivo real.
+      // Erro cru do Supabase Auth → mensagem genérica (vem em inglês).
+      setError(isAccessDenied(res.error) ? res.error.message : 'Não foi possível entrar. Tente novamente.');
       return;
     }
     navigate('/home', { replace: true });
@@ -43,34 +42,15 @@ const Auth: React.FC = () => {
         </div>
 
         <div className="bg-white border border-[#BE0D3E]/15 rounded-3xl p-6 shadow-[0_12px_40px_rgba(255,45,122,0.12)]">
-          {/* Tabs */}
-          <div className="flex bg-[#FFF9EE] rounded-2xl p-1 mb-6">
-            {(['login', 'signup'] as Mode[]).map(m => (
-              <button
-                key={m}
-                onClick={() => { setMode(m); setError(null); }}
-                className={`flex-1 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all ${
-                  mode === m ? 'text-white shadow-[0_4px_12px_rgba(255,45,122,0.35)]' : 'text-[#5B4041]'
-                }`}
-                style={mode === m ? { background: 'linear-gradient(135deg, #BE0D3E 0%, #E06B85 100%)' } : {}}
-              >
-                {m === 'login' ? 'Entrar' : 'Cadastrar'}
-              </button>
-            ))}
+          <div className="mb-5">
+            <h1 className="text-[18px] font-black text-[#1E1B11] leading-tight">Entrar na comunidade</h1>
+            <p className="text-[11px] text-[#5B4041]/75 mt-1 leading-relaxed">
+              Use o e-mail da sua compra. A senha foi enviada pra ele assim que o
+              acesso foi liberado.
+            </p>
           </div>
 
           <form onSubmit={submit} className="space-y-3">
-            {mode === 'signup' && (
-              <div className="flex items-center gap-2 input-instagram">
-                <UserIcon size={16} className="text-[#BE0D3E]/60 shrink-0" />
-                <input
-                  className="flex-1 bg-transparent outline-none text-[14px]"
-                  placeholder="Seu nome"
-                  value={fullName}
-                  onChange={e => setFullName(e.target.value)}
-                />
-              </div>
-            )}
             <div className="flex items-center gap-2 input-instagram">
               <Mail size={16} className="text-[#BE0D3E]/60 shrink-0" />
               <input
@@ -88,7 +68,7 @@ const Auth: React.FC = () => {
                 className="flex-1 bg-transparent outline-none text-[14px]"
                 placeholder="Senha"
                 type="password"
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                autoComplete="current-password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
               />
@@ -105,18 +85,16 @@ const Auth: React.FC = () => {
               style={{ background: 'linear-gradient(135deg, #BE0D3E 0%, #E06B85 100%)', boxShadow: '0 8px 25px rgba(255,45,122,0.4)' }}
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={15} />}
-              {mode === 'login' ? 'Entrar na comunidade' : 'Criar minha conta'}
+              Entrar na comunidade
             </button>
           </form>
 
-          {mode === 'login' && (
-            <button
-              onClick={() => navigate('/reset-password')}
-              className="w-full text-center text-[11px] text-[#5B4041] mt-4 hover:text-[#BE0D3E] transition-colors"
-            >
-              Esqueci minha senha
-            </button>
-          )}
+          <button
+            onClick={() => navigate('/reset-password')}
+            className="w-full text-center text-[11px] text-[#5B4041] mt-4 hover:text-[#BE0D3E] transition-colors"
+          >
+            Esqueci minha senha
+          </button>
         </div>
 
         <p className="text-[10px] text-[#5B4041]/60 text-center mt-5 leading-relaxed">

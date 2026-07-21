@@ -18,6 +18,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { checkSubscription, AccessDeniedError, SUB_DENIED_MSG } from '@/lib/subscription';
 
 export interface Profile {
   id: string;
@@ -83,7 +84,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session: current } }) => {
+    // Restauração de sessão: revalida a assinatura. Sem isso, quem foi
+    // cancelado/reembolsado continuaria entrando com a sessão salva no navegador.
+    supabase.auth.getSession().then(async ({ data: { session: current } }) => {
+      if (current?.user?.email) {
+        const status = await checkSubscription(current.user.email);
+        if (status !== 'active') {
+          await supabase.auth.signOut();
+          setLoading(false);
+          return;
+        }
+      }
       setSession(current);
       setUser(current?.user ?? null);
       if (current?.user) { fetchProfile(current.user.id); checkRoles(current.user.id); }
@@ -106,11 +117,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
-    });
-    return { error };
+    const clean = email.trim().toLowerCase();
+    const { error } = await supabase.auth.signInWithPassword({ email: clean, password });
+    if (error) return { error };
+
+    // Gate: autenticar não basta — precisa ter assinatura ativa (ou role da equipe).
+    const status = await checkSubscription(clean);
+    if (status !== 'active') {
+      await supabase.auth.signOut();
+      return { error: new AccessDeniedError(SUB_DENIED_MSG[status]) };
+    }
+    return { error: null };
   };
 
   const signOut = async () => {
