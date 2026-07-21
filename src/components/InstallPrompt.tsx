@@ -11,8 +11,9 @@ import { Download, X, ChevronRight, Check } from 'lucide-react';
  *  - iOS  → carrossel de prints com o passo a passo do Safari.
  *  - Android → botão "Instalar agora" que dispara a instalação NATIVA
  *    (precisa do evento beforeinstallprompt — o app precisa ser um PWA
- *    instalável: manifest + service worker + HTTPS. Este app já tem os
- *    dois primeiros; falta só o deploy em HTTPS).
+ *    instalável: manifest + service worker + HTTPS. Os três já estão de pé
+ *    em app.comunidadedigital.com.br; o manifest declara ícone 192 e 512,
+ *    exigência do Chrome pra oferecer a instalação).
  *
  *  Prints em /public/install/*.webp — são os do app original. Quando
  *  quiser, tire prints do SEU app instalado e substitua os arquivos
