@@ -15,32 +15,9 @@ interface Comment {
   isMe?: boolean;
 }
 
-const seedComments = (lessonId: string): Comment[] => [
-  {
-    id: `${lessonId}-c1`,
-    name: 'Marina Costa',
-    initials: 'MC',
-    gradient: 'linear-gradient(135deg, #BE0D3E 0%, #E06B85 100%)',
-    time: 'há 1h',
-    text: 'Gente, quando ela fala do "gancho nos 3 primeiros segundos", isso vale pra vídeo de talking head também ou só pra edição rápida?',
-  },
-  {
-    id: `${lessonId}-c2`,
-    name: 'Thiago Alves',
-    initials: 'TA',
-    gradient: 'linear-gradient(135deg, #F6B43A 0%, #9FE000 100%)',
-    time: 'há 2h',
-    text: 'Apliquei essa técnica de corte no meu último Reels e o retention subiu de 38% pra 61%. Surreal.',
-  },
-  {
-    id: `${lessonId}-c3`,
-    name: 'Bia Ferraz',
-    initials: 'BF',
-    gradient: 'linear-gradient(135deg, #E06B85 0%, #F6B43A 100%)',
-    time: 'há 4h',
-    text: 'Alguém tem exemplo de legenda estilo "closed caption animada" pronta pra usar no CapCut? Essa aula deu vontade de testar hoje.',
-  },
-];
+/* Sem comentários de exemplo: o fórum começa vazio e só mostra o que
+   as alunas escreverem de verdade. */
+const seedComments = (_lessonId: string): Comment[] => [];
 
 const LessonForum: React.FC<Props> = ({ lessonId }) => {
   const [comments, setComments] = useState<Comment[]>(() => seedComments(lessonId));
