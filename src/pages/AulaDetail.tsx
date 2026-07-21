@@ -18,6 +18,15 @@ const TIPO_COLOR: Record<string, string> = {
   video:     'text-orange-400 bg-orange-400/10',
 };
 
+/** O admin aceita URL colada — mas é comum colar o código <iframe> inteiro do
+ *  Panda/YouTube. Nesse caso extraímos o src, senão o player não carrega. */
+const embedSrc = (raw: string | null): string | null => {
+  if (!raw) return null;
+  const v = raw.trim();
+  if (v.startsWith('<')) return v.match(/src=["']([^"']+)["']/i)?.[1] ?? null;
+  return v;
+};
+
 const AulaDetail: React.FC = () => {
   const { moduleId, aulaId } = useParams<{ moduleId: string; aulaId: string }>();
   const navigate = useNavigate();
@@ -93,9 +102,9 @@ const AulaDetail: React.FC = () => {
         className="mx-4 rounded-2xl overflow-hidden relative bg-[#1E1B11]"
         style={{ aspectRatio: '16/9' }}
       >
-        {aula.video_url ? (
+        {embedSrc(aula.video_url) ? (
           <iframe
-            src={aula.video_url}
+            src={embedSrc(aula.video_url)!}
             title={aula.titulo}
             className="absolute inset-0 w-full h-full border-0"
             allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
