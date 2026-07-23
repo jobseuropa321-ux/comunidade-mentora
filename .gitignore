@@ -36,3 +36,4 @@ dev-dist
 
 # Backup de trabalho (logos antigos)
 .logo-backup/
+supabase/.temp/
