@@ -197,6 +197,74 @@ Se você não comprou a Comunidade Digital, pode ignorar este e-mail.`;
   return await resp.json();
 }
 
+/* ── Email "acesso ativo" — pra quem JÁ tinha conta (recompra/renovação).
+   Não tem senha nova pra mandar: orienta usar a senha existente ou o
+   "Esqueci minha senha". Sem isso, quem recompra não recebe email nenhum. */
+async function sendAccessActiveEmail(opts: {
+  resendApiKey: string;
+  to: string;
+  name: string;
+  loginUrl: string;
+}) {
+  const firstName = (opts.name || '').trim().split(' ')[0] || 'tudo bem';
+  const html = `<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Seu acesso à Comunidade Digital</title></head>
+<body style="margin:0;padding:0;background-color:#FFF7E6;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FFF7E6;padding:24px 12px;">
+    <tr><td align="center">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#FFFFFF;border-radius:20px;overflow:hidden;border:1px solid #F6D6DC;">
+        <tr><td style="background-color:#BE0D3E;padding:28px 32px;" align="left">
+          <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:22px;line-height:1.2;color:#FFFFFF;font-weight:bold;letter-spacing:-0.3px;">Comunidade Digital</p>
+          <p style="margin:6px 0 0;font-family:Helvetica,Arial,sans-serif;font-size:11px;line-height:1.4;color:#FFD9E2;letter-spacing:2px;text-transform:uppercase;">Do atendimento ao digital</p>
+        </td></tr>
+        <tr><td style="padding:36px 32px 8px;">
+          <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.25;color:#1E1B11;font-weight:normal;">Oi ${firstName}, seu acesso está ativo!</h1>
+          <p style="margin:0;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.65;color:#5B4041;">
+            Sua compra foi confirmada. Você já tinha uma conta com este e-mail
+            (<strong style="color:#1E1B11;">${opts.to}</strong>), então é só entrar com a senha
+            que você já usa. Se não lembrar, use <strong style="color:#1E1B11;">“Esqueci minha senha”</strong>
+            na tela de login.
+          </p>
+        </td></tr>
+        <tr><td align="center" style="padding:28px 32px 8px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+            <tr><td align="center" style="background-color:#BE0D3E;border-radius:12px;">
+              <a href="${opts.loginUrl}" target="_blank" style="display:inline-block;padding:16px 38px;font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:bold;color:#FFFFFF;text-decoration:none;letter-spacing:1.5px;text-transform:uppercase;">Entrar na comunidade</a>
+            </td></tr>
+          </table>
+        </td></tr>
+        <tr><td style="background-color:#FFF7E6;padding:22px 32px;border-top:1px solid #F6D6DC;">
+          <p style="margin:0;font-family:Helvetica,Arial,sans-serif;font-size:11px;line-height:1.6;color:#9B8586;">Se você não comprou a Comunidade Digital, pode ignorar este e-mail.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+  const text = `Oi ${firstName}, seu acesso está ativo!
+
+Sua compra foi confirmada. Você já tinha uma conta com este e-mail (${opts.to}) — é só entrar com a senha que você já usa. Se não lembrar, use "Esqueci minha senha" na tela de login.
+
+Entrar: ${opts.loginUrl}
+
+Se você não comprou a Comunidade Digital, pode ignorar este e-mail.`;
+  const resp = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${opts.resendApiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: 'Comunidade Digital <contato@comunidadedigital.com.br>',
+      to: [opts.to],
+      subject: 'Seu acesso à Comunidade Digital',
+      html,
+      text,
+    }),
+  });
+  if (!resp.ok) throw new Error(`Resend ${resp.status}: ${await resp.text()}`);
+  return await resp.json();
+}
+
 serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -224,7 +292,7 @@ serve(async (req) => {
       headers: Object.fromEntries(req.headers.entries()),
       body,
       raw_body: rawBody,
-    }).then(() => {}).catch(() => {});
+    }).then(() => {}, () => {});
 
     // Valida token no header
     const token = req.headers.get('x-hubla-token');
@@ -257,28 +325,58 @@ serve(async (req) => {
 
     if (lookupErr) return json({ error: 'erro lookup: ' + lookupErr.message }, 500);
 
-    const isFirstActivation = !existing && newStatus === 'active';
-
-    // Se primeira ativacao: cria auth user (se nao existir)
+    // Ativação que precisa de conta: 1ª vez OU linha antiga que ficou sem
+    // user_id (ex.: falha transitória do Auth — replay da Hubla cura aqui).
     let userId: string | null = existing?.user_id ?? null;
     let generatedPassword: string | null = null;
-    if (isFirstActivation) {
+    let accountAlreadyExisted = false;
+
+    if (newStatus === 'active' && !userId) {
       generatedPassword = generatePassword(10);
-      const { data: created, error: createErr } = await admin.auth.admin.createUser({
-        email,
-        password: generatedPassword,
-        email_confirm: true,
-        user_metadata: { full_name: evt.userName },
-      });
+      let createErr: { message?: string; code?: string; status?: number } | null = null;
+
+      // Até 2 tentativas: erro transitório do Auth (ex.: 403 bad_jwt visto em
+      // produção em 2026-07-23 02:49) não pode virar cliente sem conta.
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        const res = await admin.auth.admin.createUser({
+          email,
+          password: generatedPassword,
+          email_confirm: true,
+          user_metadata: { full_name: evt.userName },
+        });
+        if (!res.error) {
+          userId = res.data.user?.id ?? null;
+          createErr = null;
+          break;
+        }
+        // deno-lint-ignore no-explicit-any
+        const e = res.error as any;
+        createErr = { message: e?.message, code: e?.code, status: e?.status };
+        const isEmailExists = createErr.code === 'email_exists' || createErr.status === 422;
+        if (isEmailExists) break; // não é transitório — trata abaixo
+        await new Promise((r) => setTimeout(r, 1500));
+      }
+
       if (createErr) {
-        // Email já tinha conta (recompra, compra dupla): não gera senha nova,
-        // só linka o user existente à assinatura.
-        generatedPassword = null;
-        const { data: list } = await admin.auth.admin.listUsers();
-        const found = list?.users?.find((u: { email?: string }) => u.email?.toLowerCase() === email);
-        if (found) userId = found.id;
-      } else {
-        userId = created.user?.id ?? null;
+        const isEmailExists = createErr.code === 'email_exists' || createErr.status === 422;
+        if (isEmailExists) {
+          // Recompra/conta pré-existente: linka o user e avisa por email (sem senha).
+          accountAlreadyExisted = true;
+          generatedPassword = null;
+          const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+          const found = list?.users?.find((u: { email?: string }) => u.email?.toLowerCase() === email);
+          if (found) userId = found.id;
+        } else {
+          // Erro REAL de criação de conta: loga e devolve 500 — a Hubla retenta
+          // e o replay cura (antes isso era engolido e o cliente ficava sem acesso).
+          await admin.from('webhook_debug_log').insert({
+            provider: 'hubla-auth-error',
+            headers: { note: 'createUser falhou apos retry' },
+            body: { error: createErr.message ?? 'auth error', code: createErr.code ?? null, status: createErr.status ?? null, email, tx: externalId },
+            raw_body: '',
+          }).then(() => {}, () => {});
+          return json({ error: 'falha ao criar conta: ' + (createErr.message ?? 'auth error') }, 500);
+        }
       }
     }
 
@@ -302,20 +400,26 @@ serve(async (req) => {
 
     if (upsertErr) return json({ error: 'erro upsert: ' + upsertErr.message }, 500);
 
-    // Se primeira ativacao e criou user novo: manda email com login
-    if (isFirstActivation && resendApiKey && generatedPassword) {
+    // Email pós-ativação: conta nova → credenciais; conta que já existia →
+    // aviso "acesso ativo" (antes a recompra ficava SEM email nenhum).
+    const loginUrl = 'https://app.comunidadedigital.com.br/auth';
+    if (newStatus === 'active' && resendApiKey && (generatedPassword || accountAlreadyExisted)) {
       try {
-        await sendWelcomeEmail({
-          resendApiKey,
-          to: email,
-          name: evt.userName,
-          password: generatedPassword,
-          loginUrl: 'https://app.comunidadedigital.com.br/auth',
-        });
+        if (generatedPassword) {
+          await sendWelcomeEmail({ resendApiKey, to: email, name: evt.userName, password: generatedPassword, loginUrl });
+        } else {
+          await sendAccessActiveEmail({ resendApiKey, to: email, name: evt.userName, loginUrl });
+        }
       } catch (e) {
         // Email falhou mas o acesso JÁ está liberado — não derruba o webhook.
-        // Recuperação: usuário usa "Esqueci minha senha" na tela de login.
+        // Loga no banco (consultável via SQL) além do console.
         console.error('email_error', e);
+        await admin.from('webhook_debug_log').insert({
+          provider: 'hubla-email-error',
+          headers: { note: 'Resend falhou; acesso liberado mesmo assim' },
+          body: { error: String(e), email, tx: externalId },
+          raw_body: '',
+        }).then(() => {}, () => {});
       }
     }
 
