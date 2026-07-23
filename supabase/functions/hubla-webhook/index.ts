@@ -313,7 +313,6 @@ serve(async (req) => {
     }
 
     const externalId = evt.transactionId;
-    const expiresAt = evt.expiresAt || null;
 
     // Upsert na tabela subscriptions
     const { data: existing, error: lookupErr } = await admin
@@ -382,6 +381,17 @@ serve(async (req) => {
 
     // Venda anual da Hubla chega como one_time_purchased. Este app só vende anual.
     const planType = evt.recurring === 'one_time_purchased' ? 'annual' : 'monthly';
+
+    // evt.expiresAt NÃO é a validade do plano: na venda anual à vista a Hubla
+    // manda ~1h (janela do checkout) ou ~5 dias, e o gate de login derruba o
+    // cliente quando isso vence (incidente 2026-07-23, 5 clientes travados).
+    // Plano anual: validade = paidAt + 1 ano, calculada aqui.
+    let expiresAt: string | null = evt.expiresAt || null;
+    if (planType === 'annual') {
+      const base = new Date(Date.parse(evt.paidAt ?? evt.createdAt ?? '') || Date.now());
+      base.setUTCFullYear(base.getUTCFullYear() + 1);
+      expiresAt = base.toISOString();
+    }
 
     const upsertPayload = {
       user_id: userId,
