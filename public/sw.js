@@ -30,10 +30,16 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
 
-  // Navegações (SPA): network-first com fallback pro index em cache.
+  // Navegações (SPA): network-first; offline tenta a própria página no cache
+  // (ex.: /ferramentas/edicao-ia/index.html precacheada) antes do shell do SPA.
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request).catch(() => caches.match("/index.html").then((r) => r || fetch(request)))
+      fetch(request).catch(() =>
+        caches
+          .match(request, { ignoreSearch: true })
+          .then((r) => r || caches.match("/index.html"))
+          .then((r) => r || fetch(request))
+      )
     );
     return;
   }

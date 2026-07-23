@@ -112,10 +112,12 @@ const Home: React.FC = () => {
             </section>
           )}
 
+          {/* Ferramentas — módulos da seção "materiais" do admin (o valor no
+              banco continua 'materiais'; só o nome exibido mudou). */}
           {materiais.length > 0 && (
             <section className="mb-4">
               <div className="px-4 mb-3">
-                <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">Materiais</h2>
+                <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">Ferramentas</h2>
               </div>
               <HorizontalCardList modules={materiais} />
             </section>

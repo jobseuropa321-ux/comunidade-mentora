@@ -352,7 +352,7 @@ const ModuleEditor: React.FC<{
         <div>
           <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">Seção da Home</label>
           <div className="grid grid-cols-2 gap-1 mt-1.5">
-            {([{ value: 'inicio', label: 'Comece por aqui' }, { value: 'modulos', label: 'Módulos' }, { value: 'materiais', label: 'Materiais' }, { value: null, label: 'Não exibir' }] as const).map(opt => (
+            {([{ value: 'inicio', label: 'Comece por aqui' }, { value: 'modulos', label: 'Módulos' }, { value: 'materiais', label: 'Ferramentas' }, { value: null, label: 'Não exibir' }] as const).map(opt => (
               <button key={String(opt.value)} type="button" onClick={() => setDraft({ ...draft, home_section: opt.value })}
                 className={`text-[9px] font-bold uppercase tracking-wider py-2 rounded-lg transition-colors ${draft.home_section === opt.value ? 'bg-[#BE0D3E] text-white' : 'bg-[#F6D6DC] text-[#5B4041]'}`}>
                 {opt.label}
@@ -361,13 +361,13 @@ const ModuleEditor: React.FC<{
           </div>
         </div>
 
-        {/* Link do material (só faz sentido pra seção Materiais) */}
+        {/* Link do material/ferramenta (só faz sentido pra seção Ferramentas) */}
         {draft.home_section === 'materiais' && (
           <Field
-            label="Link do material (Google Drive)"
+            label="Link do material ou ferramenta"
             value={draft.material_url ?? ''}
             onChange={v => setDraft({ ...draft, material_url: v || null })}
-            hint="a aluna abre este link pra ver e baixar"
+            hint="Drive (https://...) abre em outra aba · link interno começando com / (ex.: /ferramentas/edicao-ia/index.html) abre como ferramenta — não altere sem saber"
           />
         )}
 

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Clock, ChevronDown, ChevronUp, Loader2, CheckCircle2, FolderOpen, ExternalLink, Download } from 'lucide-react';
+import { ArrowLeft, Play, Clock, ChevronDown, ChevronUp, Loader2, CheckCircle2, FolderOpen, ExternalLink, Download, Sparkles, ChevronRight } from 'lucide-react';
 import { useModuleBySlug, useLessonProgress, type Lesson } from '@/hooks/useCourses';
 
 /* ── AULA ROW ── */
@@ -98,6 +98,10 @@ const ModuleDetail: React.FC = () => {
 
   // Módulos da seção "Materiais" não têm aulas: abrem direto num link (Drive) pra ver/baixar.
   const isMateriais = modulo.home_section === 'materiais';
+  // Ferramenta interna (ex.: Edição com IA): material_url aponta pra uma página do
+  // próprio app em vez do Drive — muda o CTA e abre na mesma aba (a ferramenta tem
+  // botão "Sair" que volta pra /home).
+  const isFerramenta = isMateriais && !!modulo.material_url?.startsWith('/');
 
   return (
     <div className="pb-28 max-w-lg mx-auto">
@@ -123,13 +127,13 @@ const ModuleDetail: React.FC = () => {
         )}
 
         <div className="relative z-10 pt-14 pb-4 px-5">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 mb-1">{isMateriais ? 'Material' : 'Módulo'}</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 mb-1">{isFerramenta ? 'Ferramenta' : isMateriais ? 'Material' : 'Módulo'}</p>
           <h1 className="text-[42px] font-black leading-[0.85] tracking-tighter text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
             {modulo.title1}<br />{modulo.title2}
           </h1>
           <p className="text-[11px] text-white/60 mt-3">{modulo.instructor}</p>
           <div className="flex items-center gap-2 mt-3 flex-wrap">
-            {[isMateriais ? 'Material de apoio' : `${totalAulas} aulas`, modulo.duracao, modulo.nivel].filter(Boolean).map(p => (
+            {[isFerramenta ? 'Ferramenta' : isMateriais ? 'Material de apoio' : `${totalAulas} aulas`, modulo.duracao, modulo.nivel].filter(Boolean).map(p => (
               <span key={p} className="text-[9px] font-black uppercase tracking-widest bg-white/10 text-white/70 px-2.5 py-1 rounded-full border border-white/10">
                 {p}
               </span>
@@ -147,25 +151,29 @@ const ModuleDetail: React.FC = () => {
         </div>
 
         {isMateriais ? (
-          /* MATERIAIS — abre o link (Drive) pra ver e baixar */
+          /* MATERIAIS/FERRAMENTAS — abre o link (Drive) ou a ferramenta interna */
           <div>
-            <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">Material</h3>
+            <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">{isFerramenta ? 'Ferramenta' : 'Material'}</h3>
             {modulo.material_url ? (
               <a
                 href={modulo.material_url}
-                target="_blank"
-                rel="noopener noreferrer"
+                target={isFerramenta ? undefined : '_blank'}
+                rel={isFerramenta ? undefined : 'noopener noreferrer'}
                 className="flex items-center gap-3 rounded-2xl p-4 text-white"
                 style={{ background: `linear-gradient(135deg, #BE0D3E, ${modulo.cor_acento})`, boxShadow: `0 8px 24px ${modulo.cor_acento}33` }}
               >
                 <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                  <FolderOpen size={20} className="text-white" />
+                  {isFerramenta
+                    ? <Sparkles size={20} className="text-white" />
+                    : <FolderOpen size={20} className="text-white" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-black leading-tight">Ver e baixar material</p>
-                  <p className="text-[10px] text-white/75 mt-0.5">Abre no Google Drive</p>
+                  <p className="text-[13px] font-black leading-tight">{isFerramenta ? 'Editar minha foto com IA' : 'Ver e baixar material'}</p>
+                  <p className="text-[10px] text-white/75 mt-0.5">{isFerramenta ? 'Prompts profissionais de edição prontos pra usar' : 'Abre no Google Drive'}</p>
                 </div>
-                <ExternalLink size={16} className="text-white/80 shrink-0" />
+                {isFerramenta
+                  ? <ChevronRight size={16} className="text-white/80 shrink-0" />
+                  : <ExternalLink size={16} className="text-white/80 shrink-0" />}
               </a>
             ) : (
               <div className="rounded-2xl border-2 border-dashed border-[#BE0D3E]/20 bg-[#FFF7E6]/40 p-6 flex items-center gap-4">

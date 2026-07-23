@@ -84,13 +84,13 @@ const Header: React.FC = () => {
             </button>
           </div>
 
-          {/* Logo — centralizada absolutamente. TROQUE /logo-app.png pela sua logo */}
+          {/* Logo — centralizada absolutamente. TROQUE /logo-app.webp pela sua logo */}
           <div
             className="absolute left-1/2 -translate-x-1/2 pointer-events-none select-none"
             aria-label="Logo do app"
           >
             <img
-              src="/logo-app.png"
+              src="/logo-app.webp"
               alt="Amentora"
               className="h-12 w-auto"
               draggable={false}

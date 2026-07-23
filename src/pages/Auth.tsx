@@ -38,7 +38,7 @@ const Auth: React.FC = () => {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <img src="/logo-app.png" alt="Amentora" className="h-28 w-auto" draggable={false} />
+          <img src="/logo-app.webp" alt="Amentora" className="h-28 w-auto" draggable={false} />
         </div>
 
         <div className="bg-white border border-[#BE0D3E]/15 rounded-3xl p-6 shadow-[0_12px_40px_rgba(255,45,122,0.12)]">
