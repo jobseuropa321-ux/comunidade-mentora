@@ -1,0 +1,6 @@
+/* Único estilo custom que o InstallPrompt usa — esconde a barra de scroll
+ * do carrossel de prints. Cole no seu src/index.css.
+ * (Se você já colou o app-nativo-feel.md ou outro pacote com .scrollbar-hide,
+ * pode pular — é a mesma classe.) */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
