@@ -334,9 +334,11 @@ serve(async (req) => {
       generatedPassword = generatePassword(10);
       let createErr: { message?: string; code?: string; status?: number } | null = null;
 
-      // Até 2 tentativas: erro transitório do Auth (ex.: 403 bad_jwt visto em
-      // produção em 2026-07-23 02:49) não pode virar cliente sem conta.
-      for (let attempt = 1; attempt <= 2; attempt++) {
+      // Até 3 tentativas (esperas 3s/10s): o 403 bad_jwt intermitente do Auth
+      // (3+ casos em 23-24/07) costuma durar segundos — janelas longas (minutos)
+      // ficam pro auto-reparo heal_hubla_webhook (pg_cron a cada 5 min).
+      const retryDelays = [3000, 10000];
+      for (let attempt = 1; attempt <= 3; attempt++) {
         const res = await admin.auth.admin.createUser({
           email,
           password: generatedPassword,
@@ -353,7 +355,8 @@ serve(async (req) => {
         createErr = { message: e?.message, code: e?.code, status: e?.status };
         const isEmailExists = createErr.code === 'email_exists' || createErr.status === 422;
         if (isEmailExists) break; // não é transitório — trata abaixo
-        await new Promise((r) => setTimeout(r, 1500));
+        const delay = retryDelays[attempt - 1];
+        if (delay) await new Promise((r) => setTimeout(r, delay));
       }
 
       if (createErr) {
