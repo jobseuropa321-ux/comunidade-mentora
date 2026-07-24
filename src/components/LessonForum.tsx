@@ -1,48 +1,144 @@
-import React, { useState } from 'react';
-import { MessageSquareText, Send, Loader2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { MessageSquareText, Send, Loader2, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Props {
   lessonId: string;
 }
 
-interface Comment {
-  id: string;
-  name: string;
-  initials: string;
-  gradient: string;
-  time: string;
-  text: string;
-  isMe?: boolean;
+interface CommentProfile {
+  user_id: string;
+  full_name: string | null;
+  avatar_url: string | null;
 }
 
-/* Sem comentários de exemplo: o fórum começa vazio e só mostra o que
-   as alunas escreverem de verdade. */
-const seedComments = (_lessonId: string): Comment[] => [];
+interface Comment {
+  id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  profile: CommentProfile | null;
+}
+
+/* Tempo relativo em pt-BR (mesmo helper da Comunidade). */
+const timeAgo = (isoStr: string): string => {
+  const diff = Math.max(0, Date.now() - new Date(isoStr).getTime());
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'agora';
+  if (m < 60) return `há ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `há ${h} h`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `há ${d} d`;
+  return new Date(isoStr).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+};
+
+const Avatar: React.FC<{ profile: CommentProfile | null }> = ({ profile }) => {
+  if (profile?.avatar_url) {
+    return (
+      <img
+        src={profile.avatar_url}
+        alt="Avatar"
+        className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+      />
+    );
+  }
+  const initial = (profile?.full_name?.trim()?.[0] || 'U').toUpperCase();
+  return (
+    <div
+      className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-black"
+      style={{ background: 'linear-gradient(135deg, #E06B85, #BE0D3E 60%, #94002D)' }}
+    >
+      {initial}
+    </div>
+  );
+};
 
 const LessonForum: React.FC<Props> = ({ lessonId }) => {
-  const [comments, setComments] = useState<Comment[]>(() => seedComments(lessonId));
+  const { user, profile } = useAuth();
+  const [comments, setComments] = useState<Comment[]>([]);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
 
-  const handleSend = () => {
+  // Carrega os comentários da aula + perfil (nome/avatar) de quem escreveu.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: rows, error } = await supabase
+          .from('lesson_comments')
+          .select('id, user_id, content, created_at')
+          .eq('lesson_id', lessonId)
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        const cRows = (rows ?? []) as Array<Omit<Comment, 'profile'>>;
+
+        const authorIds = [...new Set(cRows.map((c) => c.user_id))];
+        const profMap: Record<string, CommentProfile> = {};
+        if (authorIds.length) {
+          const { data: profRows } = await supabase
+            .from('profiles')
+            .select('user_id, full_name, avatar_url')
+            .in('user_id', authorIds);
+          (profRows ?? []).forEach((p: CommentProfile) => { profMap[p.user_id] = p; });
+        }
+        if (!cancelled) {
+          setComments(cRows.map((c) => ({ ...c, profile: profMap[c.user_id] ?? null })));
+        }
+      } catch (error) {
+        console.error(error);
+        if (!cancelled) toast.error('Erro ao carregar comentários');
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [lessonId]);
+
+  const handleSend = async () => {
     const text = draft.trim();
-    if (!text || sending) return;
+    if (!text || sending || !user) return;
 
     setSending(true);
-    window.setTimeout(() => {
-      const newComment: Comment = {
-        id: `${lessonId}-you-${Date.now()}`,
-        name: 'Você',
-        initials: 'EU',
-        gradient: 'linear-gradient(135deg, #BE0D3E 0%, #F6B43A 100%)',
-        time: 'agora',
-        text,
-        isMe: true,
+    try {
+      const { data: inserted, error } = await supabase
+        .from('lesson_comments')
+        .insert({ lesson_id: lessonId, user_id: user.id, content: text })
+        .select('id, user_id, content, created_at')
+        .single();
+      if (error) throw error;
+      const comment: Comment = {
+        ...(inserted as Omit<Comment, 'profile'>),
+        profile: {
+          user_id: user.id,
+          full_name: profile?.full_name ?? null,
+          avatar_url: profile?.avatar_url ?? null,
+        },
       };
-      setComments((prev) => [newComment, ...prev]);
+      setComments((prev) => [comment, ...prev]);
       setDraft('');
+    } catch (error) {
+      console.error(error);
+      toast.error('Erro ao enviar comentário');
+    } finally {
       setSending(false);
-    }, 500);
+    }
+  };
+
+  const handleDelete = async (commentId: string) => {
+    const removed = comments.find((c) => c.id === commentId);
+    setComments((prev) => prev.filter((c) => c.id !== commentId));
+    try {
+      const { error } = await supabase.from('lesson_comments').delete().eq('id', commentId);
+      if (error) throw error;
+      toast.success('Comentário excluído');
+    } catch (error) {
+      console.error(error);
+      toast.error('Erro ao excluir comentário');
+      if (removed) setComments((prev) => [...prev, removed].sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      ));
+    }
   };
 
   return (
@@ -98,37 +194,45 @@ const LessonForum: React.FC<Props> = ({ lessonId }) => {
       </div>
 
       <div className="space-y-3">
-        {comments.map((comment) => (
-          <div key={comment.id} className="viral-card p-4">
-            <div className="flex items-start gap-3">
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-black"
-                style={{ background: comment.gradient }}
-              >
-                {comment.initials}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-black text-sm text-[#1E1B11] tracking-tight">
-                    {comment.name}
-                  </span>
-                  {comment.isMe && (
-                    <span
-                      className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full text-white"
-                      style={{ background: 'linear-gradient(135deg, #BE0D3E 0%, #E06B85 100%)' }}
-                    >
-                      Você
+        {comments.map((comment) => {
+          const isMe = comment.user_id === user?.id;
+          return (
+            <div key={comment.id} className="viral-card p-4">
+              <div className="flex items-start gap-3">
+                <Avatar profile={comment.profile} />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-black text-sm text-[#1E1B11] tracking-tight">
+                      {comment.profile?.full_name || 'Aluna'}
                     </span>
-                  )}
-                  <span className="text-[11px] font-bold text-[#5B4041]">{comment.time}</span>
+                    {isMe && (
+                      <span
+                        className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full text-white"
+                        style={{ background: 'linear-gradient(135deg, #BE0D3E 0%, #E06B85 100%)' }}
+                      >
+                        Você
+                      </span>
+                    )}
+                    <span className="text-[11px] font-bold text-[#5B4041]">{timeAgo(comment.created_at)}</span>
+                    {isMe && (
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(comment.id)}
+                        className="ml-auto text-[#5B4041]/40 hover:text-[#BE0D3E] active:scale-95 transition-all"
+                        aria-label="Excluir comentário"
+                      >
+                        <Trash2 size={14} strokeWidth={2.5} />
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-sm text-[#1E1B11]/80 mt-1 leading-relaxed break-words">
+                    {comment.content}
+                  </p>
                 </div>
-                <p className="text-sm text-[#1E1B11]/80 mt-1 leading-relaxed break-words">
-                  {comment.text}
-                </p>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );
