@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, BookOpen, Radio, Loader2 } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, BookOpen, Radio, KeyRound, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminCourses from '@/components/admin/AdminCourses';
 import AdminLive from '@/components/admin/AdminLive';
+import AdminAccess from '@/components/admin/AdminAccess';
 
-type Tab = 'cursos' | 'aovivo';
+type Tab = 'cursos' | 'aovivo' | 'acessos';
 
 const Admin: React.FC = () => {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ const Admin: React.FC = () => {
   const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: 'cursos', label: 'Cursos', icon: BookOpen },
     { id: 'aovivo', label: 'Ao Vivo', icon: Radio },
+    { id: 'acessos', label: 'Acessos', icon: KeyRound },
   ];
 
   return (
@@ -53,7 +55,7 @@ const Admin: React.FC = () => {
       </div>
 
       {/* Abas */}
-      <div className="grid grid-cols-2 gap-1 bg-[#F6D6DC]/50 p-1 rounded-xl mb-5">
+      <div className="grid grid-cols-3 gap-1 bg-[#F6D6DC]/50 p-1 rounded-xl mb-5">
         {TABS.map(t => {
           const active = tab === t.id;
           return (
@@ -73,6 +75,7 @@ const Admin: React.FC = () => {
 
       {tab === 'cursos' && <AdminCourses />}
       {tab === 'aovivo' && <AdminLive />}
+      {tab === 'acessos' && <AdminAccess />}
     </div>
   );
 };
