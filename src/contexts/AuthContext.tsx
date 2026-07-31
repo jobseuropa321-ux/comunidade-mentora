@@ -15,10 +15,10 @@
  *  joqajomzignamixxqeet). O trigger handle_new_user cria a linha em
  *  `profiles` no cadastro, lendo o full_name do metadata que o signUp envia.
  * ═══════════════════════════════════════════════════════════════════════ */
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { checkSubscription, AccessDeniedError, SUB_DENIED_MSG } from '@/lib/subscription';
+import { checkSubscription, AccessDeniedError, SUB_DENIED_MSG, type SubStatus } from '@/lib/subscription';
 
 export interface Profile {
   id: string;
@@ -50,10 +50,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isExpert, setIsExpert] = useState(false);
   const [isTester, setIsTester] = useState(false);
   const [loading, setLoading] = useState(true);
+  const interactiveSignIn = useRef(false);
+  const authCheckVersion = useRef(0);
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle();
-    if (data) setProfile(data as Profile);
+    setProfile(data ? data as Profile : null);
   };
 
   const checkRoles = async (userId: string) => {
@@ -68,37 +70,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      setSession(nextSession);
-      setUser(nextSession?.user ?? null);
-      if (nextSession?.user) {
-        // setTimeout(0) evita deadlock de chamadas ao supabase dentro do callback
-        const uid = nextSession.user.id;
-        setTimeout(() => { fetchProfile(uid); checkRoles(uid); }, 0);
-      } else {
-        setProfile(null);
-        setIsExpert(false);
-        setIsTester(false);
-      }
-      setLoading(false);
-    });
+  const clearAuthState = () => {
+    setUser(null);
+    setSession(null);
+    setProfile(null);
+    setIsExpert(false);
+    setIsTester(false);
+  };
 
-    // Restauração de sessão: revalida a assinatura. Sem isso, quem foi
-    // cancelado/reembolsado continuaria entrando com a sessão salva no navegador.
-    supabase.auth.getSession().then(async ({ data: { session: current } }) => {
-      if (current?.user?.email) {
-        const status = await checkSubscription(current.user.email);
-        if (status !== 'active') {
-          await supabase.auth.signOut();
-          setLoading(false);
-          return;
-        }
+  const validateAndPublishSession = async (nextSession: Session): Promise<SubStatus> => {
+    const version = ++authCheckVersion.current;
+    setLoading(true);
+
+    const email = nextSession.user.email;
+    const status = email ? await checkSubscription(email) : 'not_found';
+    if (version !== authCheckVersion.current) return status;
+
+    if (status !== 'active') {
+      await supabase.auth.signOut();
+      if (version === authCheckVersion.current) {
+        clearAuthState();
+        setLoading(false);
       }
-      setSession(current);
-      setUser(current?.user ?? null);
-      if (current?.user) { fetchProfile(current.user.id); checkRoles(current.user.id); }
-      setLoading(false);
+      return status;
+    }
+
+    setSession(nextSession);
+    setUser(nextSession.user);
+    void fetchProfile(nextSession.user.id);
+    void checkRoles(nextSession.user.id);
+    setLoading(false);
+    return status;
+  };
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      // signIn() faz a validação e só publica o usuário depois que o gate passa.
+      // Assim a rota pública não pula para /home antes de um eventual signOut.
+      if (event === 'SIGNED_IN' && interactiveSignIn.current) {
+        setSession(nextSession);
+        return;
+      }
+
+      if (!nextSession) {
+        authCheckVersion.current += 1;
+        clearAuthState();
+        setLoading(false);
+        return;
+      }
+
+      // Evita chamadas Supabase dentro do callback de auth (pode causar deadlock).
+      setLoading(true);
+      setTimeout(() => { void validateAndPublishSession(nextSession); }, 0);
     });
 
     return () => subscription.unsubscribe();
@@ -118,25 +141,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     const clean = email.trim().toLowerCase();
-    const { error } = await supabase.auth.signInWithPassword({ email: clean, password });
-    if (error) return { error };
+    interactiveSignIn.current = true;
+    setLoading(true);
 
-    // Gate: autenticar não basta — precisa ter assinatura ativa (ou role da equipe).
-    const status = await checkSubscription(clean);
-    if (status !== 'active') {
-      await supabase.auth.signOut();
-      return { error: new AccessDeniedError(SUB_DENIED_MSG[status]) };
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email: clean, password });
+      if (error || !data.session) {
+        setLoading(false);
+        return { error: error ?? new Error('Sessão não criada') };
+      }
+
+      // Autenticar não basta: o usuário só chega às rotas protegidas depois
+      // que uma assinatura válida (ou role de equipe) foi confirmada.
+      const status = await validateAndPublishSession(data.session);
+      if (status !== 'active') {
+        return { error: new AccessDeniedError(SUB_DENIED_MSG[status]) };
+      }
+      return { error: null };
+    } finally {
+      interactiveSignIn.current = false;
     }
-    return { error: null };
   };
 
   const signOut = async () => {
+    authCheckVersion.current += 1;
     await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    setIsExpert(false);
-    setIsTester(false);
+    clearAuthState();
+    setLoading(false);
   };
 
   const updateProfile = async (updates: Partial<Profile>) => {

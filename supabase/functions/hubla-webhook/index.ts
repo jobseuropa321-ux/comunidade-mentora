@@ -16,6 +16,10 @@
 // ═══════════════════════════════════════════════════════════════════
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  hasAuthenticatedLegacyTwin,
+  parseHublaPayload,
+} from "./hubla-payload.ts";
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -34,34 +38,26 @@ function generatePassword(length = 10): string {
   return pass;
 }
 
-interface HublaBody {
-  type: string;
-  event: {
-    userId: string;
-    userName: string;
-    userEmail: string;
-    userPhone?: string;
-    groupId?: string;
-    groupName?: string;
-    sellerId?: string;
-    recurring?: string;
-    paymentMethod?: string;
-    transactionId: string;
-    createdAt?: string;
-    expiresAt?: string;
-    paidAt?: string;
-    isRenewing?: boolean;
-    totalAmount?: number;
-  };
-  version?: string;
-}
+async function hasRecentLegacyTwin(
+  admin: ReturnType<typeof createClient<any>>,
+  externalId: string,
+  webhookToken: string,
+): Promise<boolean> {
+  // Os eventos v1/v2 chegam em paralelo. Esta espera curta dá tempo para o
+  // request v1 concluir o log antes de verificarmos a duplicidade.
+  await new Promise((resolve) => setTimeout(resolve, 400));
 
-function mapStatusFromType(type: string): 'active' | 'canceled' | 'refunded' | null {
-  const t = type.toLowerCase();
-  if (t === 'newsale' || t === 'renewedsale') return 'active';
-  if (t === 'canceledsale' || t === 'canceledsubscription' || t === 'subscription.deactivated') return 'canceled';
-  if (t === 'refundedsale' || t === 'refundrequested') return 'refunded';
-  return null;
+  const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  const { data, error } = await admin
+    .from('webhook_debug_log')
+    .select('headers, body')
+    .eq('provider', 'hubla')
+    .gte('created_at', since)
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  if (error || !data) return false;
+  return hasAuthenticatedLegacyTwin(data, externalId, webhookToken);
 }
 
 /* ── Email de boas-vindas — identidade Comunidade Digital ──
@@ -278,7 +274,7 @@ serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceKey);
 
     const rawBody = await req.text();
-    let body: HublaBody;
+    let body: unknown;
     try {
       body = JSON.parse(rawBody);
     } catch {
@@ -300,29 +296,81 @@ serve(async (req) => {
       return json({ error: 'token invalido' }, 401);
     }
 
-    const evt = body.event;
-    if (!evt) return json({ error: 'event ausente' }, 400);
-
-    const email = evt.userEmail?.toLowerCase();
-    if (!email) return json({ error: 'email ausente' }, 400);
-
-    const newStatus = mapStatusFromType(body.type);
-    if (!newStatus) {
-      // Evento que não interessa (ex: abandono de carrinho) — ack e ignora
-      return json({ ok: true, ignored: true, type: body.type });
+    const parsed = parseHublaPayload(body);
+    if (parsed.kind === 'ignored') {
+      return json({ ok: true, ignored: true, type: parsed.eventType });
+    }
+    if (parsed.kind === 'error') {
+      return json({ error: parsed.message }, 400);
     }
 
-    const externalId = evt.transactionId;
+    const evt = parsed.event;
+    const {
+      action,
+      email,
+      eventType,
+      externalId,
+      format,
+      planType,
+      status: newStatus,
+    } = evt;
+
+    // Durante a migração da Hubla, a mesma venda normalmente chega como
+    // NewSale (v1) e invoice.payment_succeeded (v2). Processar os dois em
+    // paralelo criaria uma corrida no Auth e poderia mandar dois emails.
+    // Se há um v1 autenticado, ele processa a venda e o auto-reparo o cobre.
+    // Quando só o v2 chega, ele segue normalmente (caso real da Hosana).
+    if (
+      format === 'v2'
+      && action === 'activate'
+      && await hasRecentLegacyTwin(admin, externalId, token)
+    ) {
+      return json({
+        ok: true,
+        duplicate: true,
+        reason: 'legacy_twin',
+        type: eventType,
+        status: newStatus,
+        email,
+      });
+    }
 
     // Upsert na tabela subscriptions
     const { data: existing, error: lookupErr } = await admin
       .from('subscriptions')
-      .select('id, user_id')
+      .select('id, user_id, status, expires_at')
       .eq('provider', 'hubla')
       .eq('external_id', externalId)
       .maybeSingle();
 
     if (lookupErr) return json({ error: 'erro lookup: ' + lookupErr.message }, 500);
+
+    // Evento negativo sem uma compra correspondente não é uma assinatura.
+    // A Hubla envia CanceledSale para PIX expirado/cartão recusado; antes isso
+    // criava uma linha canceled nova e escondia uma compra válida do mesmo email.
+    if (action !== 'activate' && !existing) {
+      return json({
+        ok: true,
+        ignored: true,
+        reason: 'no_matching_subscription',
+        type: eventType,
+        status: newStatus,
+        email,
+      });
+    }
+
+    // Reembolso é terminal para uma transação. Um replay atrasado da venda
+    // não pode reativar a mesma fatura depois que o reembolso já chegou.
+    if (existing?.status === 'refunded' && action === 'activate') {
+      return json({
+        ok: true,
+        ignored: true,
+        reason: 'refunded_is_terminal',
+        type: eventType,
+        status: existing.status,
+        email,
+      });
+    }
 
     // Ativação que precisa de conta: 1ª vez OU linha antiga que ficou sem
     // user_id (ex.: falha transitória do Auth — replay da Hubla cura aqui).
@@ -330,7 +378,7 @@ serve(async (req) => {
     let generatedPassword: string | null = null;
     let accountAlreadyExisted = false;
 
-    if (newStatus === 'active' && !userId) {
+    if (action === 'activate' && !userId) {
       generatedPassword = generatePassword(10);
       let createErr: { message?: string; code?: string; status?: number } | null = null;
 
@@ -343,7 +391,7 @@ serve(async (req) => {
           email,
           password: generatedPassword,
           email_confirm: true,
-          user_metadata: { full_name: evt.userName },
+          user_metadata: { full_name: evt.userName || null },
         });
         if (!res.error) {
           userId = res.data.user?.id ?? null;
@@ -382,15 +430,12 @@ serve(async (req) => {
       }
     }
 
-    // Venda anual da Hubla chega como one_time_purchased. Este app só vende anual.
-    const planType = evt.recurring === 'one_time_purchased' ? 'annual' : 'monthly';
-
-    // evt.expiresAt NÃO é a validade do plano: na venda anual à vista a Hubla
+    // expiresAt/dueDate NÃO é a validade do plano: na venda anual à vista a Hubla
     // manda ~1h (janela do checkout) ou ~5 dias, e o gate de login derruba o
     // cliente quando isso vence (incidente 2026-07-23, 5 clientes travados).
     // Plano anual: validade = paidAt + 1 ano, calculada aqui.
-    let expiresAt: string | null = evt.expiresAt || null;
-    if (planType === 'annual') {
+    let expiresAt: string | null = existing?.expires_at ?? evt.expiresAt ?? null;
+    if (action === 'activate' && planType === 'annual') {
       const base = new Date(Date.parse(evt.paidAt ?? evt.createdAt ?? '') || Date.now());
       base.setUTCFullYear(base.getUTCFullYear() + 1);
       expiresAt = base.toISOString();
@@ -404,7 +449,8 @@ serve(async (req) => {
       plan_type: planType,
       external_id: externalId,
       expires_at: expiresAt,
-      raw_payload: body as unknown as Record<string, unknown>,
+      raw_payload: body as Record<string, unknown>,
+      updated_at: new Date().toISOString(),
     };
 
     const { error: upsertErr } = await admin
@@ -413,10 +459,39 @@ serve(async (req) => {
 
     if (upsertErr) return json({ error: 'erro upsert: ' + upsertErr.message }, 500);
 
+    // Cancelar só a renovação mantém o período já pago. Desativação/reembolso
+    // revoga a sessão apenas se não houver outra compra válida para o email.
+    if ((action === 'deactivate' || action === 'refund') && userId) {
+      const { data: accessStatus, error: accessErr } = await admin.rpc(
+        'check_email_subscription',
+        { check_email: email },
+      );
+
+      if (accessErr) {
+        return json({ error: 'falha ao revalidar acesso: ' + accessErr.message }, 500);
+      }
+
+      const { error: revokeErr } = accessStatus === 'active'
+        ? { error: null }
+        : await admin.rpc('revoke_user_sessions_for_access', { _user_id: userId });
+
+      if (revokeErr) {
+        await admin.from('webhook_debug_log').insert({
+          provider: 'hubla-session-revoke-error',
+          headers: { note: 'assinatura bloqueada, mas revogação de sessão falhou' },
+          body: { error: revokeErr.message, email, tx: externalId },
+          raw_body: '',
+        }).then(() => {}, () => {});
+        // A assinatura já foi bloqueada. O 500 pede retry para concluir também
+        // a revogação das sessões; o processamento é idempotente.
+        return json({ error: 'falha ao revogar sessoes' }, 500);
+      }
+    }
+
     // Email pós-ativação: conta nova → credenciais; conta que já existia →
     // aviso "acesso ativo" (antes a recompra ficava SEM email nenhum).
     const loginUrl = 'https://app.comunidadedigital.com.br/auth';
-    if (newStatus === 'active' && resendApiKey && (generatedPassword || accountAlreadyExisted)) {
+    if (action === 'activate' && resendApiKey && (generatedPassword || accountAlreadyExisted)) {
       try {
         if (generatedPassword) {
           await sendWelcomeEmail({ resendApiKey, to: email, name: evt.userName, password: generatedPassword, loginUrl });
@@ -436,7 +511,7 @@ serve(async (req) => {
       }
     }
 
-    return json({ ok: true, type: body.type, status: newStatus, email });
+    return json({ ok: true, type: eventType, format, action, status: newStatus, email });
   } catch (err) {
     return json({ error: String(err instanceof Error ? err.message : err) }, 500);
   }
