@@ -1,22 +1,33 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, Loader2, Sparkles } from 'lucide-react';
+import { CircleAlert, Mail, Lock, Loader2, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { isAccessDenied } from '@/lib/subscription';
+import { isAccessDenied, SUB_DENIED_MSG, SUB_DENIED_TITLE } from '@/lib/subscription';
 
 /* Só login. Conta não se cria aqui: quem compra na Hubla recebe a conta
    pronta (com senha) por email — ver supabase/functions/hubla-webhook. */
 const Auth: React.FC = () => {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signIn, accessDeniedStatus, clearAccessDeniedNotice } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const accessDeniedMessage = accessDeniedStatus ? SUB_DENIED_MSG[accessDeniedStatus] : null;
+  const visibleError = accessDeniedMessage ?? error;
+  const errorTitle = accessDeniedStatus
+    ? SUB_DENIED_TITLE[accessDeniedStatus]
+    : 'Não foi possível entrar';
+
+  const clearErrors = () => {
+    setError(null);
+    clearAccessDeniedNotice();
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    clearErrors();
     if (!email || !password) {
       setError('Preencha todos os campos.');
       return;
@@ -27,7 +38,9 @@ const Auth: React.FC = () => {
     if (res.error) {
       // Acesso negado pelo gate de assinatura → mostra o motivo real.
       // Erro cru do Supabase Auth → mensagem genérica (vem em inglês).
-      setError(isAccessDenied(res.error) ? res.error.message : 'Não foi possível entrar. Tente novamente.');
+      if (!isAccessDenied(res.error)) {
+        setError('Confira seu e-mail e sua senha e tente novamente.');
+      }
       return;
     }
     navigate('/home', { replace: true });
@@ -59,7 +72,10 @@ const Auth: React.FC = () => {
                 type="email"
                 autoComplete="email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={e => {
+                  setEmail(e.target.value);
+                  clearErrors();
+                }}
               />
             </div>
             <div className="flex items-center gap-2 input-instagram">
@@ -70,12 +86,25 @@ const Auth: React.FC = () => {
                 type="password"
                 autoComplete="current-password"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={e => {
+                  setPassword(e.target.value);
+                  clearErrors();
+                }}
               />
             </div>
 
-            {error && (
-              <p className="text-[11px] text-red-500 font-semibold px-1">{error}</p>
+            {visibleError && (
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-800"
+              >
+                <CircleAlert size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
+                <div>
+                  <p className="text-[12px] font-black leading-tight">{errorTitle}</p>
+                  <p className="mt-1 text-[11px] font-medium leading-relaxed">{visibleError}</p>
+                </div>
+              </div>
             )}
 
             <button

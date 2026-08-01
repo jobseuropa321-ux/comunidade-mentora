@@ -10,12 +10,21 @@
    ═══════════════════════════════════════════════════════════════ */
 import { supabase } from '@/integrations/supabase/client';
 
-export type SubStatus = 'active' | 'cancelled' | 'refunded' | 'not_found';
+export type SubStatus = 'active' | 'cancelled' | 'expired' | 'refunded' | 'not_found';
+
+/** Títulos curtos usados pelo alerta de bloqueio na tela de login. */
+export const SUB_DENIED_TITLE: Record<Exclude<SubStatus, 'active'>, string> = {
+  not_found: 'Acesso não liberado',
+  cancelled: 'Assinatura cancelada',
+  expired: 'Período de acesso encerrado',
+  refunded: 'Compra reembolsada',
+};
 
 /** Mensagens mostradas na tela de login quando o acesso é negado. */
 export const SUB_DENIED_MSG: Record<Exclude<SubStatus, 'active'>, string> = {
   not_found: 'Não encontramos uma compra com esse e-mail. Use o mesmo e-mail que você usou na compra.',
-  cancelled: 'Sua assinatura não está ativa no momento. Se isso for engano, fale com o suporte.',
+  cancelled: 'Sua assinatura foi cancelada e o acesso está encerrado. Se isso for engano, fale com o suporte.',
+  expired: 'O período contratado para este e-mail terminou. Para voltar a acessar, renove sua assinatura.',
   refunded: 'Sua compra foi reembolsada, então o acesso foi encerrado.',
 };
 
@@ -55,7 +64,8 @@ export const checkSubscription = async (email: string): Promise<SubStatus> => {
 
   const status = data as string;
   if (status === 'active') return 'active';
-  if (status === 'canceled' || status === 'expired') return 'cancelled';
+  if (status === 'canceled') return 'cancelled';
+  if (status === 'expired') return 'expired';
   if (status === 'refunded') return 'refunded';
   return 'not_found';
 };

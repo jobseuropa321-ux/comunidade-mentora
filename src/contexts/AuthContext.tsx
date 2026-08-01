@@ -35,6 +35,8 @@ interface AuthContextType {
   isExpert: boolean;
   isTester: boolean;
   loading: boolean;
+  accessDeniedStatus: Exclude<SubStatus, 'active'> | null;
+  clearAccessDeniedNotice: () => void;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: unknown }>;
   signIn: (email: string, password: string) => Promise<{ error: unknown }>;
   signOut: () => Promise<void>;
@@ -50,6 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isExpert, setIsExpert] = useState(false);
   const [isTester, setIsTester] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [accessDeniedStatus, setAccessDeniedStatus] = useState<Exclude<SubStatus, 'active'> | null>(null);
   const interactiveSignIn = useRef(false);
   const authCheckVersion = useRef(0);
 
@@ -87,6 +90,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (version !== authCheckVersion.current) return status;
 
     if (status !== 'active') {
+      // Mantém o motivo depois do signOut para que a rota /auth consiga
+      // explicar por que a sessão foi encerrada, inclusive ao recarregar o app.
+      setAccessDeniedStatus(status);
       await supabase.auth.signOut();
       if (version === authCheckVersion.current) {
         clearAuthState();
@@ -95,6 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return status;
     }
 
+    setAccessDeniedStatus(null);
     setSession(nextSession);
     setUser(nextSession.user);
     void fetchProfile(nextSession.user.id);
@@ -141,6 +148,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     const clean = email.trim().toLowerCase();
+    setAccessDeniedStatus(null);
     interactiveSignIn.current = true;
     setLoading(true);
 
@@ -165,6 +173,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     authCheckVersion.current += 1;
+    setAccessDeniedStatus(null);
     await supabase.auth.signOut();
     clearAuthState();
     setLoading(false);
@@ -179,7 +188,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider
-      value={{ user, session, profile, isExpert, isTester, loading, signUp, signIn, signOut, updateProfile }}
+      value={{
+        user,
+        session,
+        profile,
+        isExpert,
+        isTester,
+        loading,
+        accessDeniedStatus,
+        clearAccessDeniedNotice: () => setAccessDeniedStatus(null),
+        signUp,
+        signIn,
+        signOut,
+        updateProfile,
+      }}
     >
       {children}
     </AuthContext.Provider>
