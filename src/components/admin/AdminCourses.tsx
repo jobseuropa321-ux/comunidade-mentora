@@ -361,15 +361,14 @@ const ModuleEditor: React.FC<{
           </div>
         </div>
 
-        {/* Link do material/ferramenta (só faz sentido pra seção Ferramentas) */}
-        {draft.home_section === 'materiais' && (
-          <Field
-            label="Link do material ou ferramenta"
-            value={draft.material_url ?? ''}
-            onChange={v => setDraft({ ...draft, material_url: v || null })}
-            hint="Drive (https://...) abre em outra aba · link interno começando com / (ex.: /ferramentas/edicao-ia/index.html) abre como ferramenta — não altere sem saber"
-          />
-        )}
+        {/* Link do material/ferramenta. Na seção Ferramentas substitui as aulas;
+            em módulo com aulas vira o card "Ferramenta" junto delas (ex.: Caderno do Desafio). */}
+        <Field
+          label="Link do material ou ferramenta (opcional)"
+          value={draft.material_url ?? ''}
+          onChange={v => setDraft({ ...draft, material_url: v || null })}
+          hint="Drive (https://...) abre em outra aba · link interno começando com / (ex.: /ferramentas/edicao-ia/index.html) abre como ferramenta — não altere sem saber"
+        />
 
         {/* Publicado */}
         <div className="flex items-center justify-between bg-[#FFF7E6] rounded-xl p-3">

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Clock, ChevronDown, ChevronUp, Loader2, CheckCircle2, FolderOpen, ExternalLink, Download, Sparkles, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Play, Clock, ChevronDown, ChevronUp, Loader2, CheckCircle2, FolderOpen, ExternalLink, Download, Sparkles, ChevronRight, NotebookPen } from 'lucide-react';
 import { useModuleBySlug, useLessonProgress, type Lesson } from '@/hooks/useCourses';
 
 /* ── AULA ROW ── */
@@ -102,6 +102,9 @@ const ModuleDetail: React.FC = () => {
   // próprio app em vez do Drive — muda o CTA e abre na mesma aba (a ferramenta tem
   // botão "Sair" que volta pra /home).
   const isFerramenta = isMateriais && !!modulo.material_url?.startsWith('/');
+  // Módulo de aulas TAMBÉM pode ter uma ferramenta interna (ex.: Caderno do
+  // Desafio no Do Zero aos 10K) — aparece como card junto das aulas.
+  const ferramentaDoModulo = !isMateriais && modulo.material_url?.startsWith('/') ? modulo.material_url : null;
 
   return (
     <div className="pb-28 max-w-lg mx-auto">
@@ -208,6 +211,27 @@ const ModuleDetail: React.FC = () => {
                 {concluidas} de {totalAulas} aulas concluídas
               </p>
             </div>
+
+            {/* FERRAMENTA DO MÓDULO (ex.: Caderno do Desafio) */}
+            {ferramentaDoModulo && (
+              <div>
+                <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">Ferramenta</h3>
+                <a
+                  href={ferramentaDoModulo}
+                  className="flex items-center gap-3 rounded-2xl p-4 text-white"
+                  style={{ background: `linear-gradient(135deg, #BE0D3E, ${modulo.cor_acento})`, boxShadow: `0 8px 24px ${modulo.cor_acento}33` }}
+                >
+                  <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <NotebookPen size={20} className="text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-black leading-tight">Caderno do Desafio</p>
+                    <p className="text-[10px] text-white/75 mt-0.5">Marque suas metas e acompanhe seus 30 dias</p>
+                  </div>
+                  <ChevronRight size={16} className="text-white/80 shrink-0" />
+                </a>
+              </div>
+            )}
 
             {/* AULAS */}
             <div>
