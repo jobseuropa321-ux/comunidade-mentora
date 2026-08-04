@@ -138,27 +138,20 @@ const Home: React.FC = () => {
                 href="https://viral1min.com/pagb"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="min-w-[148px] h-[200px] rounded-[1rem] relative overflow-hidden shrink-0 shadow-[0_8px_20px_rgba(255,45,122,0.25)] cursor-pointer active:scale-[0.97] transition-transform block"
-                style={{
-                  background: 'linear-gradient(165deg, #1A0B14 0%, #46102F 60%, #FF2D7A 140%)',
-                  WebkitTapHighlightColor: 'transparent',
-                }}
+                className="min-w-[148px] h-[200px] rounded-[1rem] border border-[#BE0D3E]/20 relative overflow-hidden shrink-0 shadow-[0_8px_20px_rgba(255,45,122,0.12)] bg-[#FFF9EE] cursor-pointer active:scale-[0.97] transition-transform block"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
+                <img
+                  src="/covers/upsell-viral1min.webp"
+                  alt="Viral em 1 Minuto — deixe de ser invisível com o app"
+                  className="absolute inset-0 w-full h-full object-cover z-0"
+                  loading="lazy"
+                  decoding="async"
+                  draggable={false}
+                />
                 <span className="absolute top-2 right-2 z-10 text-[8px] font-black uppercase tracking-widest text-[#1A0B14] px-1.5 py-0.5 rounded-md bg-[#C8F000]">
                   Novo
                 </span>
-                <div className="absolute inset-0 flex flex-col justify-end p-3.5">
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-[#C8F000] mb-1">Método</p>
-                  <p className="text-[22px] font-black leading-[0.95] tracking-tight text-white">
-                    VIRAL<br />1 MIN
-                  </p>
-                  <p className="text-[9px] font-bold leading-snug text-white/75 mt-2">
-                    Viralize no Instagram com 1 minuto por dia
-                  </p>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-[#FF7FB1] mt-2.5">
-                    Conhecer →
-                  </p>
-                </div>
               </a>
               <div className="w-1 shrink-0" />
             </div>
