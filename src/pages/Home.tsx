@@ -149,9 +149,6 @@ const Home: React.FC = () => {
                   decoding="async"
                   draggable={false}
                 />
-                <span className="absolute top-2 right-2 z-10 text-[8px] font-black uppercase tracking-widest text-[#1A0B14] px-1.5 py-0.5 rounded-md bg-[#C8F000]">
-                  Novo
-                </span>
               </a>
               <div className="w-1 shrink-0" />
             </div>
