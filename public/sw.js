@@ -55,6 +55,15 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
 
+  /* Só interceptamos GETs do PRÓPRIO site. Requests pra outros domínios
+   * (API do Supabase, storage, Panda...) vão direto pra rede.
+   *
+   * Antes o handler de baixo tratava TUDO como asset cache-first — inclusive
+   * /rest/v1/lessons do Supabase. Resultado: a aula nova era criada no banco
+   * (POST passa), mas a lista voltava do cache congelada, como se o insert
+   * tivesse falhado. Foi o bug de 03/08 ("não consigo adicionar aulas"). */
+  if (new URL(request.url).origin !== self.location.origin) return;
+
   // Navegações (SPA): network-first; offline tenta a própria página no cache
   // (ex.: /ferramentas/edicao-ia/index.html precacheada) antes do shell do SPA.
   if (request.mode === "navigate") {
