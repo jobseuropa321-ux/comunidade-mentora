@@ -91,7 +91,7 @@ const WhatsAppIcon: React.FC = () => (
 );
 
 /* Link do convite do grupo do WhatsApp da comunidade. */
-const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/KKcYepLlOrkESx94H1z7jp?mode=gi_t';
+const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/JUUOZVbvbLh1vMvDTC4D7P?mode=gi_t';
 
 const BottomNav: React.FC = () => {
   const location = useLocation();
