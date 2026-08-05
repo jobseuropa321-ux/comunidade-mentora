@@ -24,8 +24,9 @@ const VTURB_VIDEO_ID = '6a6901b622215083f60b5679';
 const BAR_LINE_1 = 'APRENDA NESSA AULA COMO VIRALIZAR';
 const BAR_LINE_2 = 'NO FINAL TEMOS UMA SURPRESA...';
 /** Botão que aparece depois da trava. */
-const CTA_TEXT = 'Quero meu acesso agora';
-const CTA_HREF = 'https://viral1min.com/pagb';
+const CTA_TEXT = 'Quero meu acesso com desconto agora';
+/** Checkout da Hubla (vai direto pro pagamento, sem passar pela página de vendas). */
+const CTA_HREF = 'https://pay.hub.la/soO8SrabzW3POhfXgl16';
 /* ───────────────────────────────────────────────────────────────────── */
 
 const VTURB_SCRIPT_SRC = `https://scripts.converteai.net/${VTURB_ACCOUNT_ID}/players/${VTURB_PLAYER_ID}/v4/player.js`;
