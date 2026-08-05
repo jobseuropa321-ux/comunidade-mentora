@@ -9,6 +9,13 @@ import BannerCarousel from '@/components/BannerCarousel';
 // Opcional: `href` pra deixar o banner clicável.
 const HOME_BANNERS = [
   { src: '/covers/banner-1.webp', alt: 'Comunidade Digital — do atendimento ao digital' },
+  // Upsell do Viral em 1 Minuto: o "clique aqui" da arte precisa do href
+  // (o carrossel envolve o slide num <a> quando ele existe).
+  {
+    src: '/covers/banner-viral1min.webp',
+    alt: 'Viral em 1 Minuto — deixe de ser invisível',
+    href: 'https://viral1min.com/pagb',
+  },
   { src: '/covers/banner-2.webp', alt: 'Comunidade Digital — nossa comunidade' },
 ];
 
