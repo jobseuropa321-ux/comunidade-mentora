@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export interface BannerSlide {
   src: string;
@@ -43,6 +44,14 @@ const BannerImg: React.FC<{
     />
   </picture>
 );
+
+
+/* Envolve o slide no link certo: caminho começando com "/" é rota do app
+   (navega sem recarregar); o resto é link externo e abre em outra aba. */
+const BannerLink: React.FC<{ href: string; className?: string; children: React.ReactNode }> = ({ href, className, children }) =>
+  href.startsWith('/')
+    ? <Link to={href} className={className}>{children}</Link>
+    : <a href={href} target="_blank" rel="noopener noreferrer" className={className}>{children}</a>;
 
 const BannerCarousel: React.FC<Props> = ({ banners: rawBanners, autoRotateMs = 6000, height = 180, heightDesktop }) => {
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -106,7 +115,7 @@ const BannerCarousel: React.FC<Props> = ({ banners: rawBanners, autoRotateMs = 6
 
   if (banners.length === 1) {
     const b = banners[0];
-    const Wrapper = b.href ? ({ children }: { children: React.ReactNode }) => <a href={b.href} target="_blank" rel="noopener noreferrer">{children}</a> : React.Fragment;
+    const Wrapper = b.href ? ({ children }: { children: React.ReactNode }) => <BannerLink href={b.href!}>{children}</BannerLink> : React.Fragment;
     return (
       <div className="w-full overflow-hidden banner-carousel-container">
         <Wrapper>
@@ -133,9 +142,9 @@ const BannerCarousel: React.FC<Props> = ({ banners: rawBanners, autoRotateMs = 6
         {banners.map((b, i) => (
           <div key={b.src} className="snap-start shrink-0 w-full">
             {b.href ? (
-              <a href={b.href} target="_blank" rel="noopener noreferrer" className="block">
+              <BannerLink href={b.href} className="block">
                 <BannerImg b={b} height={height} heightDesktop={heightDesktop} loading={i === 0 ? 'eager' : 'lazy'} onError={handleImgError} />
-              </a>
+              </BannerLink>
             ) : (
               <BannerImg b={b} height={height} heightDesktop={heightDesktop} loading={i === 0 ? 'eager' : 'lazy'} onError={handleImgError} />
             )}
