@@ -14,6 +14,12 @@ const AulaRow: React.FC<{
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
+  // Aula que abre uma PÁGINA do app em vez do player: `video_url` guarda um
+  // caminho interno (começa com "/"), ex.: a oferta do Viral 1 Min.
+  // Sem isso o AulaDetail tentaria tocar o caminho num iframe.
+  const paginaInterna = aula.video_url?.startsWith('/') ? aula.video_url : null;
+  const abrirAula = () => navigate(paginaInterna ?? `/modulo/${moduleSlug}/aula/${index + 1}`);
+
   return (
     <div className="rounded-2xl border border-[#BE0D3E]/15 bg-[#FFFFFF] overflow-hidden transition-all">
       <button
@@ -54,7 +60,7 @@ const AulaRow: React.FC<{
             <p className="text-[11px] text-[#5B4041]/70 leading-relaxed mb-3">{aula.descricao}</p>
           )}
           <button
-            onClick={() => navigate(`/modulo/${moduleSlug}/aula/${index + 1}`)}
+            onClick={abrirAula}
             className="flex items-center gap-2 py-2.5 px-4 rounded-xl text-[11px] font-black text-white w-full justify-center"
             style={{ background: `linear-gradient(135deg, #BE0D3E, ${acento})`, boxShadow: `0 0 15px ${acento}40` }}
           >

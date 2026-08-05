@@ -33,6 +33,7 @@ const Biblioteca    = lazy(() => import("@/pages/Biblioteca"));
 const ModuleDetail  = lazy(() => import("@/pages/ModuleDetail"));
 const AulaDetail    = lazy(() => import("@/pages/AulaDetail"));
 const Estudio       = lazy(() => import("@/pages/Estudio"));
+const OfertaViral1Min = lazy(() => import("@/pages/OfertaViral1Min"));
 const NotFound      = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -81,6 +82,9 @@ const AppRoutes = () => (
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/estudio" element={<ProtectedRoute><Estudio /></ProtectedRoute>} />
       <Route path="/estudio/:cardId" element={<ProtectedRoute><Estudio /></ProtectedRoute>} />
+      {/* Oferta do Viral 1 Min — aberta pela "aula" do módulo viral-em-1-minuto.
+          Fora do AppLayout: é uma VSL, ocupa a tela toda (tem botão de voltar). */}
+      <Route path="/oferta/viral-1-min" element={<ProtectedRoute><OfertaViral1Min /></ProtectedRoute>} />
 
       <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
         <Route index element={<Navigate to="home" replace />} />

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Loader2, Image as ImageIcon } from 'lucide-react';
 import { useAllModules, type Module } from '@/hooks/useCourses';
 import BannerCarousel from '@/components/BannerCarousel';
@@ -130,9 +130,10 @@ const Home: React.FC = () => {
             </section>
           )}
 
-          {/* Ferramentas avançadas — upsell fixo do Viral 1 Min (produto irmão).
-              Card hardcoded de propósito: não é módulo do banco; abre a página
-              de vendas em outra aba. Identidade neon do produto (rosa/lima). */}
+          {/* Ferramentas avançadas — upsell do Viral 1 Min (produto irmão).
+              O card é fixo aqui (o módulo tem home_section NULL de propósito,
+              pra não cair junto das fileiras normais). Abre o módulo, que tem
+              a aula levando pra oferta com a VSL — tudo dentro do app. */}
           <section className="mb-4">
             <div className="px-4 mb-3">
               <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">Ferramentas avançadas</h2>
@@ -141,10 +142,8 @@ const Home: React.FC = () => {
               className="flex gap-3 overflow-x-auto pb-2 px-4"
               style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
             >
-              <a
-                href="https://viral1min.com/pagb"
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                to="/modulo/viral-em-1-minuto"
                 className="min-w-[148px] h-[200px] rounded-[1rem] border border-[#BE0D3E]/20 relative overflow-hidden shrink-0 shadow-[0_8px_20px_rgba(255,45,122,0.12)] bg-[#FFF9EE] cursor-pointer active:scale-[0.97] transition-transform block"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
@@ -156,7 +155,7 @@ const Home: React.FC = () => {
                   decoding="async"
                   draggable={false}
                 />
-              </a>
+              </Link>
               <div className="w-1 shrink-0" />
             </div>
           </section>

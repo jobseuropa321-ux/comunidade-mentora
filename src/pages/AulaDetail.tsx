@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft, Play, ChevronLeft, ChevronRight, CheckCircle2, Clock, List, Download, FileText, BookOpen, X, Loader2 } from 'lucide-react';
 import { useLesson, useLessonProgress } from '@/hooks/useCourses';
 import LessonForum from '@/components/LessonForum';
@@ -56,6 +56,13 @@ const AulaDetail: React.FC = () => {
         <button onClick={() => navigate('/home')} className="text-[#BE0D3E] text-sm font-bold">Voltar ao início</button>
       </div>
     );
+  }
+
+  // Aula que é uma PÁGINA do app (video_url = caminho interno, ex. a oferta do
+  // Viral 1 Min): quem chega por link direto vai pra página em vez de ver o
+  // caminho virar src de iframe. O ModuleDetail já navega direto pra lá.
+  if (data.lesson.video_url?.startsWith('/')) {
+    return <Navigate to={data.lesson.video_url} replace />;
   }
 
   const { module: modulo, lessons, lesson: aula } = data;
