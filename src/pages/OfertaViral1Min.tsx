@@ -104,9 +104,28 @@ const DelayGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   useEffect(() => {
     if (unlocked) return;
-    const restante = Math.max(0, delayMs - (Date.now() - readStart()));
-    const t = window.setTimeout(() => setUnlocked(true), restante);
-    return () => window.clearTimeout(t);
+
+    // Só o setTimeout não basta no celular: quando a pessoa troca de app, o
+    // iOS/Android congela os timers da aba e o botão nunca apareceria (ela
+    // ficaria presa, já que a página não tem botão de voltar). Por isso a
+    // conferência é sempre pelo RELÓGIO, em 3 gatilhos:
+    //   1. timeout no tempo exato (caso normal, com a tela aberta)
+    //   2. ao voltar pro app (visibilitychange/focus) — cobre o congelamento
+    //   3. tique de 1s como rede de segurança
+    const jaPassou = () => Date.now() - readStart() >= delayMs;
+    const conferir = () => { if (jaPassou()) setUnlocked(true); };
+
+    const timeout = window.setTimeout(conferir, Math.max(0, delayMs - (Date.now() - readStart())));
+    const intervalo = window.setInterval(conferir, 1000);
+    document.addEventListener('visibilitychange', conferir);
+    window.addEventListener('focus', conferir);
+
+    return () => {
+      window.clearTimeout(timeout);
+      window.clearInterval(intervalo);
+      document.removeEventListener('visibilitychange', conferir);
+      window.removeEventListener('focus', conferir);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unlocked]);
 
