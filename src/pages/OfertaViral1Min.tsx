@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 
 /* ══════════════════════════════════════════════════════════════════════
    OFERTA · VIRAL EM 1 MINUTO — primeira seção da /pagb dentro do app.
@@ -22,9 +20,9 @@ const DELAY_KEY = 'vsl_first_visit_ts';
 const VTURB_ACCOUNT_ID = '30c1fd3f-8014-4648-b3ff-9d8977fda8b8';
 const VTURB_PLAYER_ID = '6a690216565ffb31f360a35b';
 const VTURB_VIDEO_ID = '6a6901b622215083f60b5679';
-/** Textos da faixa (a data do dia entra sozinha na 1ª linha). */
-const BAR_LINE_1 = 'ESSE VÍDEO SAI DO AR HOJE,';
-const BAR_LINE_2 = 'NO FINAL REVELAMOS O SEGREDO PARA VIRALIZAR';
+/** Textos da faixa (2 linhas, cada uma numa linha só). */
+const BAR_LINE_1 = 'APRENDA NESSA AULA COMO VIRALIZAR';
+const BAR_LINE_2 = 'NO FINAL TEMOS UMA SURPRESA...';
 /** Botão que aparece depois da trava. */
 const CTA_TEXT = 'Quero meu acesso agora';
 const CTA_HREF = 'https://viral1min.com/pagb';
@@ -117,10 +115,8 @@ const DelayGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const OfertaViral1Min: React.FC = () => {
-  const navigate = useNavigate();
 
 
-  const hoje = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
   return (
     <div className="oferta-v1m min-h-screen">
@@ -196,18 +192,12 @@ const OfertaViral1Min: React.FC = () => {
         }
       `}</style>
 
-      {/* Voltar — a aula é aberta de dentro do app, então precisa de saída. */}
-      <button
-        onClick={() => navigate(-1)}
-        aria-label="Voltar"
-        className="fixed top-4 left-4 z-50 w-9 h-9 rounded-full flex items-center justify-center bg-white/85 backdrop-blur-md border border-black/5 shadow-sm active:scale-95 transition-transform"
-      >
-        <ArrowLeft size={16} className="text-[#1A1A1A]" />
-      </button>
+      {/* Sem botão de voltar: decisão do produto — a aula prende a atenção
+          até o fim (o botão da oferta é a saída). */}
 
       {/* 1) FAIXA */}
       <div className="urgency-bar">
-        <span>{BAR_LINE_1} {hoje}</span>
+        <span>{BAR_LINE_1}</span>
         <span>{BAR_LINE_2}</span>
       </div>
 
