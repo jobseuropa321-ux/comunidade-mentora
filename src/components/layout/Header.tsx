@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, User, Kanban, TrendingUp, X, BellOff, MessageCircle, MessageSquareText, Heart } from 'lucide-react';
+import { Bell, User, Kanban, TrendingUp, X, BellOff, MessageCircle, MessageSquareText, Heart, Library } from 'lucide-react';
 import { usePlan } from '@/contexts/PlanContext';
 import UpgradeModal from '@/components/UpgradeModal';
 import { useNotifications, type NotificationItem } from '@/hooks/useNotifications';
@@ -101,8 +101,17 @@ const Header: React.FC = () => {
             />
           </div>
 
-          {/* Direita: notificações */}
+          {/* Direita: biblioteca + notificações */}
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/biblioteca')}
+              className="relative shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-[#BE0D3E] bg-white border border-[#BE0D3E]/15 shadow-[0_5px_14px_-4px_rgba(190,13,62,0.22)] hover:scale-105 active:scale-95 transition-transform"
+              aria-label="Abrir Biblioteca"
+              title="Biblioteca"
+            >
+              <Library size={18} strokeWidth={1.9} />
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#F6B43A] ring-2 ring-white" aria-hidden="true" />
+            </button>
             <button
               onClick={openNotifs}
               className="relative shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white shadow-[0_5px_14px_-4px_rgba(190,13,62,0.35)] hover:scale-105 active:scale-95 transition-transform"

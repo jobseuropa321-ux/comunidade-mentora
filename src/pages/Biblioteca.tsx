@@ -2,11 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, Library as LibraryIcon, Copy, Check,
-  Pencil, Trash2, X, Save, BookOpen,
+  Pencil, Trash2, X, Save, BookOpen, Search, Clock3,
+  ChevronRight, Layers3, Sparkles,
 } from 'lucide-react';
 import { supabase, SUPABASE_READY } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { AGENTS } from '@/data/agents';
 
 /* ─────────────────────────────────────────────
    TEXTOS DA TELA (toda a "escrita" daqui)
@@ -14,9 +16,9 @@ import { useToast } from '@/hooks/use-toast';
 const TXT = {
   back: 'Voltar',
   title: 'Biblioteca',
-  subtitle: 'Todos os roteiros salvos, agrupados por modelo',
+  subtitle: 'Seu acervo criativo, organizado por etapa',
   empty: 'Biblioteca vazia',
-  empty_desc: 'Gere um roteiro em algum modelo viral e toque em Salvar pra guardar aqui.',
+  empty_desc: 'Os conteúdos criados pelos agentes aparecem aqui assim que forem salvos.',
   saved_one: 'salvo',
   saved_many: 'salvos',
   model_empty: 'Nenhum roteiro salvo nesse modelo ainda.',
@@ -35,6 +37,9 @@ const TXT = {
   toast_delete_error: 'Erro ao deletar',
   toast_removed: 'Removido da biblioteca',
   toast_updated: 'Roteiro atualizado',
+  load_error: 'Não foi possível carregar a Biblioteca',
+  search_placeholder: 'Buscar por agente ou etapa...',
+  no_results: 'Nenhum conteúdo encontrado nessa busca.',
 };
 
 interface SavedItem {
@@ -59,96 +64,229 @@ const formatDate = (ts: string) => {
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
 
+interface LibraryGroup {
+  slug: string;
+  name: string;
+  count: number;
+  latest: string;
+}
+
+const LIBRARY_SECTIONS = [
+  {
+    id: 'curso',
+    title: 'Construção do curso',
+    description: 'Estrutura, aulas e material de apoio',
+    slugs: ['agente-1', 'agente-2', 'agente-3'],
+    Icon: Layers3,
+  },
+  {
+    id: 'estrategia',
+    title: 'Estratégia e oferta',
+    description: 'Pesquisa, nome e promessa do produto',
+    slugs: ['agente-4', 'agente-5', 'agente-6'],
+    Icon: Sparkles,
+  },
+  {
+    id: 'conteudo',
+    title: 'Conteúdo e divulgação',
+    description: 'Roteiros, anúncios e formatos virais',
+    slugs: ['agente-7', 'agente-8', 'agente-9', 'agente-10', 'agente-11', 'agente-12'],
+    Icon: BookOpen,
+  },
+];
+
 /* ─────────────────────────────────────────────
-   LISTA DE MODELOS (com contagens)
+   ACERVO ORGANIZADO POR ETAPA
 ───────────────────────────────────────────── */
 const ModelsOverview: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [groups, setGroups] = useState<{ slug: string; name: string; count: number }[]>([]);
+  const { toast } = useToast();
+  const [groups, setGroups] = useState<LibraryGroup[]>([]);
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     if (!user) return;
-    // Sem Supabase configurado ainda → biblioteca vazia (sem chamada de rede)
     if (!SUPABASE_READY) {
       setLoading(false);
       return;
     }
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('saved_viral_outputs')
-      .select('model_slug, model_name')
+      .select('model_slug, model_name, created_at')
       .eq('user_id', user.id);
 
-    if (data) {
-      const map = new Map<string, { name: string; count: number }>();
-      for (const row of data) {
-        const existing = map.get(row.model_slug);
-        map.set(row.model_slug, {
-          name: row.model_name,
-          count: (existing?.count ?? 0) + 1,
-        });
-      }
-      const list = Array.from(map.entries()).map(([slug, v]) => ({ slug, name: v.name, count: v.count }));
-      list.sort((a, b) => b.count - a.count);
-      setGroups(list);
+    if (error) {
+      toast({ title: TXT.load_error, description: error.message, variant: 'destructive' });
+      setLoading(false);
+      return;
     }
+
+    const map = new Map<string, LibraryGroup>();
+    for (const row of data ?? []) {
+      const existing = map.get(row.model_slug);
+      const currentAgent = AGENTS.find(agent => agent.slug === row.model_slug);
+      const latest = existing && new Date(existing.latest) > new Date(row.created_at)
+        ? existing.latest
+        : row.created_at;
+      map.set(row.model_slug, {
+        slug: row.model_slug,
+        name: currentAgent?.name ?? row.model_name,
+        count: (existing?.count ?? 0) + 1,
+        latest,
+      });
+    }
+
+    setGroups(Array.from(map.values()));
     setLoading(false);
-  }, [user]);
+  }, [toast, user]);
 
   useEffect(() => { load(); }, [load]);
 
+  const normalizedSearch = search.trim().toLocaleLowerCase('pt-BR');
+  const filteredGroups = groups.filter(group =>
+    !normalizedSearch
+    || group.name.toLocaleLowerCase('pt-BR').includes(normalizedSearch)
+    || LIBRARY_SECTIONS.some(section =>
+      section.slugs.includes(group.slug)
+      && section.title.toLocaleLowerCase('pt-BR').includes(normalizedSearch)
+    )
+  );
+  const visibleSections = LIBRARY_SECTIONS
+    .map(section => ({
+      ...section,
+      groups: section.slugs
+        .map(slug => filteredGroups.find(group => group.slug === slug))
+        .filter((group): group is LibraryGroup => !!group),
+    }))
+    .filter(section => section.groups.length > 0);
+  const unclassified = filteredGroups.filter(group =>
+    !LIBRARY_SECTIONS.some(section => section.slugs.includes(group.slug))
+  );
+  const totalItems = groups.reduce((sum, group) => sum + group.count, 0);
+
   return (
     <div className="pb-28 pt-1">
-      <div className="pl-2 pr-4 pt-3 mb-4 flex items-center gap-0.5">
-        <button
-          onClick={() => navigate('/chat')}
-          className="w-7 h-9 -ml-1 flex items-center justify-start text-[#5B4041]"
-          style={{ WebkitTapHighlightColor: 'transparent' }}
-          aria-label={TXT.back}
-        >
-          <ArrowLeft size={18} />
-        </button>
-        <div className="flex-1">
-          <h2 className="mb-2 flex items-center gap-2">
-            <LibraryIcon size={20} className="text-[#BE0D3E] shrink-0" />
-            <span className="text-[26px] leading-none font-black text-transparent bg-clip-text bg-gradient-to-r from-[#BE0D3E] to-[#E06B85] tracking-tighter">
-              {TXT.title}
-            </span>
-          </h2>
-          <p className="text-[#5B4041] text-[11px] font-light tracking-[0.15em] uppercase opacity-80 leading-tight">{TXT.subtitle}</p>
+      <section className="mx-4 mt-3 overflow-hidden rounded-[26px] border border-white/70 bg-gradient-to-br from-[#94002D] via-[#BE0D3E] to-[#D94368] p-5 text-white shadow-[0_18px_45px_-20px_rgba(148,0,45,0.65)]">
+        <div className="flex items-start gap-3">
+          <button
+            onClick={() => navigate('/chat')}
+            className="-ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/12 text-white backdrop-blur"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+            aria-label={TXT.back}
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 flex items-center gap-2">
+              <LibraryIcon size={18} className="shrink-0 text-[#FFD27A]" />
+              <span className="text-[9px] font-black uppercase tracking-[0.22em] text-white/75">Seu acervo criativo</span>
+            </div>
+            <h2 className="text-[30px] font-black leading-none tracking-tight text-white">{TXT.title}</h2>
+            <p className="mt-2 text-[11px] leading-relaxed text-white/75">{TXT.subtitle}</p>
+          </div>
+          {!loading && totalItems > 0 && (
+            <div className="shrink-0 rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-center backdrop-blur">
+              <p className="text-[22px] font-black leading-none">{totalItems}</p>
+              <p className="mt-1 text-[8px] font-bold uppercase tracking-widest text-white/70">itens</p>
+            </div>
+          )}
         </div>
-      </div>
+      </section>
+
+      {!loading && groups.length > 0 && (
+        <div className="relative mx-4 mt-4">
+          <Search size={15} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#BE0D3E]/60" />
+          <input
+            type="search"
+            value={search}
+            onChange={event => setSearch(event.target.value)}
+            placeholder={TXT.search_placeholder}
+            className="h-11 w-full rounded-2xl border border-[#BE0D3E]/15 bg-white pl-10 pr-4 text-[12px] text-[#1E1B11] shadow-[0_8px_24px_-16px_rgba(148,0,45,0.3)] placeholder:text-[#5B4041]/45 focus:border-[#BE0D3E]/45"
+          />
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-16">
           <Loader2 size={20} className="animate-spin text-[#BE0D3E]" />
         </div>
       ) : groups.length === 0 ? (
-        <div className="mx-4 bg-white border border-[#BE0D3E]/20 rounded-2xl p-6 text-center">
-          <BookOpen size={28} className="text-[#BE0D3E]/50 mx-auto mb-2" />
-          <p className="text-[#1E1B11] font-bold text-[13px] mb-1">{TXT.empty}</p>
-          <p className="text-[#5B4041] text-[11px] leading-tight">
-            {TXT.empty_desc}
-          </p>
+        <div className="mx-4 mt-4 rounded-3xl border border-[#BE0D3E]/15 bg-white p-7 text-center shadow-[0_10px_28px_-20px_rgba(148,0,45,0.35)]">
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F6D6DC]/70">
+            <BookOpen size={26} className="text-[#BE0D3E]/65" />
+          </div>
+          <p className="mb-1 text-[15px] font-bold text-[#1E1B11]">{TXT.empty}</p>
+          <p className="text-[11px] leading-relaxed text-[#5B4041]/75">{TXT.empty_desc}</p>
         </div>
+      ) : visibleSections.length === 0 && unclassified.length === 0 ? (
+        <p className="px-4 py-12 text-center text-[12px] text-[#5B4041]/65">{TXT.no_results}</p>
       ) : (
-        <div className="px-4 grid grid-cols-2 gap-3">
-          {groups.map(g => (
-            <button
-              key={g.slug}
-              onClick={() => navigate(`/biblioteca/${g.slug}`)}
-              className="bg-white border border-[#BE0D3E]/15 rounded-2xl p-4 text-left shadow-[0_6px_18px_rgba(190,13,62,0.08)] hover:border-[#BE0D3E]/40 active:scale-[0.98] transition-all"
-              style={{ WebkitTapHighlightColor: 'transparent' }}
-            >
-              <p className="text-[13px] font-black text-[#1E1B11] leading-tight mb-2 line-clamp-2 min-h-[32px]">{g.name}</p>
-              <div className="flex items-baseline gap-1">
-                <span className="text-[28px] font-black text-[#BE0D3E] leading-none">{g.count}</span>
-                <span className="text-[10px] text-[#5B4041]">{g.count === 1 ? TXT.saved_one : TXT.saved_many}</span>
+        <div className="mt-5 space-y-6 px-4">
+          {visibleSections.map(section => (
+            <section key={section.id}>
+              <div className="mb-2.5 flex items-center gap-2.5 px-1">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#F6D6DC]/70 text-[#BE0D3E]">
+                  <section.Icon size={15} />
+                </div>
+                <div>
+                  <h3 className="text-[14px] font-black leading-tight text-[#1E1B11]">{section.title}</h3>
+                  <p className="text-[9px] text-[#5B4041]/60">{section.description}</p>
+                </div>
               </div>
-            </button>
+
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                {section.groups.map(group => {
+                  const AgentIcon = AGENTS.find(agent => agent.slug === group.slug)?.icon ?? BookOpen;
+                  return (
+                    <button
+                      key={group.slug}
+                      onClick={() => navigate(`/biblioteca/${group.slug}`)}
+                      className="group flex w-full items-center gap-3 rounded-2xl border border-[#BE0D3E]/12 bg-white p-3.5 text-left shadow-[0_8px_22px_-18px_rgba(148,0,45,0.38)] transition-all hover:border-[#BE0D3E]/35 active:scale-[0.99]"
+                      style={{ WebkitTapHighlightColor: 'transparent' }}
+                    >
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FFF0F3] to-[#F6D6DC] text-[#BE0D3E]">
+                        <AgentIcon size={19} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-[12px] font-black text-[#1E1B11]">{group.name}</p>
+                        <div className="mt-1 flex items-center gap-2 text-[9px] text-[#5B4041]/60">
+                          <span className="font-bold text-[#BE0D3E]">
+                            {group.count} {group.count === 1 ? TXT.saved_one : TXT.saved_many}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock3 size={9} />
+                            {formatDate(group.latest)}
+                          </span>
+                        </div>
+                      </div>
+                      <ChevronRight size={16} className="shrink-0 text-[#BE0D3E]/35 transition-transform group-hover:translate-x-0.5" />
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
           ))}
+
+          {unclassified.length > 0 && (
+            <section>
+              <h3 className="mb-2.5 px-1 text-[14px] font-black text-[#1E1B11]">Outros conteúdos</h3>
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                {unclassified.map(group => (
+                  <button
+                    key={group.slug}
+                    onClick={() => navigate(`/biblioteca/${group.slug}`)}
+                    className="flex items-center justify-between rounded-2xl border border-[#BE0D3E]/12 bg-white p-4 text-left"
+                  >
+                    <span className="text-[12px] font-black text-[#1E1B11]">{group.name}</span>
+                    <span className="text-[11px] font-bold text-[#BE0D3E]">{group.count}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       )}
     </div>
@@ -182,15 +320,20 @@ const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
       return;
     }
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('saved_viral_outputs')
       .select('*')
       .eq('user_id', user.id)
       .eq('model_slug', modelSlug)
       .order('created_at', { ascending: false });
+    if (error) {
+      toast({ title: TXT.load_error, description: error.message, variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
     if (data) setItems(data as SavedItem[]);
     setLoading(false);
-  }, [user, modelSlug]);
+  }, [modelSlug, toast, user]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -260,7 +403,7 @@ const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
   const prettySlug = modelSlug
     ? modelSlug.replace(/-/g, ' ').replace(/(^|\s)\S/g, c => c.toUpperCase())
     : TXT.title;
-  const modelName = items[0]?.model_name ?? prettySlug;
+  const modelName = AGENTS.find(agent => agent.slug === modelSlug)?.name ?? items[0]?.model_name ?? prettySlug;
 
   return (
     <div className="pb-28 pt-1">

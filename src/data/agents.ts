@@ -27,7 +27,7 @@
 import {
   Blocks, Clapperboard, BookOpen, BarChart3,
   Tag, Megaphone, Anchor, Mic, GalleryHorizontalEnd,
-  Target, GraduationCap,
+  Target, GraduationCap, ScanFace,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -46,6 +46,7 @@ export const CATEGORIES = [
   { id: 'ganchos',   label: 'Ganchos',    color: 'text-[#E8226C]', dot: 'bg-[#FF2D7A]' },
   { id: 'narrado',   label: 'Narrado',    color: 'text-[#6E8B00]', dot: 'bg-[#C8F000]' },
   { id: 'carrossel', label: 'Carrossel',  color: 'text-[#E8226C]', dot: 'bg-[#FF2D7A]' },
+  { id: 'perfil',    label: 'Perfil',     color: 'text-[#B0004E]', dot: 'bg-[#FF2D7A]' },
 ];
 
 /* Gradientes prontos pros palcos dos robôs — família de cores da marca. */
@@ -63,6 +64,7 @@ export const GRAD = {
   viralPink: 'linear-gradient(150deg, #C8005A 0%, #FF2D7A 55%, #FF8FBE 100%)',
   viralLime: 'linear-gradient(150deg, #7FA000 0%, #C8F000 60%, #E4FF7A 100%)',
   viralMix:  'linear-gradient(150deg, #FF2D7A 0%, #FF6BA5 45%, #C8F000 100%)',
+  viralScan: 'linear-gradient(155deg, #5C0028 0%, #B0004E 38%, #FF2D7A 78%, #C8F000 128%)',
 };
 
 export interface Agent {
@@ -74,8 +76,14 @@ export interface Agent {
   gradient: string;
   /** true = agente BÔNUS (viralização) — recebe destaque lime/rosa no Estúdio. */
   bonus?: boolean;
-  /** Mensagem inicial customizada da IA. Se não tiver, usa a default genérica. */
+  /** Mensagem inicial customizada da IA. Se não tiver, usa a default genérica.  */
   openingMessage?: string;
+  /**
+   * Agente-FERRAMENTA: em vez do chat, abre uma tela própria.
+   * 'analisar-perfil' → <AnalisarPerfilAgent /> (upload de print + visão).
+   * Agente com `tool` NÃO usa `viral_models` (o prompt mora na edge function).
+   */
+  tool?: 'analisar-perfil';
 }
 
 /* ── OS AGENTES — a esteira do curso, na ordem ── */
@@ -187,6 +195,16 @@ export const AGENTS: Agent[] = [
     gradient: GRAD.viralMix,
     bonus: true,
     openingMessage: 'Olá! Eu sou o **Carrossel Viral** 🎠\n\nEu monto carrosséis estratégicos, slide a slide.',
+  },
+  {
+    slug: 'agente-12',
+    name: 'Analisar Meu Perfil',
+    desc: 'Manda a print do seu perfil e ele turbina foto, nome e bio.',
+    category: 'perfil',
+    icon: ScanFace,
+    gradient: GRAD.viralScan,
+    bonus: true,
+    tool: 'analisar-perfil',
   },
 ];
 

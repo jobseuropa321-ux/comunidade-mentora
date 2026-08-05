@@ -305,6 +305,7 @@ Siga o **PROMPTS_DOS_AGENTES.md** — é 1 UPDATE por agente.
 | **Cota diária** de conversas (50) | o `CASE` dentro de `consume_ai_quota` (SQL) — sem deploy |
 | Dar **cota ilimitada** a alguém | `INSERT INTO user_roles (user_id, role) VALUES ('<uuid>', 'expert');` |
 | Tamanho máx da resposta (6000 tokens) | `MAX_COMPLETION_TOKENS` na function → redeploy |
+| O agente **Analisar Meu Perfil** (agente-12) | não usa `viral_models` nem `chat-viral` — ver **BACKEND_SETUP-analisar-perfil.md** |
 
 ## Variáveis do frontend (.env)
 

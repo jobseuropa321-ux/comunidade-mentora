@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, Send, RotateCcw, Mic,
   Library as LibraryIcon, Save, Check, Loader2, X,
-  Blocks, Layers, ChevronRight, Sparkles, Zap,
+  Blocks, Layers, ChevronRight, Sparkles, Zap, CircleHelp,
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { supabase, SUPABASE_READY } from '@/integrations/supabase/client';
@@ -13,6 +13,8 @@ import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { readFnError } from '@/lib/functionsError';
 import { AGENTS, CATEGORIES, defaultOpening, type Agent } from '@/data/agents';
 import VoiceField from '@/components/VoiceField';
+import { Robot, SceneFX, ACCENT, type RobotKind } from '@/components/estudio/AgentRobot';
+import AnalisarPerfilAgent from '@/components/estudio/AnalisarPerfilAgent';
 
 /* ─────────────────────────────────────────────
    TEXTOS DA TELA (toda a "escrita" daqui)
@@ -20,12 +22,19 @@ import VoiceField from '@/components/VoiceField';
 const TXT = {
   grid_title: 'Estúdio de Criação',
   grid_subtitle: 'Crie seu curso em minutos usando IA. Um agente pra cada etapa — e bônus de viralização.',
-  your_models: 'Seus Roteiros',
+  your_models: 'Seus Cursos',
   library: 'Biblioteca',
   create_btn: 'Começar',
   agent_word: 'Agente',
   saved: 'Salvo',
   save: 'Salvar',
+  saving_lesson: 'Salvando aula...',
+  retry_save: 'Tentar salvar',
+  answer_required: 'Sua resposta é necessária',
+  answer_below: 'Responda no campo abaixo',
+  next_lesson: 'Criar próxima aula',
+  next_lesson_hint: 'Ou digite “próxima” no campo de mensagem.',
+  lesson_saved: 'Aula salva automaticamente ✨',
   placeholder: 'Descreva seu nicho e tema...',
   transcribing: 'Transcrevendo áudio...',
   recording: 'Gravando...',
@@ -38,7 +47,7 @@ const TXT = {
   save_modal_placeholder: 'Ex: Esqueleto do curso de confeitaria',
   save_course_label: 'Nome do curso',
   exit_title: 'Salvar antes de sair?',
-  exit_desc: 'Você gerou um esqueleto que ainda não foi salvo. Quer guardar na Biblioteca antes de sair?',
+  exit_desc: 'Você gerou um conteúdo que ainda não foi salvo. Quer guardar na Biblioteca antes de sair?',
   exit_discard: 'Sair sem salvar',
   exit_save: 'Salvar e sair',
   cancel: 'Cancelar',
@@ -71,339 +80,18 @@ const newSessionId = () =>
     ? crypto.randomUUID()
     : `s-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
+const countLessonsInSkeleton = (content: string) => {
+  const lessonNumbers = new Set<string>();
+  for (const match of content.matchAll(/\baula\s*(\d{1,3}(?:[.-]\d{1,3})?)\b/gi)) {
+    lessonNumbers.add(match[1]);
+  }
+  return Math.max(lessonNumbers.size, 1);
+};
+
 /* ═════════════════════════════════════════════
-   ESTÚDIO DE CRIAÇÃO — hub dos 4 agentes
-   (robôs SVG personalizados + cenas animadas)
+   ESTÚDIO DE CRIAÇÃO — hub dos agentes
+   (robôs SVG personalizados + cenas animadas: ver AgentRobot.tsx)
 ═════════════════════════════════════════════ */
-type RobotKind =
-  | 'estrutura' | 'roteiro' | 'apostila' | 'pesquisa'
-  | 'nome' | 'promessa' | 'ganchos' | 'narrado' | 'carrossel'
-  | 'anuncioPS' | 'anuncioAula';
-
-const ACCENT: Record<RobotKind, { main: string; deep: string; soft: string; cta: string }> = {
-  estrutura: { main: '#BE0D3E', deep: '#7C0026', soft: '#F6D6DC', cta: '#BE0D3E' },
-  roteiro:   { main: '#F6B43A', deep: '#B96F0E', soft: '#FBE3BC', cta: '#C77E14' },
-  apostila:  { main: '#E06B85', deep: '#B04967', soft: '#F6D6DC', cta: '#D06A85' },
-  pesquisa:  { main: '#94002D', deep: '#5E001C', soft: '#ECA6BB', cta: '#94002D' },
-  // oferta (marca)
-  nome:      { main: '#C81F5C', deep: '#94002D', soft: '#F6D6DC', cta: '#BE0D3E' },
-  promessa:  { main: '#E06B85', deep: '#B04967', soft: '#F6D6DC', cta: '#D06A85' },
-  // bônus de viralização (lime + rosa choque)
-  ganchos:   { main: '#FF2D7A', deep: '#C8005A', soft: '#FFD1E4', cta: '#E8226C' },
-  narrado:   { main: '#C8F000', deep: '#7FA000', soft: '#EEFFC0', cta: '#6E8B00' },
-  carrossel: { main: '#FF2D7A', deep: '#C8005A', soft: '#FFD1E4', cta: '#E8226C' },
-  // anúncios (resposta direta) — tons de azul
-  anuncioPS:   { main: '#2563EB', deep: '#1E3A8A', soft: '#DBEAFE', cta: '#1D4ED8' },
-  anuncioAula: { main: '#0EA5E9', deep: '#075985', soft: '#E0F2FE', cta: '#0369A1' },
-};
-
-/* ── O robô: base comum + ferramenta/rosto próprios de cada profissão ── */
-const Robot: React.FC<{ kind: RobotKind; reduce: boolean }> = ({ kind, reduce }) => {
-  const a = ACCENT[kind];
-  return (
-    <svg viewBox="0 0 120 120" className="w-[88px] h-[88px] drop-shadow-[0_12px_14px_rgba(30,27,17,0.30)]" aria-hidden="true">
-      {/* antena */}
-      <line x1="60" y1="14" x2="60" y2="25" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" opacity="0.9" />
-      <motion.circle
-        cx="60" cy="10.5" r="4" fill="#F6B43A" stroke="#FFFFFF" strokeWidth="1.5"
-        animate={reduce ? undefined : { scale: [1, 1.45, 1], opacity: [1, 0.7, 1] }}
-        transition={{ duration: 1.9, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
-      />
-      {/* orelhas */}
-      <rect x="21.5" y="41" width="7" height="15" rx="3.5" fill="#FFFFFF" opacity="0.9" />
-      <rect x="91.5" y="41" width="7" height="15" rx="3.5" fill="#FFFFFF" opacity="0.9" />
-      {/* cabeça */}
-      <rect x="28" y="25" width="64" height="49" rx="16" fill="#FFFDF7" stroke={a.deep} strokeWidth="2.5" />
-      {/* visor */}
-      <rect x="36" y="33" width="48" height="33" rx="11" fill={a.soft} opacity="0.5" />
-
-      {/* chapéus/acessórios de cabeça (desenhados depois da cabeça) */}
-      {kind === 'estrutura' && (
-        <>
-          {/* capacete de obra */}
-          <path d="M37 27 Q60 10 83 27 L83 29 L37 29 Z" fill="#F6B43A" stroke="#C77E14" strokeWidth="1.5" />
-          <rect x="31.5" y="27" width="57" height="5" rx="2.5" fill="#C77E14" />
-        </>
-      )}
-      {kind === 'roteiro' && (
-        <>
-          {/* boina de diretora */}
-          <ellipse cx="46.5" cy="23" rx="15" ry="6.5" fill={a.deep} />
-          <circle cx="46.5" cy="15.5" r="2.6" fill={a.deep} />
-        </>
-      )}
-
-      {/* olhos */}
-      {kind === 'pesquisa' ? (
-        <>
-          <rect x="46" y="42.5" width="7" height="11.5" rx="3.5" fill="#1E1B11" className="robot-eye" />
-          {/* olho direito ampliado pela lupa */}
-          <rect x="66" y="41" width="8.5" height="14" rx="4.2" fill="#1E1B11" className="robot-eye" style={{ animationDelay: '0.35s' }} />
-          <circle cx="70.2" cy="48" r="11" fill="rgba(255,255,255,0.35)" stroke={a.deep} strokeWidth="3" />
-          <line x1="78.4" y1="56.4" x2="86.5" y2="64.5" stroke={a.deep} strokeWidth="4.5" strokeLinecap="round" />
-        </>
-      ) : (
-        <>
-          <rect x="46" y="42.5" width="7" height="11.5" rx="3.5" fill="#1E1B11" className="robot-eye" />
-          <rect x="67" y="42.5" width="7" height="11.5" rx="3.5" fill="#1E1B11" className="robot-eye" style={{ animationDelay: '0.2s' }} />
-        </>
-      )}
-      {kind === 'apostila' && (
-        <>
-          {/* óculos de leitura */}
-          <circle cx="49.5" cy="48" r="8.6" fill="none" stroke={a.deep} strokeWidth="2.3" />
-          <circle cx="70.5" cy="48" r="8.6" fill="none" stroke={a.deep} strokeWidth="2.3" />
-          <line x1="58.1" y1="48" x2="61.9" y2="48" stroke={a.deep} strokeWidth="2.3" strokeLinecap="round" />
-          <line x1="40.9" y1="47" x2="29" y2="45" stroke={a.deep} strokeWidth="2" strokeLinecap="round" />
-          <line x1="79.1" y1="47" x2="91" y2="45" stroke={a.deep} strokeWidth="2" strokeLinecap="round" />
-        </>
-      )}
-
-      {/* sorriso + bochechas */}
-      <path d="M53 59.5 Q60 64.5 67 59.5" stroke="#1E1B11" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-      <circle cx="42" cy="56" r="3" fill="#ECA6BB" opacity="0.8" />
-      <circle cx="78" cy="56" r="3" fill="#ECA6BB" opacity="0.8" />
-
-      {/* corpo */}
-      <rect x="41" y="77" width="38" height="21" rx="10" fill={a.main} stroke={a.deep} strokeWidth="2" />
-      <motion.circle
-        cx="60" cy="87.5" r="4"
-        fill="#FFFFFF" opacity="0.45"
-        animate={reduce ? undefined : { opacity: [0.3, 0.65, 0.3] }}
-        transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      {/* braços */}
-      <rect x="29" y="80" width="9" height="15" rx="4.5" fill={a.deep} />
-      <rect x="82" y="80" width="9" height="15" rx="4.5" fill={a.deep} />
-
-      {/* ferramenta da profissão */}
-      {kind === 'estrutura' && (
-        <g transform="rotate(-22 91 92)">
-          <rect x="82" y="88" width="18" height="7" rx="3.5" fill="#FFFDF7" stroke={a.deep} strokeWidth="1.8" />
-          <line x1="87" y1="88.5" x2="87" y2="94.5" stroke={a.deep} strokeWidth="1.2" opacity="0.6" />
-          <line x1="93" y1="88.5" x2="93" y2="94.5" stroke={a.deep} strokeWidth="1.2" opacity="0.6" />
-        </g>
-      )}
-      {kind === 'roteiro' && (
-        <g transform="rotate(28 89 88)">
-          <rect x="86" y="74" width="6" height="17" rx="2" fill="#F6B43A" stroke="#B96F0E" strokeWidth="1.5" />
-          <path d="M86 91 L92 91 L89 97 Z" fill="#1E1B11" />
-        </g>
-      )}
-      {kind === 'apostila' && (
-        <>
-          <path d="M44 95 Q52 90 60 95 Q68 90 76 95 L76 104 Q68 99 60 104 Q52 99 44 104 Z" fill="#FFFDF7" stroke={a.deep} strokeWidth="1.8" />
-          <line x1="60" y1="95" x2="60" y2="104" stroke={a.deep} strokeWidth="1.2" opacity="0.6" />
-        </>
-      )}
-      {/* Nome Potente — etiqueta de marca */}
-      {kind === 'nome' && (
-        <g transform="rotate(-16 89 91)">
-          <path d="M81 86 h11 a3 3 0 0 1 3 3 v6 a3 3 0 0 1 -3 3 h-11 l-4 -6 z" fill="#FFFDF7" stroke={a.deep} strokeWidth="1.8" />
-          <circle cx="82.5" cy="92" r="1.5" fill={a.deep} />
-        </g>
-      )}
-      {/* Promessa — megafone */}
-      {kind === 'promessa' && (
-        <g transform="rotate(-18 90 90)">
-          <rect x="79" y="88" width="5" height="6" rx="1.5" fill={a.deep} />
-          <path d="M84 87 L96 83 L96 99 L84 95 Z" fill="#FFFDF7" stroke={a.deep} strokeWidth="1.8" strokeLinejoin="round" />
-          <path d="M99 87 q3 4 0 8" stroke={a.deep} strokeWidth="1.6" fill="none" strokeLinecap="round" />
-        </g>
-      )}
-      {/* Ganchos — anzol */}
-      {kind === 'ganchos' && (
-        <g>
-          <path d="M90 83 L90 93 a4.2 4.2 0 0 1 -8.4 0 a4.2 4.2 0 0 1 4.2 -4.2" fill="none" stroke={a.deep} strokeWidth="2.4" strokeLinecap="round" />
-          <path d="M86 88.5 l-2 -3 l4 0 z" fill={a.deep} />
-        </g>
-      )}
-      {/* Narrado Técnico — microfone */}
-      {kind === 'narrado' && (
-        <g transform="rotate(20 88 90)">
-          <rect x="84.5" y="81" width="7" height="12" rx="3.5" fill="#FFFDF7" stroke={a.deep} strokeWidth="1.8" />
-          <line x1="88" y1="93" x2="88" y2="99" stroke={a.deep} strokeWidth="1.8" />
-          <line x1="84.5" y1="99" x2="91.5" y2="99" stroke={a.deep} strokeWidth="1.8" strokeLinecap="round" />
-        </g>
-      )}
-      {/* Carrossel — pilha de slides */}
-      {kind === 'carrossel' && (
-        <g transform="rotate(-10 89 91)">
-          <rect x="83" y="85" width="12" height="11" rx="2" fill={a.deep} opacity="0.45" />
-          <rect x="80.5" y="87" width="12" height="11" rx="2" fill="#FFFDF7" stroke={a.deep} strokeWidth="1.6" />
-        </g>
-      )}
-      {/* Anúncio Problema/Solução — alvo/bullseye (tráfego, resposta direta) */}
-      {kind === 'anuncioPS' && (
-        <g>
-          <circle cx="89" cy="90" r="8" fill="#FFFDF7" stroke={a.deep} strokeWidth="1.8" />
-          <circle cx="89" cy="90" r="5" fill="none" stroke={a.deep} strokeWidth="1.6" />
-          <circle cx="89" cy="90" r="2" fill={a.deep} />
-        </g>
-      )}
-      {/* Anúncio Mini-Aula — lousa com giz (ensina um passo) */}
-      {kind === 'anuncioAula' && (
-        <g transform="rotate(-8 88 90)">
-          <rect x="80" y="84" width="17" height="13" rx="2" fill={a.deep} stroke="#FFFDF7" strokeWidth="1.6" />
-          <line x1="83" y1="88.5" x2="93.5" y2="88.5" stroke="#FFFFFF" strokeWidth="1.4" strokeLinecap="round" opacity="0.92" />
-          <line x1="83" y1="92.5" x2="90" y2="92.5" stroke="#FFFFFF" strokeWidth="1.4" strokeLinecap="round" opacity="0.75" />
-        </g>
-      )}
-    </svg>
-  );
-};
-
-/* ── Cena ambiente de cada palco (atrás do robô) ── */
-const SceneFX: React.FC<{ kind: RobotKind; reduce: boolean }> = ({ kind, reduce }) => {
-  if (kind === 'estrutura') {
-    return (
-      <>
-        {/* grade de blueprint */}
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              'linear-gradient(rgba(255,255,255,0.13) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.13) 1px, transparent 1px)',
-            backgroundSize: '13px 13px',
-          }}
-        />
-        {/* blocos do esqueleto se empilhando */}
-        {[0, 1, 2].map(i => (
-          <motion.div
-            key={i}
-            className="absolute left-2.5 w-7 h-2 rounded-[3px] bg-white/80"
-            style={{ bottom: 8 + i * 9 }}
-            animate={reduce ? undefined : { opacity: [0, 1, 1, 0], y: [7, 0, 0, 0] }}
-            transition={{ duration: 3, times: [0, 0.2, 0.85, 1], repeat: Infinity, delay: i * 0.5, repeatDelay: 1.2 }}
-          />
-        ))}
-      </>
-    );
-  }
-  if (kind === 'roteiro') {
-    return (
-      <>
-        {/* linhas do roteiro sendo "digitadas" */}
-        {[38, 26, 44, 30].map((w, i) => (
-          <motion.div
-            key={i}
-            className="absolute left-2.5 h-[3px] rounded-full bg-white/80"
-            style={{ top: 10 + i * 8 }}
-            animate={reduce ? { width: w } : { width: [0, w, w, 0] }}
-            transition={{ duration: 3.8, times: [0, 0.3, 0.9, 1], repeat: Infinity, delay: i * 0.45 }}
-          />
-        ))}
-      </>
-    );
-  }
-  if (kind === 'apostila') {
-    return (
-      <>
-        {/* fita marcadora da apostila */}
-        <motion.div
-          className="absolute top-0 right-3 w-2.5 h-9 bg-white/85 rounded-b-[3px]"
-          style={{ transformOrigin: 'top center' }}
-          animate={reduce ? undefined : { rotate: [0, 5, 0, -4, 0] }}
-          transition={{ duration: 4.4, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        {/* linhas de leitura */}
-        {[0, 1, 2].map(i => (
-          <motion.div
-            key={i}
-            className="absolute left-3 h-[3px] rounded-full bg-white/75"
-            style={{ bottom: 11 + i * 8, width: 32 - i * 7 }}
-            animate={reduce ? undefined : { opacity: [0.25, 0.95, 0.25] }}
-            transition={{ duration: 2.6, repeat: Infinity, delay: i * 0.4, ease: 'easeInOut' }}
-          />
-        ))}
-      </>
-    );
-  }
-  if (kind === 'pesquisa') {
-  return (
-    <>
-      {/* radar */}
-      <div className="absolute top-2 left-2 w-14 h-14 rounded-full border border-white/40" />
-      <div className="absolute top-[13px] left-[13px] w-[34px] h-[34px] rounded-full border border-white/25" />
-      <div className="absolute top-2 left-2 w-14 h-14 rounded-full overflow-hidden">
-        <motion.div
-          className="w-full h-full"
-          style={{ background: 'conic-gradient(from 0deg, rgba(255,255,255,0.55), transparent 75deg)' }}
-          animate={reduce ? undefined : { rotate: 360 }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-        />
-      </div>
-      <div className="absolute top-[27px] left-[27px] w-1.5 h-1.5 rounded-full bg-white/95" />
-      {/* barras do relatório */}
-      {[9, 15, 21].map((h, i) => (
-        <motion.div
-          key={i}
-          className="absolute bottom-2 w-2 rounded-t-[3px] bg-white/80"
-          style={{ left: 10 + i * 10 }}
-          animate={reduce ? { height: h } : { height: [4, h, 4] }}
-          transition={{ duration: 2.4, repeat: Infinity, delay: i * 0.3, ease: 'easeInOut' }}
-        />
-      ))}
-    </>
-  );
-  }
-  if (kind === 'anuncioPS') {
-    return (
-      <>
-        {/* ondas de resposta direta expandindo do alvo */}
-        {[0, 1, 2].map(i => (
-          <motion.div
-            key={i}
-            className="absolute left-3 top-3 w-4 h-4 rounded-full border-2 border-white/55"
-            animate={reduce ? undefined : { scale: [1, 3], opacity: [0.65, 0] }}
-            transition={{ duration: 2.8, repeat: Infinity, delay: i * 0.9, ease: 'easeOut' }}
-          />
-        ))}
-        <div className="absolute left-[17px] top-[17px] w-1.5 h-1.5 rounded-full bg-white/90" />
-      </>
-    );
-  }
-  if (kind === 'anuncioAula') {
-    return (
-      <>
-        {/* passos da mini-aula sendo escritos na lousa */}
-        {[30, 22, 34].map((w, i) => (
-          <motion.div
-            key={i}
-            className="absolute left-3 h-[3px] rounded-full bg-white/80"
-            style={{ top: 12 + i * 9 }}
-            animate={reduce ? { width: w } : { width: [0, w, w, 0] }}
-            transition={{ duration: 3.6, times: [0, 0.35, 0.9, 1], repeat: Infinity, delay: i * 0.5 }}
-          />
-        ))}
-        {/* seta pro próximo nível */}
-        <motion.div
-          className="absolute bottom-3 right-3 text-white/85"
-          animate={reduce ? undefined : { x: [0, 4, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <ArrowRight size={12} strokeWidth={3} />
-        </motion.div>
-      </>
-    );
-  }
-  // genérico (agentes de oferta + bônus): partículas flutuantes brancas
-  return (
-    <>
-      {[0, 1, 2, 3, 4].map(i => (
-        <motion.div
-          key={i}
-          className="absolute rounded-full bg-white/70"
-          style={{ width: 4 + (i % 3), height: 4 + (i % 3), left: 10 + ((i * 21) % 44), top: 12 + ((i * 27) % 62) }}
-          animate={reduce ? undefined : { y: [0, -7, 0], opacity: [0.25, 0.85, 0.25] }}
-          transition={{ duration: 2.6 + i * 0.35, repeat: Infinity, delay: i * 0.4, ease: 'easeInOut' }}
-        />
-      ))}
-    </>
-  );
-};
-
 const cardVariants = {
   hidden: { opacity: 0, y: 28 },
   show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 220, damping: 24 } },
@@ -555,6 +243,7 @@ const FormatsGrid: React.FC = () => {
    CHAT
 ───────────────────────────────────────────── */
 interface Message { role: 'user' | 'ia'; content: string; display?: string }
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 const INITIAL_MSG = (agent: Agent) => agent.openingMessage ?? defaultOpening(agent.name);
 
@@ -569,8 +258,14 @@ const Bubble: React.FC<{
   msg: Message;
   onSave?: () => void;
   saved?: boolean;
-}> = ({ msg, onSave, saved }) => {
+  saveStatus?: SaveStatus;
+}> = ({ msg, onSave, saved, saveStatus = 'idle' }) => {
   const isIA = msg.role === 'ia';
+  const lastMeaningfulLine = msg.content.split('\n').map(line => line.trim()).filter(Boolean).pop() ?? '';
+  const asksForReply = isIA && /[?？]$/.test(lastMeaningfulLine);
+  const isSaved = saved || saveStatus === 'saved';
+  const isSaving = saveStatus === 'saving';
+  const saveFailed = saveStatus === 'error';
   return (
     <div className={`flex ${isIA ? 'justify-start' : 'justify-end'}`}>
       <div className="flex flex-col max-w-[82%]">
@@ -586,18 +281,34 @@ const Bubble: React.FC<{
         >
           {isIA ? renderBold(msg.content) : (msg.display ?? msg.content)}
         </div>
+        {asksForReply && (
+          <div className="self-start mt-1.5 flex items-center gap-1.5 rounded-xl border border-[#F6B43A]/45 bg-[#FFF2CF] px-2.5 py-1.5 text-[10px] font-bold text-[#7A4C00]">
+            <CircleHelp size={12} className="shrink-0" />
+            <span>{TXT.answer_below}</span>
+          </div>
+        )}
         {isIA && onSave && (
           <button
             onClick={onSave}
-            disabled={saved}
+            disabled={isSaved || isSaving}
             className={`self-start mt-1.5 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg transition-colors ${
-              saved
+              isSaved
                 ? 'bg-green-500/10 text-green-600 cursor-default'
+                : isSaving
+                ? 'bg-[#F6B43A]/15 text-[#9A6200] cursor-wait'
+                : saveFailed
+                ? 'bg-red-50 border border-red-300/60 text-red-600'
                 : 'bg-white border border-[#BE0D3E]/25 text-[#BE0D3E] hover:border-[#BE0D3E]/50'
             }`}
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
-            {saved ? <><Check size={11} /> {TXT.saved}</> : <><Save size={11} /> {TXT.save}</>}
+            {isSaved
+              ? <><Check size={11} /> {TXT.saved}</>
+              : isSaving
+              ? <><Loader2 size={11} className="animate-spin" /> {TXT.saving_lesson}</>
+              : saveFailed
+              ? <><Save size={11} /> {TXT.retry_save}</>
+              : <><Save size={11} /> {TXT.save}</>}
           </button>
         )}
       </div>
@@ -908,6 +619,10 @@ const AgentIntakeForm: React.FC<{
 
       {/* Pergunta atual */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[#F6B43A]/45 bg-[#FFF2CF] px-2.5 py-1 text-[9px] font-black uppercase tracking-widest text-[#7A4C00]">
+          <CircleHelp size={12} />
+          {TXT.answer_required}
+        </div>
         <h2 className="text-[20px] font-black text-[#1E1B11] leading-tight">
           {q.label}
           {!q.required && <span className="text-[#5B4041]/40 text-[12px] font-medium"> · opcional</span>}
@@ -1055,6 +770,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   const [saveModalIdx, setSaveModalIdx] = useState<number | null>(null);
   const [saveTitle, setSaveTitle] = useState('');
   const [saving, setSaving] = useState(false);
+  const [saveStatuses, setSaveStatuses] = useState<Record<number, SaveStatus>>({});
 
   // Esteira Arquiteto→Roteirista: etapa da tela, nome do curso e modo "salvar ao sair"
   const reduce = !!useReducedMotion();
@@ -1063,6 +779,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   );
   const [courseName, setCourseName] = useState('');
   const [exitMode, setExitMode] = useState(false);
+  const [lessonProgress, setLessonProgress] = useState<{ current: number; total: number } | null>(null);
 
   const { isRecording, recordingTime, error: recorderError, startRecording, stopRecording, cancelRecording } = useAudioRecorder();
   const [transcribing, setTranscribing] = useState(false);
@@ -1075,9 +792,45 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
+  const saveLessonAutomatically = async (
+    replyIdx: number,
+    userInput: string,
+    aiResponse: string,
+    title: string,
+  ) => {
+    if (!SUPABASE_READY || !user || !agent) {
+      setSaveStatuses(prev => ({ ...prev, [replyIdx]: 'error' }));
+      return;
+    }
+
+    setSaveStatuses(prev => ({ ...prev, [replyIdx]: 'saving' }));
+    const { error } = await supabase.from('saved_viral_outputs').insert({
+      user_id: user.id,
+      model_slug: agent.slug,
+      model_name: agent.name,
+      title,
+      user_input: userInput,
+      ai_response: aiResponse,
+    });
+
+    if (error) {
+      setSaveStatuses(prev => ({ ...prev, [replyIdx]: 'error' }));
+      toast({ title: TXT.toast_save_error, description: error.message, variant: 'destructive' });
+      return;
+    }
+
+    setSavedIdx(prev => new Set(prev).add(replyIdx));
+    setSaveStatuses(prev => ({ ...prev, [replyIdx]: 'saved' }));
+    toast({ title: TXT.lesson_saved });
+  };
+
   // Núcleo de geração: recebe a mensagem do usuário + a base de conversa a usar.
   // Passar `base` explicitamente evita ler `messages` desatualizado (formulário/picker).
-  const runGeneration = async (userMsg: Message, base: Message[]) => {
+  const runGeneration = async (
+    userMsg: Message,
+    base: Message[],
+    lessonToSave?: { courseTitle: string; lessonNumber: number },
+  ) => {
     const next: Message[] = [...base, userMsg];
     setMessages(next);
     // Sem Supabase configurado ainda → resposta amigável, sem chamar a function
@@ -1109,7 +862,18 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
         throw error;
       }
       if (data?.error) throw new Error(data.error);
-      setMessages(prev => [...prev, { role: 'ia', content: data.reply }]);
+      const reply = String(data?.reply ?? '').trim();
+      if (!reply) throw new Error('A IA não retornou conteúdo');
+      const replyIdx = next.length;
+      setMessages([...next, { role: 'ia', content: reply }]);
+      if (lessonToSave) {
+        await saveLessonAutomatically(
+          replyIdx,
+          userMsg.content,
+          reply,
+          `${lessonToSave.courseTitle} — Aula ${lessonToSave.lessonNumber}`,
+        );
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : TXT.unknown_error;
       setMessages(prev => [...prev, { role: 'ia', content: `${TXT.error_prefix}\n\n${msg}\n\n${TXT.error_retry}` }]);
@@ -1118,9 +882,34 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     }
   };
 
+  const goToNextLesson = () => {
+    if (!lessonProgress || loading || agent?.slug !== 'agente-2') return;
+    if (lessonProgress.current >= lessonProgress.total) return;
+
+    const nextLesson = lessonProgress.current + 1;
+    setInput('');
+    setLessonProgress(prev => prev ? { ...prev, current: nextLesson } : prev);
+    const content = `A Aula ${lessonProgress.current} foi concluída. Agora escreva somente a Aula ${nextLesson} do curso "${courseName}", mantendo a ordem e o conteúdo definidos no esqueleto.`;
+    const display = `✨ Próxima etapa: Aula ${nextLesson} de ${lessonProgress.total}`;
+    runGeneration(
+      { role: 'user', content, display },
+      messages,
+      { courseTitle: courseName || 'Meu curso', lessonNumber: nextLesson },
+    );
+  };
+
   const send = () => {
     const text = input.trim();
     if (!text || loading) return;
+    if (
+      agent?.slug === 'agente-2'
+      && /^(pr[oó]xima)(\s+aula)?[.!]?$/i.test(text)
+      && lessonProgress
+      && lessonProgress.current < lessonProgress.total
+    ) {
+      goToNextLesson();
+      return;
+    }
     setInput('');
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
     runGeneration({ role: 'user', content: text }, messages);
@@ -1130,6 +919,8 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     if (!agent) return;
     setInput('');
     setSavedIdx(new Set());
+    setSaveStatuses({});
+    setLessonProgress(null);
     if (agent.slug === 'agente-2') { setMessages([]); setStage('picker'); return; }
     if (INTAKE[agent.slug]) { setMessages([]); setStage('form'); return; }
     setMessages([{ role: 'ia', content: INITIAL_MSG(agent) }]);
@@ -1141,7 +932,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     if (!iaMsg || !userMsg) return;
     // Título default: nome do curso (esteira) ou primeiros 60 caracteres do briefing
     const defaultTitle =
-      agent?.slug === 'agente-2' && courseName ? `${courseName} — aula`
+      agent?.slug === 'agente-2' && courseName ? `${courseName} — Aula ${lessonProgress?.current ?? 1}`
       : courseName && INTAKE[agent?.slug ?? ''] ? courseName
       : userMsg.content.replace(/\s+/g, ' ').trim().slice(0, 60);
     setSaveTitle(defaultTitle);
@@ -1174,10 +965,12 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     });
     setSaving(false);
     if (error) {
+      setSaveStatuses(prev => ({ ...prev, [saveModalIdx]: 'error' }));
       toast({ title: TXT.toast_save_error, description: error.message, variant: 'destructive' });
       return;
     }
     setSavedIdx(prev => new Set(prev).add(saveModalIdx));
+    setSaveStatuses(prev => ({ ...prev, [saveModalIdx]: 'saved' }));
     const wasExit = exitMode;
     setSaveModalIdx(null);
     setExitMode(false);
@@ -1196,22 +989,33 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
 
   // Esqueleto escolhido no Roteirista → injeta como base e pede a 1ª aula.
   const handlePickSkeleton = (it: SkeletonItem) => {
+    const totalLessons = countLessonsInSkeleton(it.ai_response);
     setCourseName(it.title);
+    setLessonProgress({ current: 1, total: totalLessons });
+    setSaveStatuses({});
     setStage('chat');
     const injected = `Esqueleto validado do curso "${it.title}":\n\n${it.ai_response}\n\nComece escrevendo a primeira aula (Aula 1) com base nesse esqueleto.`;
-    const display = `📋 Curso escolhido: "${it.title}".\nVamos começar pelas aulas!`;
-    runGeneration({ role: 'user', content: injected, display }, []);
+    const display = `📋 Curso escolhido: "${it.title}".\n\nVou criar uma aula por vez e salvar cada aula automaticamente na Biblioteca.`;
+    runGeneration(
+      { role: 'user', content: injected, display },
+      [],
+      { courseTitle: it.title, lessonNumber: 1 },
+    );
   };
 
-  // Voltar: no Arquiteto, se houver esqueleto não salvo, oferece salvar antes de sair.
+  // Voltar: protege conteúdo não salvo tanto no Arquiteto quanto no Roteirista.
   const handleBackPress = () => {
-    if (agent?.slug === 'agente-1' && stage === 'chat') {
+    if ((agent?.slug === 'agente-1' || agent?.slug === 'agente-2') && stage === 'chat') {
       let idx = -1;
       for (let i = messages.length - 1; i > 0; i--) {
         if (messages[i].role === 'ia' && !savedIdx.has(i)) { idx = i; break; }
       }
       if (idx !== -1) {
-        setSaveTitle(courseName || 'Esqueleto do meu curso');
+        setSaveTitle(
+          agent.slug === 'agente-2'
+            ? `${courseName || 'Meu curso'} — Aula ${lessonProgress?.current ?? 1}`
+            : courseName || 'Esqueleto do meu curso',
+        );
         setExitMode(true);
         setSaveModalIdx(idx);
         return;
@@ -1303,6 +1107,15 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     );
   }
 
+  const lastMessage = messages[messages.length - 1];
+  const showNextLesson =
+    agent.slug === 'agente-2'
+    && !!lessonProgress
+    && lessonProgress.current < lessonProgress.total
+    && lastMessage?.role === 'ia'
+    && (saveStatuses[messages.length - 1] === 'saved' || saveStatuses[messages.length - 1] === 'error')
+    && !loading;
+
   return (
     <div className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
@@ -1334,6 +1147,30 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
         </button>
       </div>
 
+      {agent.slug === 'agente-2' && lessonProgress && (
+        <div className="shrink-0 border-b border-[#BE0D3E]/10 bg-white/75 px-4 py-2.5">
+          <div className="mx-auto flex max-w-lg items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#BE0D3E] text-[12px] font-black text-white shadow-[0_5px_14px_rgba(190,13,62,0.22)]">
+              {lessonProgress.current}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[11px] font-black text-[#1E1B11]">
+                  Aula {lessonProgress.current} de {lessonProgress.total}
+                </p>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-[#BE0D3E]">uma por vez</span>
+              </div>
+              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#F6D6DC]">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#BE0D3E] to-[#F6B43A] transition-all duration-500"
+                  style={{ width: `${Math.min(100, (lessonProgress.current / lessonProgress.total) * 100)}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mensagens */}
       <div
         className="flex-1 overflow-y-auto px-4 py-5 space-y-3"
@@ -1348,6 +1185,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
               msg={msg}
               onSave={canSave ? () => openSaveModal(i) : undefined}
               saved={savedIdx.has(i)}
+              saveStatus={saveStatuses[i]}
             />
           );
         })}
@@ -1360,6 +1198,18 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
         className="shrink-0 px-4 py-3 border-t border-[#BE0D3E]/10"
         style={{ background: 'rgba(255,247,230,0.95)', backdropFilter: 'blur(20px)' }}
       >
+        {showNextLesson && (
+          <div className="mb-2.5 rounded-2xl border border-[#BE0D3E]/15 bg-white p-2 shadow-[0_8px_22px_-12px_rgba(190,13,62,0.28)]">
+            <button
+              onClick={goToNextLesson}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#BE0D3E] to-[#D94368] px-4 py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-[0_6px_16px_rgba(190,13,62,0.22)] active:scale-[0.98] transition-transform"
+            >
+              {TXT.next_lesson}
+              <ArrowRight size={14} strokeWidth={2.8} />
+            </button>
+            <p className="mt-1.5 text-center text-[9px] text-[#5B4041]/55">{TXT.next_lesson_hint}</p>
+          </div>
+        )}
         {isRecording ? (
           <div className="flex items-center gap-2 bg-[#FFFFFF] border border-[#BE0D3E]/20 rounded-2xl px-4 py-2.5">
             <button
@@ -1490,13 +1340,16 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
 ───────────────────────────────────────────── */
 const Chat: React.FC = () => {
   const { formatSlug } = useParams<{ formatSlug?: string }>();
-  // Só monta o chat se o slug existir em AGENTS — slug desconhecido
+  // Só monta o agente se o slug existir em AGENTS — slug desconhecido
   // (bookmark antigo, slug renomeado) volta pra grade em vez de quebrar.
-  if (formatSlug && AGENTS.some(a => a.slug === formatSlug)) {
-    // key força remontar (reinicia etapa/mensagens) ao trocar de agente
-    return <ChatScreen key={formatSlug} formatSlug={formatSlug} />;
+  const agent = formatSlug ? AGENTS.find(a => a.slug === formatSlug) : undefined;
+  if (!agent) return <FormatsGrid />;
+  // Agente-FERRAMENTA (não é chat): tem tela própria.
+  if (agent.tool === 'analisar-perfil') {
+    return <AnalisarPerfilAgent key={agent.slug} agent={agent} />;
   }
-  return <FormatsGrid />;
+  // key força remontar (reinicia etapa/mensagens) ao trocar de agente
+  return <ChatScreen key={agent.slug} formatSlug={agent.slug} />;
 };
 
 export default Chat;

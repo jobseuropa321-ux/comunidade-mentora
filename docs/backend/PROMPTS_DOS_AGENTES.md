@@ -65,6 +65,13 @@ FROM public.viral_models ORDER BY slug;
    (mesmo `slug: 'agente-5'`) com nome, descrição, ícone, cor e mensagem
    de abertura. Pronto — ele aparece na grade automaticamente.
 
+> **Exceção — agentes-FERRAMENTA.** O `agente-12` (Analisar Meu Perfil) tem
+> `tool: 'analisar-perfil'` no `agents.ts`: em vez do chat ele abre uma tela
+> própria e chama a edge function `analisar-perfil`, cujo prompt mora **na
+> própria function** (é acoplado ao JSON que a tela renderiza). Por isso ele
+> **não tem linha em `viral_models`** — procurar por ela aqui é perda de tempo.
+> Ver `BACKEND_SETUP-analisar-perfil.md`.
+
 ## Renomear um agente
 
 - O **nome exibido** (card, header do chat, Biblioteca) vem do
