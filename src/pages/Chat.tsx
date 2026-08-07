@@ -34,6 +34,8 @@ const TXT = {
   answer_below: 'Responda no campo abaixo',
   next_lesson: 'Criar próxima aula',
   next_lesson_hint: 'Ou digite “próxima” no campo de mensagem.',
+  next_lesson_extra: 'Criar mais uma aula',
+  next_lesson_extra_hint: 'As aulas do esqueleto acabaram. Siga enquanto quiser — quando achar que está bom, é só sair (tudo já está na Biblioteca).',
   lesson_saved: 'Aula salva automaticamente ✨',
   placeholder: 'Descreva seu nicho e tema...',
   transcribing: 'Transcrevendo áudio...',
@@ -80,12 +82,44 @@ const newSessionId = () =>
     ? crypto.randomUUID()
     : `s-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
+/* Quantas aulas o esqueleto promete — usado só pra barra de progresso.
+
+   O Arquiteto não segue um formato fixo, então na prática o esqueleto sai
+   de duas formas (conferido nos esqueletos salvos das alunas):
+
+     A) cabeçalho "### Aulas:" e a lista numerada embaixo  (o caso comum)
+        ### Aulas:
+        1. **Boas-vindas ao curso**
+        2. **O que é o Efeito Fox**
+
+     B) o número no próprio título
+        ### Aula 1. Boas-vindas ao curso
+
+   Conta por OCORRÊNCIA, nunca por número distinto: a numeração recomeça a
+   cada módulo (todo módulo tem uma "1."), então contar números diferentes
+   dizia "5 aulas" num curso de 50. Só os itens que estão DEBAIXO de um
+   cabeçalho de aulas entram — senão listas de "Formato ideal", "Bônus" e
+   afins virariam aula.
+
+   É uma ESTIMATIVA: o texto é livre e sempre vai ter esqueleto fora do
+   padrão. Por isso nada trava quando ela erra — o total acompanha se a
+   pessoa continuar criando além da conta. */
 const countLessonsInSkeleton = (content: string) => {
-  const lessonNumbers = new Set<string>();
-  for (const match of content.matchAll(/\baula\s*(\d{1,3}(?:[.-]\d{1,3})?)\b/gi)) {
-    lessonNumbers.add(match[1]);
+  const ehCabecalho = (l: string) => /^\s*#{1,6}\s*\S/.test(l) || /^\s*\*\*[^*]+\*\*\s*:?\s*$/.test(l);
+  const ehCabecalhoDeAulas = (l: string) => /^\s*(?:#{1,6}\s*)?\*{0,2}\s*aulas?\b[^\n]{0,24}$/i.test(l);
+  const ehTituloDeAula = (l: string) => /^\s*(?:#{1,6}\s*)?\*{0,2}\s*aulas?\s*\d{1,3}\b/i.test(l);
+  const ehItemNumerado = (l: string) => /^\s*\d{1,3}[.)]\s+\S/.test(l);
+
+  let dentroDaLista = false;
+  let total = 0;
+
+  for (const linha of content.split('\n')) {
+    if (ehTituloDeAula(linha)) { total++; dentroDaLista = false; continue; }   // formato B
+    if (ehItemNumerado(linha)) { if (dentroDaLista) total++; continue; }        // formato A
+    if (ehCabecalho(linha)) dentroDaLista = ehCabecalhoDeAulas(linha);
   }
-  return Math.max(lessonNumbers.size, 1);
+
+  return Math.max(total, 1);
 };
 
 /* ═════════════════════════════════════════════
@@ -884,11 +918,15 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
 
   const goToNextLesson = () => {
     if (!lessonProgress || loading || agent?.slug !== 'agente-2') return;
-    if (lessonProgress.current >= lessonProgress.total) return;
 
     const nextLesson = lessonProgress.current + 1;
     setInput('');
-    setLessonProgress(prev => prev ? { ...prev, current: nextLesson } : prev);
+    // O total é a estimativa lida do esqueleto — quem decide quando parar é
+    // quem está criando. Passou da conta? O total acompanha, em vez de sumir
+    // com o botão e deixar a pessoa presa na "Aula 1 de 1".
+    setLessonProgress(prev => prev
+      ? { current: nextLesson, total: Math.max(prev.total, nextLesson) }
+      : prev);
     const content = `A Aula ${lessonProgress.current} foi concluída. Agora escreva somente a Aula ${nextLesson} do curso "${courseName}", mantendo a ordem e o conteúdo definidos no esqueleto.`;
     const display = `✨ Próxima etapa: Aula ${nextLesson} de ${lessonProgress.total}`;
     runGeneration(
@@ -901,11 +939,13 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   const send = () => {
     const text = input.trim();
     if (!text || loading) return;
+    // Atalho do Roteirista: digitar "próxima" faz o mesmo que o botão —
+    // inclusive salvar a aula sozinho. Sem isso a frase virava mensagem
+    // solta pra IA e a aula nascia fora da contagem e sem salvar.
     if (
       agent?.slug === 'agente-2'
-      && /^(pr[oó]xima)(\s+aula)?[.!]?$/i.test(text)
       && lessonProgress
-      && lessonProgress.current < lessonProgress.total
+      && /^(pr[oó]xima|continuar?|segue|seguir)(\s+aula)?[.!]?$/i.test(text)
     ) {
       goToNextLesson();
       return;
@@ -1108,13 +1148,17 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   }
 
   const lastMessage = messages[messages.length - 1];
+  // Só espera o salvamento terminar; não exige que a aula tenha sido salva
+  // nem que ainda falte aula na estimativa (antes, uma pergunta solta no
+  // meio da conversa fazia o botão sumir pro resto da sessão).
   const showNextLesson =
     agent.slug === 'agente-2'
     && !!lessonProgress
-    && lessonProgress.current < lessonProgress.total
+    && messages.length > 1
     && lastMessage?.role === 'ia'
-    && (saveStatuses[messages.length - 1] === 'saved' || saveStatuses[messages.length - 1] === 'error')
+    && saveStatuses[messages.length - 1] !== 'saving'
     && !loading;
+  const passouDoEsqueleto = !!lessonProgress && lessonProgress.current >= lessonProgress.total;
 
   return (
     <div className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
@@ -1204,10 +1248,12 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
               onClick={goToNextLesson}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#BE0D3E] to-[#D94368] px-4 py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-[0_6px_16px_rgba(190,13,62,0.22)] active:scale-[0.98] transition-transform"
             >
-              {TXT.next_lesson}
+              {passouDoEsqueleto ? TXT.next_lesson_extra : TXT.next_lesson}
               <ArrowRight size={14} strokeWidth={2.8} />
             </button>
-            <p className="mt-1.5 text-center text-[9px] text-[#5B4041]/55">{TXT.next_lesson_hint}</p>
+            <p className="mt-1.5 text-center text-[9px] leading-snug text-[#5B4041]/55">
+              {passouDoEsqueleto ? TXT.next_lesson_extra_hint : TXT.next_lesson_hint}
+            </p>
           </div>
         )}
         {isRecording ? (
