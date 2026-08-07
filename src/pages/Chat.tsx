@@ -35,6 +35,11 @@ const TXT = {
   next_lesson: 'Criar próxima aula',
   next_lesson_hint: 'Ou digite “próxima” no campo de mensagem.',
   next_lesson_extra: 'Criar mais uma aula',
+  resume_badge: (n: number) => `Parou na aula ${n}`,
+  resume_restart: 'Recomeçar do zero',
+  resume_loading: 'Buscando as aulas que você já escreveu...',
+  resume_display: (curso: string, n: number) =>
+    `📋 Voltando pro curso "${curso}".\n\nVocê parou na Aula ${n} — é só seguir daqui.`,
   next_lesson_extra_hint: 'As aulas do esqueleto acabaram. Siga enquanto quiser — quando achar que está bom, é só sair (tudo já está na Biblioteca).',
   lesson_saved: 'Aula salva automaticamente ✨',
   placeholder: 'Descreva seu nicho e tema...',
@@ -702,25 +707,41 @@ interface SkeletonItem { id: string; title: string; ai_response: string; created
 
 const SkeletonPicker: React.FC<{
   agent: Agent; userId?: string; reduce: boolean;
-  onBack: () => void; onPick: (it: SkeletonItem) => void; onCreate: () => void;
+  onBack: () => void; onPick: (it: SkeletonItem, retomar: boolean) => void; onCreate: () => void;
 }> = ({ agent, userId, reduce, onBack, onPick, onCreate }) => {
   const kind = agent.category as RobotKind;
   const [items, setItems] = useState<SkeletonItem[]>([]);
   const [loading, setLoading] = useState(true);
+  // Última aula escrita de cada esqueleto (só as que o Roteirista salvou
+  // sozinho — é o que dá pra afirmar que pertence àquele curso).
+  const [ultimaAula, setUltimaAula] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!userId || !SUPABASE_READY) { setLoading(false); return; }
     let cancel = false;
     (async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from('saved_viral_outputs')
-        .select('id, title, ai_response, created_at')
-        .eq('user_id', userId)
-        .eq('model_slug', 'agente-1')
-        .order('created_at', { ascending: false });
+      const [esqueletos, aulas] = await Promise.all([
+        supabase
+          .from('saved_viral_outputs')
+          .select('id, title, ai_response, created_at')
+          .eq('user_id', userId)
+          .eq('model_slug', 'agente-1')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('saved_viral_outputs')
+          .select('skeleton_id, lesson_number')
+          .eq('user_id', userId)
+          .eq('model_slug', 'agente-2')
+          .not('skeleton_id', 'is', null),
+      ]);
       if (cancel) return;
-      setItems((data ?? []) as SkeletonItem[]);
+      const mapa: Record<string, number> = {};
+      for (const a of (aulas.data ?? []) as { skeleton_id: string; lesson_number: number | null }[]) {
+        mapa[a.skeleton_id] = Math.max(mapa[a.skeleton_id] ?? 0, a.lesson_number ?? 0);
+      }
+      setUltimaAula(mapa);
+      setItems((esqueletos.data ?? []) as SkeletonItem[]);
       setLoading(false);
     })();
     return () => { cancel = true; };
@@ -757,23 +778,46 @@ const SkeletonPicker: React.FC<{
             <p className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-1">
               {items.length} esqueleto{items.length > 1 ? 's' : ''} salvo{items.length > 1 ? 's' : ''}
             </p>
-            {items.map(it => (
-              <button
-                key={it.id}
-                onClick={() => onPick(it)}
-                className="w-full text-left bg-white border border-[#BE0D3E]/15 hover:border-[#BE0D3E]/40 rounded-2xl p-4 transition-all active:scale-[0.99]"
-                style={{ WebkitTapHighlightColor: 'transparent' }}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="shrink-0 w-9 h-9 rounded-xl bg-[#F6D6DC] flex items-center justify-center mt-0.5"><Layers size={16} className="text-[#BE0D3E]" /></div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[14px] font-bold text-[#1E1B11] truncate">{it.title}</p>
-                    <p className="text-[11px] text-[#5B4041]/60 line-clamp-2 mt-0.5">{it.ai_response.replace(/[#*_>`-]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120)}</p>
-                  </div>
-                  <ChevronRight size={16} className="text-[#BE0D3E]/40 shrink-0 mt-2" />
+            {items.map(it => {
+              const parouNa = ultimaAula[it.id] ?? 0;
+              return (
+                <div
+                  key={it.id}
+                  className="bg-white border border-[#BE0D3E]/15 rounded-2xl overflow-hidden transition-all"
+                >
+                  <button
+                    onClick={() => onPick(it, parouNa > 0)}
+                    className="w-full text-left p-4 active:scale-[0.99] transition-transform"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="shrink-0 w-9 h-9 rounded-xl bg-[#F6D6DC] flex items-center justify-center mt-0.5"><Layers size={16} className="text-[#BE0D3E]" /></div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[14px] font-bold text-[#1E1B11] truncate">{it.title}</p>
+                        {parouNa > 0 ? (
+                          <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-[#F6D6DC] text-[9px] font-black uppercase tracking-widest text-[#BE0D3E]">
+                            {TXT.resume_badge(parouNa)}
+                          </span>
+                        ) : (
+                          <p className="text-[11px] text-[#5B4041]/60 line-clamp-2 mt-0.5">{it.ai_response.replace(/[#*_>`-]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120)}</p>
+                        )}
+                      </div>
+                      <ChevronRight size={16} className="text-[#BE0D3E]/40 shrink-0 mt-2" />
+                    </div>
+                  </button>
+
+                  {parouNa > 0 && (
+                    <button
+                      onClick={() => onPick(it, false)}
+                      className="w-full border-t border-[#BE0D3E]/10 py-2 text-[9px] font-black uppercase tracking-widest text-[#5B4041]/45 active:bg-[#FFF7E6]"
+                      style={{ WebkitTapHighlightColor: 'transparent' }}
+                    >
+                      {TXT.resume_restart}
+                    </button>
+                  )}
                 </div>
-              </button>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -812,6 +856,9 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     agent?.slug === 'agente-2' ? 'picker' : (agent && INTAKE[agent.slug]) ? 'form' : 'chat'
   );
   const [courseName, setCourseName] = useState('');
+  // Esqueleto que está sendo roteirizado: é ele que amarra cada aula ao
+  // curso certo no banco (e faz o "continuar de onde parou" existir).
+  const [skeletonId, setSkeletonId] = useState<string | null>(null);
   const [exitMode, setExitMode] = useState(false);
   const [lessonProgress, setLessonProgress] = useState<{ current: number; total: number } | null>(null);
 
@@ -831,6 +878,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     userInput: string,
     aiResponse: string,
     title: string,
+    vinculo?: { skeletonId: string | null; lessonNumber: number },
   ) => {
     if (!SUPABASE_READY || !user || !agent) {
       setSaveStatuses(prev => ({ ...prev, [replyIdx]: 'error' }));
@@ -845,6 +893,8 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       title,
       user_input: userInput,
       ai_response: aiResponse,
+      skeleton_id: vinculo?.skeletonId ?? null,
+      lesson_number: vinculo?.lessonNumber ?? null,
     });
 
     if (error) {
@@ -858,12 +908,25 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     toast({ title: TXT.lesson_saved });
   };
 
+  /* O QUE VAI PRA IA a cada aula. A conversa inteira cresce sem parar —
+     uma aula tem uns 6 mil tokens, então na aula 20 seriam 120 mil por
+     chamada (e o backend corta a sessão em 50 mensagens). No Roteirista
+     mandamos o esqueleto, que já traz o índice inteiro do curso, mais as
+     últimas trocas — o tom e o "não repita o que acabei de dizer". É isso
+     também que deixa retomar um curso antigo custar igual a continuar um
+     que acabou de começar. */
+  const CONTEXTO_CAUDA = 4;
+  const contextoParaIA = (msgs: Message[]) =>
+    agent?.slug === 'agente-2' && msgs.length > CONTEXTO_CAUDA + 1
+      ? [msgs[0], ...msgs.slice(-CONTEXTO_CAUDA)]
+      : msgs;
+
   // Núcleo de geração: recebe a mensagem do usuário + a base de conversa a usar.
   // Passar `base` explicitamente evita ler `messages` desatualizado (formulário/picker).
   const runGeneration = async (
     userMsg: Message,
     base: Message[],
-    lessonToSave?: { courseTitle: string; lessonNumber: number },
+    lessonToSave?: { courseTitle: string; lessonNumber: number; skeletonId: string | null },
   ) => {
     const next: Message[] = [...base, userMsg];
     setMessages(next);
@@ -877,7 +940,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       const { data, error } = await supabase.functions.invoke('chat-viral', {
         body: {
           formatSlug,
-          messages: next.map(m => ({ role: m.role, content: m.content })),
+          messages: contextoParaIA(next).map(m => ({ role: m.role, content: m.content })),
           sessionId: sessionIdRef.current,
           segment: agent?.category,
         },
@@ -906,6 +969,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
           userMsg.content,
           reply,
           `${lessonToSave.courseTitle} — Aula ${lessonToSave.lessonNumber}`,
+          { skeletonId: lessonToSave.skeletonId, lessonNumber: lessonToSave.lessonNumber },
         );
       }
     } catch (err) {
@@ -932,7 +996,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     runGeneration(
       { role: 'user', content, display },
       messages,
-      { courseTitle: courseName || 'Meu curso', lessonNumber: nextLesson },
+      { courseTitle: courseName || 'Meu curso', lessonNumber: nextLesson, skeletonId },
     );
   };
 
@@ -961,6 +1025,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     setSavedIdx(new Set());
     setSaveStatuses({});
     setLessonProgress(null);
+    setSkeletonId(null);
     if (agent.slug === 'agente-2') { setMessages([]); setStage('picker'); return; }
     if (INTAKE[agent.slug]) { setMessages([]); setStage('form'); return; }
     setMessages([{ role: 'ia', content: INITIAL_MSG(agent) }]);
@@ -995,6 +1060,14 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       return;
     }
     setSaving(true);
+    // Se for a aula que acabou de sair no Roteirista, amarra ao curso do
+    // mesmo jeito que o salvamento automático faria — é o caso de quando o
+    // automático falhou e a pessoa clicou em "tentar salvar". Bubble antigo
+    // (rolou pra cima e salvou) fica sem vínculo de propósito: não dá pra
+    // saber que número era sem chutar.
+    const ehAulaAtual =
+      agent.slug === 'agente-2' && !!skeletonId && !!lessonProgress
+      && saveModalIdx === messages.length - 1;
     const { error } = await supabase.from('saved_viral_outputs').insert({
       user_id: user.id,
       model_slug: agent.slug,
@@ -1002,6 +1075,8 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       title: cleanTitle,
       user_input: userMsg.content,
       ai_response: iaMsg.content,
+      skeleton_id: ehAulaAtual ? skeletonId : null,
+      lesson_number: ehAulaAtual ? lessonProgress.current : null,
     });
     setSaving(false);
     if (error) {
@@ -1027,19 +1102,67 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     runGeneration({ role: 'user', content: briefing }, []);
   };
 
-  // Esqueleto escolhido no Roteirista → injeta como base e pede a 1ª aula.
-  const handlePickSkeleton = (it: SkeletonItem) => {
+  /* Esqueleto escolhido no Roteirista.
+
+     `retomar` = a pessoa já escreveu aula desse curso antes. A conversa
+     não vive em lugar nenhum entre uma visita e outra (sair da tela
+     desmonta tudo), mas as AULAS estão salvas e agora sabem de qual
+     esqueleto vieram — então a conversa é remontada a partir delas, na
+     ordem, e o progresso volta pro número certo. */
+  const handlePickSkeleton = async (it: SkeletonItem, retomar: boolean) => {
     const totalLessons = countLessonsInSkeleton(it.ai_response);
     setCourseName(it.title);
-    setLessonProgress({ current: 1, total: totalLessons });
+    setSkeletonId(it.id);
     setSaveStatuses({});
+    setSavedIdx(new Set());
     setStage('chat');
+
+    if (retomar && user && SUPABASE_READY) {
+      setMessages([]);
+      setLoading(true);
+      const { data } = await supabase
+        .from('saved_viral_outputs')
+        .select('lesson_number, ai_response')
+        .eq('user_id', user.id)
+        .eq('skeleton_id', it.id)
+        .not('lesson_number', 'is', null)
+        .order('lesson_number', { ascending: true })
+        .order('created_at', { ascending: true });
+      setLoading(false);
+
+      // A mesma aula pode ter sido escrita mais de uma vez (recomeço,
+      // tentativa que não agradou): vale a última versão de cada número.
+      const porNumero = new Map<number, string>();
+      for (const r of (data ?? []) as { lesson_number: number; ai_response: string }[]) {
+        porNumero.set(r.lesson_number, r.ai_response);
+      }
+      const aulas = [...porNumero.entries()].sort((a, b) => a[0] - b[0]);
+
+      if (aulas.length > 0) {
+        const parouNa = aulas[aulas.length - 1][0];
+        const contexto = `Esqueleto validado do curso "${it.title}":\n\n${it.ai_response}\n\nAs aulas 1 a ${parouNa} já foram escritas — a última está logo abaixo. Continue exatamente de onde parou, sem repetir o que já foi dito, e escreva apenas a aula que eu pedir a seguir.`;
+        setMessages([
+          { role: 'user', content: contexto, display: TXT.resume_display(it.title, parouNa) },
+          ...aulas.map(([, texto]) => ({ role: 'ia' as const, content: texto })),
+        ]);
+        // As aulas remontadas já estão na Biblioteca — nascem marcadas
+        // como salvas pra não oferecer salvar de novo (viraria duplicata).
+        const indices = aulas.map((_, i) => i + 1);
+        setSavedIdx(new Set(indices));
+        setSaveStatuses(Object.fromEntries(indices.map(i => [i, 'saved' as SaveStatus])));
+        setLessonProgress({ current: parouNa, total: Math.max(totalLessons, parouNa) });
+        return;
+      }
+      // Sem aula salva (só o esqueleto): segue como curso novo.
+    }
+
+    setLessonProgress({ current: 1, total: totalLessons });
     const injected = `Esqueleto validado do curso "${it.title}":\n\n${it.ai_response}\n\nComece escrevendo a primeira aula (Aula 1) com base nesse esqueleto.`;
     const display = `📋 Curso escolhido: "${it.title}".\n\nVou criar uma aula por vez e salvar cada aula automaticamente na Biblioteca.`;
     runGeneration(
       { role: 'user', content: injected, display },
       [],
-      { courseTitle: it.title, lessonNumber: 1 },
+      { courseTitle: it.title, lessonNumber: 1, skeletonId: it.id },
     );
   };
 
