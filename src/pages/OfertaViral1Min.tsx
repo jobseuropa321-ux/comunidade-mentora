@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { trackAscension } from '@/lib/ascension';
 
 /* ══════════════════════════════════════════════════════════════════════
    OFERTA · VIRAL EM 1 MINUTO — primeira seção da /pagb dentro do app.
@@ -135,8 +136,14 @@ const DelayGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const OfertaViral1Min: React.FC = () => {
-
-
+  // Passo 2 do funil: abriu a aula com a VSL. O ref evita contar duas vezes
+  // no StrictMode (dev monta → desmonta → monta).
+  const jaContou = React.useRef(false);
+  useEffect(() => {
+    if (jaContou.current) return;
+    jaContou.current = true;
+    trackAscension('vsl');
+  }, []);
 
   return (
     <div className="oferta-v1m min-h-screen">
@@ -233,7 +240,13 @@ const OfertaViral1Min: React.FC = () => {
           {/* 3 + 4) TRAVA → BOTÃO */}
           <DelayGate>
             <div className="cta-block">
-              <a href={CTA_HREF} target="_blank" rel="noopener noreferrer" className="alpha-btn">
+              <a
+                href={CTA_HREF}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="alpha-btn"
+                onClick={() => trackAscension('cta')}
+              >
                 <span className="btn-content">{CTA_TEXT}</span>
               </a>
             </div>

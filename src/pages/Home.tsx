@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Loader2, Image as ImageIcon } from 'lucide-react';
 import { useAllModules, type Module } from '@/hooks/useCourses';
 import BannerCarousel from '@/components/BannerCarousel';
+import { trackAscension } from '@/lib/ascension';
 
 // Pra adicionar/trocar banner: jogue o .webp em `public/covers/` e adicione aqui.
 // Slots sem arquivo somem do carrossel (BannerCarousel filtra 404).
@@ -137,6 +138,7 @@ const Home: React.FC = () => {
             >
               <Link
                 to="/modulo/viral-em-1-minuto"
+                onClick={() => trackAscension('modulo')}
                 className="min-w-[148px] h-[200px] rounded-[1rem] border border-[#BE0D3E]/20 relative overflow-hidden shrink-0 shadow-[0_8px_20px_rgba(255,45,122,0.12)] bg-[#FFF9EE] cursor-pointer active:scale-[0.97] transition-transform block"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >

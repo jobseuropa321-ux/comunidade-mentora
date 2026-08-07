@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, BookOpen, Radio, KeyRound, Loader2 } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, BookOpen, Radio, KeyRound, TrendingUp, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminCourses from '@/components/admin/AdminCourses';
 import AdminLive from '@/components/admin/AdminLive';
 import AdminAccess from '@/components/admin/AdminAccess';
+import AdminAscensao from '@/components/admin/AdminAscensao';
 
-type Tab = 'cursos' | 'aovivo' | 'acessos';
+type Tab = 'cursos' | 'aovivo' | 'acessos' | 'ascensao';
 
 const Admin: React.FC = () => {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ const Admin: React.FC = () => {
     { id: 'cursos', label: 'Cursos', icon: BookOpen },
     { id: 'aovivo', label: 'Ao Vivo', icon: Radio },
     { id: 'acessos', label: 'Acessos', icon: KeyRound },
+    { id: 'ascensao', label: 'Ascensão', icon: TrendingUp },
   ];
 
   return (
@@ -55,19 +57,19 @@ const Admin: React.FC = () => {
       </div>
 
       {/* Abas */}
-      <div className="grid grid-cols-3 gap-1 bg-[#F6D6DC]/50 p-1 rounded-xl mb-5">
+      <div className="grid grid-cols-4 gap-1 bg-[#F6D6DC]/50 p-1 rounded-xl mb-5">
         {TABS.map(t => {
           const active = tab === t.id;
           return (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[11px] font-black uppercase tracking-widest transition-colors ${
+              className={`flex items-center justify-center gap-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ${
                 active ? 'bg-white text-[#BE0D3E] shadow-sm' : 'text-[#5B4041]/70'
               }`}
               style={{ WebkitTapHighlightColor: 'transparent' }}
             >
-              <t.icon size={13} /> {t.label}
+              <t.icon size={12} className="shrink-0" /> {t.label}
             </button>
           );
         })}
@@ -76,6 +78,7 @@ const Admin: React.FC = () => {
       {tab === 'cursos' && <AdminCourses />}
       {tab === 'aovivo' && <AdminLive />}
       {tab === 'acessos' && <AdminAccess />}
+      {tab === 'ascensao' && <AdminAscensao />}
     </div>
   );
 };
