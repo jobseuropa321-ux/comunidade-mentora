@@ -30,23 +30,26 @@ import {
   Target, GraduationCap, ScanFace,
   type LucideIcon,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-/* Especialidades (cor + rótulo no card e no header do chat). */
+/* Especialidades — só id e cor. O rótulo vem do dicionário
+   (agentes.categorias.<id>): duplicar o array por idioma é a armadilha nº 1
+   do kit. */
 export const CATEGORIES = [
-  { id: 'estrutura', label: 'Estrutura',  color: 'text-[#BE0D3E]', dot: 'bg-[#BE0D3E]' },
-  { id: 'roteiro',   label: 'Roteiros',   color: 'text-[#C77E14]', dot: 'bg-[#F6B43A]' },
-  { id: 'apostila',  label: 'Apostila',   color: 'text-[#D06A85]', dot: 'bg-[#ECA6BB]' },
-  { id: 'pesquisa',  label: 'Pesquisa',   color: 'text-[#94002D]', dot: 'bg-[#94002D]' },
-  { id: 'nome',      label: 'Naming',     color: 'text-[#BE0D3E]', dot: 'bg-[#BE0D3E]' },
-  { id: 'promessa',  label: 'Copy',       color: 'text-[#D06A85]', dot: 'bg-[#E06B85]' },
+  { id: 'estrutura',   color: 'text-[#BE0D3E]', dot: 'bg-[#BE0D3E]' },
+  { id: 'roteiro',     color: 'text-[#C77E14]', dot: 'bg-[#F6B43A]' },
+  { id: 'apostila',    color: 'text-[#D06A85]', dot: 'bg-[#ECA6BB]' },
+  { id: 'pesquisa',    color: 'text-[#94002D]', dot: 'bg-[#94002D]' },
+  { id: 'nome',        color: 'text-[#BE0D3E]', dot: 'bg-[#BE0D3E]' },
+  { id: 'promessa',    color: 'text-[#D06A85]', dot: 'bg-[#E06B85]' },
   // anúncios (azul) — tráfego pago
-  { id: 'anuncioPS',   label: 'Anúncio',   color: 'text-[#1D4ED8]', dot: 'bg-[#2563EB]' },
-  { id: 'anuncioAula', label: 'Mini-Aula', color: 'text-[#0369A1]', dot: 'bg-[#0EA5E9]' },
+  { id: 'anuncioPS',   color: 'text-[#1D4ED8]', dot: 'bg-[#2563EB]' },
+  { id: 'anuncioAula', color: 'text-[#0369A1]', dot: 'bg-[#0EA5E9]' },
   // bônus de viralização — lime + rosa choque (id visual "Viral em 1 Minuto")
-  { id: 'ganchos',   label: 'Ganchos',    color: 'text-[#E8226C]', dot: 'bg-[#FF2D7A]' },
-  { id: 'narrado',   label: 'Narrado',    color: 'text-[#6E8B00]', dot: 'bg-[#C8F000]' },
-  { id: 'carrossel', label: 'Carrossel',  color: 'text-[#E8226C]', dot: 'bg-[#FF2D7A]' },
-  { id: 'perfil',    label: 'Perfil',     color: 'text-[#B0004E]', dot: 'bg-[#FF2D7A]' },
+  { id: 'ganchos',     color: 'text-[#E8226C]', dot: 'bg-[#FF2D7A]' },
+  { id: 'narrado',     color: 'text-[#6E8B00]', dot: 'bg-[#C8F000]' },
+  { id: 'carrossel',   color: 'text-[#E8226C]', dot: 'bg-[#FF2D7A]' },
+  { id: 'perfil',      color: 'text-[#B0004E]', dot: 'bg-[#FF2D7A]' },
 ];
 
 /* Gradientes prontos pros palcos dos robôs — família de cores da marca. */
@@ -67,17 +70,18 @@ export const GRAD = {
   viralScan: 'linear-gradient(155deg, #5C0028 0%, #B0004E 38%, #FF2D7A 78%, #C8F000 128%)',
 };
 
-export interface Agent {
+/* O agente guarda só o que NÃO é texto: slug, categoria, ícone, gradiente e
+   os dois marcadores de comportamento. Nome, descrição e mensagem de abertura
+   vivem no dicionário e são resolvidos no render por useAgents(). */
+export interface AgentBase {
+  /** identificador único. TEM QUE BATER com a linha de `viral_models` no
+   *  Supabase (é de lá que o backend lê o PROMPT). ⚠️ NÃO renomeie. */
   slug: string;
-  name: string;
-  desc: string;
   category: string;
   icon: LucideIcon;
   gradient: string;
   /** true = agente BÔNUS (viralização) — recebe destaque lime/rosa no Estúdio. */
   bonus?: boolean;
-  /** Mensagem inicial customizada da IA. Se não tiver, usa a default genérica.  */
-  openingMessage?: string;
   /**
    * Agente-FERRAMENTA: em vez do chat, abre uma tela própria.
    * 'analisar-perfil' → <AnalisarPerfilAgent /> (upload de print + visão).
@@ -86,128 +90,55 @@ export interface Agent {
   tool?: 'analisar-perfil';
 }
 
-/* ── OS AGENTES — a esteira do curso, na ordem ── */
-export const AGENTS: Agent[] = [
-  {
-    slug: 'agente-4',
-    name: 'Pesquisa de Mercado',
-    desc: 'Mapeia concorrentes, dores e oportunidades do seu nicho.',
-    category: 'pesquisa',
-    icon: BarChart3,
-    gradient: GRAD.wine,
-    openingMessage:
-      'Olá! Eu sou o **Pesquisa de Mercado** 🔎\n\nEu investigo o seu nicho: **concorrentes, dores da audiência e oportunidades** de posicionamento.\n\nMe conta:\n\n1. Qual é o seu **nicho**?\n2. Quem é a sua **cliente ideal**?',
-  },
-  {
-    slug: 'agente-5',
-    name: 'Nome Potente',
-    desc: 'Cria nomes fortes e vendedores pro seu produto.',
-    category: 'nome',
-    icon: Tag,
-    gradient: GRAD.sunset,
-    openingMessage: 'Olá! Eu sou o **Nome Potente** 🏷️\n\nEu crio nomes fortes, claros e memoráveis pro seu produto.',
-  },
-  {
-    slug: 'agente-1',
-    name: 'Arquiteto do Curso',
-    desc: 'Monta o esqueleto do curso: módulos e aulas na ordem certa.',
-    category: 'estrutura',
-    icon: Blocks,
-    gradient: GRAD.red,
-    openingMessage:
-      'Olá! Eu sou o **Arquiteto do Curso** 🏗️\n\nEu desenho o **esqueleto completo** do seu curso: módulos, aulas e a ordem ideal de ensino.\n\nPra começar, me conta:\n\n1. Qual é o seu **nicho**?\n2. Qual **transformação** você quer entregar pras suas alunas?',
-  },
-  {
-    slug: 'agente-2',
-    name: 'Roteirista de Aulas',
-    desc: 'Escreve o roteiro de cada aula, pronto pra gravar.',
-    category: 'roteiro',
-    icon: Clapperboard,
-    gradient: GRAD.orange,
-    openingMessage:
-      'Olá! Eu sou a **Roteirista de Aulas** 🎬\n\nEu transformo cada aula num **roteiro pronto pra gravar** — com abertura, desenvolvimento e fechamento.\n\nMe manda:\n\n1. O **tema da aula** (ou cole o esqueleto que o Arquiteto montou)\n2. O **nível** das suas alunas (iniciantes, intermediárias...)',
-  },
-  {
-    slug: 'agente-6',
-    name: 'Promessa Irresistível',
-    desc: 'Escreve promessas SMART pra headline da sua oferta.',
-    category: 'promessa',
-    icon: Megaphone,
-    gradient: GRAD.rose,
-    openingMessage: 'Olá! Eu sou a **Promessa Irresistível** 📣\n\nEu crio promessas fortes e específicas pra sua oferta.',
-  },
-  {
-    slug: 'agente-3',
-    name: 'Apostila Técnica',
-    desc: 'Cria a apostila do curso, o material de apoio das alunas.',
-    category: 'apostila',
-    icon: BookOpen,
-    gradient: GRAD.rose,
-    openingMessage:
-      'Olá! Eu sou a **Apostila Técnica** 📘\n\nEu escrevo o **material de apoio** do seu curso, capítulo por capítulo, em linguagem clara.\n\nMe conta:\n\n1. O **tema ou módulo** da apostila\n2. O **nível** das suas alunas',
-  },
-  {
-    slug: 'agente-10',
-    name: 'Anúncio Problema/Solução',
-    desc: 'Cria 5 anúncios que expõem a dor e entregam a solução.',
-    category: 'anuncioPS',
-    icon: Target,
-    gradient: GRAD.adBlue,
-    openingMessage:
-      'Olá! Eu sou o **Anúncio Problema/Solução** 🎯\n\nEu crio **5 anúncios** que expõem a dor da sua cliente e entregam a solução na lata.\n\nPra começar, me conta:\n\n1. Qual é o seu **produto**?\n2. Quem é o **expert** por trás dele?\n3. Qual é o seu **nicho**?',
-  },
-  {
-    slug: 'agente-11',
-    name: 'Anúncio Mini-Aula',
-    desc: 'Cria 5 anúncios que ensinam um passo e abrem pro próximo nível.',
-    category: 'anuncioAula',
-    icon: GraduationCap,
-    gradient: GRAD.adSky,
-    openingMessage:
-      'Olá! Eu sou o **Anúncio Mini-Aula** 🎓\n\nEu crio **5 anúncios** que ensinam um passo na prática e abrem a porta pro próximo nível.\n\nPra começar, me conta:\n\n1. Qual é o seu **produto**?\n2. Quem é o **expert** por trás dele?\n3. Qual é o seu **nicho**?',
-  },
-  {
-    slug: 'agente-7',
-    name: 'Ganchos Virais',
-    desc: 'Gera 20 ganchos de alta retenção pros seus vídeos.',
-    category: 'ganchos',
-    icon: Anchor,
-    gradient: GRAD.viralPink,
-    bonus: true,
-    openingMessage: 'Olá! Eu sou os **Ganchos Virais** 🪝\n\nEu crio 20 ganchos que fazem a pessoa parar de rolar a tela.',
-  },
-  {
-    slug: 'agente-8',
-    name: 'Narrado Técnico',
-    desc: 'Roteiros narrados técnicos de até 90s pra viralizar.',
-    category: 'narrado',
-    icon: Mic,
-    gradient: GRAD.viralLime,
-    bonus: true,
-    openingMessage: 'Olá! Eu sou o **Narrado Técnico** 🎙️\n\nEu crio roteiros técnicos, fortes e fáceis de gravar.',
-  },
-  {
-    slug: 'agente-9',
-    name: 'Carrossel Viral',
-    desc: 'Monta carrosséis de 10 slides que prendem e convertem.',
-    category: 'carrossel',
-    icon: GalleryHorizontalEnd,
-    gradient: GRAD.viralMix,
-    bonus: true,
-    openingMessage: 'Olá! Eu sou o **Carrossel Viral** 🎠\n\nEu monto carrosséis estratégicos, slide a slide.',
-  },
-  {
-    slug: 'agente-12',
-    name: 'Analisar Meu Perfil',
-    desc: 'Manda a print do seu perfil e ele turbina foto, nome e bio.',
-    category: 'perfil',
-    icon: ScanFace,
-    gradient: GRAD.viralScan,
-    bonus: true,
-    tool: 'analisar-perfil',
-  },
+/** Agente já com os textos resolvidos no idioma da tela. */
+export interface Agent extends AgentBase {
+  name: string;
+  desc: string;
+  openingMessage?: string;
+}
+
+/* ── OS AGENTES — a esteira do curso, na ordem ──
+   Para adicionar um 6º agente: acrescente o objeto aqui, as chaves
+   agentes.<slug>.{nome,desc,abertura} nos DOIS dicionários, e a linha com o
+   prompt em `viral_models`. */
+export const AGENTS_BASE: AgentBase[] = [
+  { slug: 'agente-4',  category: 'pesquisa',    icon: BarChart3,             gradient: GRAD.wine },
+  { slug: 'agente-5',  category: 'nome',        icon: Tag,                   gradient: GRAD.sunset },
+  { slug: 'agente-1',  category: 'estrutura',   icon: Blocks,                gradient: GRAD.red },
+  { slug: 'agente-2',  category: 'roteiro',     icon: Clapperboard,          gradient: GRAD.orange },
+  { slug: 'agente-6',  category: 'promessa',    icon: Megaphone,             gradient: GRAD.rose },
+  { slug: 'agente-3',  category: 'apostila',    icon: BookOpen,              gradient: GRAD.rose },
+  { slug: 'agente-10', category: 'anuncioPS',   icon: Target,                gradient: GRAD.adBlue },
+  { slug: 'agente-11', category: 'anuncioAula', icon: GraduationCap,         gradient: GRAD.adSky },
+  { slug: 'agente-7',  category: 'ganchos',     icon: Anchor,                gradient: GRAD.viralPink, bonus: true },
+  { slug: 'agente-8',  category: 'narrado',     icon: Mic,                   gradient: GRAD.viralLime, bonus: true },
+  { slug: 'agente-9',  category: 'carrossel',   icon: GalleryHorizontalEnd,  gradient: GRAD.viralMix,  bonus: true },
+  { slug: 'agente-12', category: 'perfil',      icon: ScanFace,              gradient: GRAD.viralScan, bonus: true, tool: 'analisar-perfil' },
 ];
 
-/** Mensagem de abertura default (quando o agente não define openingMessage). */
-export const defaultOpening = (name: string) =>
-  `Olá! Sou especialista em **${name}**.\n\nPra começar, me conta:\n\n1. Qual é o seu **nicho**?\n2. O que você quer criar hoje?`;
+type TFunc = (k: string, o?: Record<string, unknown>) => string;
+
+/** Mensagem de abertura default (quando o agente não tem uma própria). */
+export const defaultOpening = (name: string, t: TFunc) =>
+  t('agentes.aberturaDefault', { name });
+
+export const resolveAgents = (t: TFunc): Agent[] =>
+  AGENTS_BASE.map((a) => {
+    // defaultValue: '' porque agente-ferramenta (agente-12) não tem abertura —
+    // sem isso o t() devolveria a própria chave e ela viraria a mensagem.
+    const abertura = t(`agentes.${a.slug}.abertura`, { defaultValue: '' });
+    return {
+      ...a,
+      name: t(`agentes.${a.slug}.nome`),
+      desc: t(`agentes.${a.slug}.desc`),
+      // string vazia no dicionário = agente sem abertura própria
+      openingMessage: abertura ? abertura : undefined,
+    };
+  });
+
+/** Rótulo da especialidade no idioma da tela. */
+export const categoryLabel = (id: string | undefined, t: TFunc) =>
+  id ? t(`agentes.categorias.${id}`) : '';
+
+/** Os agentes já traduzidos. Use isto nos componentes. */
+export const useAgents = (): Agent[] => resolveAgents(useTranslation().t);

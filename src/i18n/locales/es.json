@@ -408,5 +408,82 @@
     "limit_chats_segment": "Ya usaste tus **{{limit}} chats de \"{{segment}}\"** de hoy. ¡Prueba otro agente o vuelve mañana!",
     "limit_reached_msg": "**Límite alcanzado**\n\n{{detail}}",
     "limit_messages_msg": "**Límite de mensajes**\n\nYa enviaste el máximo de {{limit}} mensajes en esta conversación. Vuelve al Estudio e inicia una conversación nueva."
+  },
+  "agentes": {
+    "bonus": "BONUS",
+    "aberturaDefault": "¡Hola! Soy especialista en **{{name}}**.\n\nPara empezar, cuéntame:\n\n1. ¿Cuál es tu **nicho**?\n2. ¿Qué quieres crear hoy?",
+    "categorias": {
+      "estrutura": "Estructura",
+      "roteiro": "Guiones",
+      "apostila": "Apuntes",
+      "pesquisa": "Investigación",
+      "nome": "Naming",
+      "promessa": "Copy",
+      "anuncioPS": "Anuncio",
+      "anuncioAula": "Mini-Clase",
+      "ganchos": "Ganchos",
+      "narrado": "Narrado",
+      "carrossel": "Carrusel",
+      "perfil": "Perfil"
+    },
+    "agente-1": {
+      "nome": "Arquitecto del Curso",
+      "desc": "Monta el esqueleto del curso: módulos y clases en el orden correcto.",
+      "abertura": "¡Hola! Soy el **Arquitecto del Curso** 🏗️\n\nDiseño el **esqueleto completo** de tu curso: módulos, clases y el orden ideal de enseñanza.\n\nPara empezar, cuéntame:\n\n1. ¿Cuál es tu **nicho**?\n2. ¿Qué **transformación** quieres entregar a tus alumnas?"
+    },
+    "agente-2": {
+      "nome": "Guionista de Clases",
+      "desc": "Escribe el guion de cada clase, listo para grabar.",
+      "abertura": "¡Hola! Soy la **Guionista de Clases** 🎬\n\nConvierto cada clase en un **guion listo para grabar** — con apertura, desarrollo y cierre.\n\nEnvíame:\n\n1. El **tema de la clase** (o pega el esqueleto que montó el Arquitecto)\n2. El **nivel** de tus alumnas (principiantes, intermedias...)"
+    },
+    "agente-3": {
+      "nome": "Apuntes Técnicos",
+      "desc": "Crea los apuntes del curso, el material de apoyo de las alumnas.",
+      "abertura": "¡Hola! Soy los **Apuntes Técnicos** 📘\n\nEscribo el **material de apoyo** de tu curso, capítulo a capítulo, en lenguaje claro.\n\nCuéntame:\n\n1. El **tema o módulo** de los apuntes\n2. El **nivel** de tus alumnas"
+    },
+    "agente-4": {
+      "nome": "Investigación de Mercado",
+      "desc": "Mapea competidores, dolores y oportunidades de tu nicho.",
+      "abertura": "¡Hola! Soy la **Investigación de Mercado** 🔎\n\nInvestigo tu nicho: **competidores, dolores de la audiencia y oportunidades** de posicionamiento.\n\nCuéntame:\n\n1. ¿Cuál es tu **nicho**?\n2. ¿Quién es tu **clienta ideal**?"
+    },
+    "agente-5": {
+      "nome": "Nombre Potente",
+      "desc": "Crea nombres fuertes y vendedores para tu producto.",
+      "abertura": "¡Hola! Soy el **Nombre Potente** 🏷️\n\nCreo nombres fuertes, claros y memorables para tu producto."
+    },
+    "agente-6": {
+      "nome": "Promesa Irresistible",
+      "desc": "Escribe promesas SMART para el titular de tu oferta.",
+      "abertura": "¡Hola! Soy la **Promesa Irresistible** 📣\n\nCreo promesas fuertes y específicas para tu oferta."
+    },
+    "agente-7": {
+      "nome": "Ganchos Virales",
+      "desc": "Genera 20 ganchos de alta retención para tus vídeos.",
+      "abertura": "¡Hola! Soy los **Ganchos Virales** 🪝\n\nCreo 20 ganchos que hacen que la persona deje de deslizar la pantalla."
+    },
+    "agente-8": {
+      "nome": "Narrado Técnico",
+      "desc": "Guiones narrados técnicos de hasta 90s para viralizar.",
+      "abertura": "¡Hola! Soy el **Narrado Técnico** 🎙️\n\nCreo guiones técnicos, potentes y fáciles de grabar."
+    },
+    "agente-9": {
+      "nome": "Carrusel Viral",
+      "desc": "Monta carruseles de 10 diapositivas que enganchan y convierten.",
+      "abertura": "¡Hola! Soy el **Carrusel Viral** 🎠\n\nMonto carruseles estratégicos, diapositiva a diapositiva."
+    },
+    "agente-10": {
+      "nome": "Anuncio Problema/Solución",
+      "desc": "Crea 5 anuncios que exponen el dolor y entregan la solución.",
+      "abertura": "¡Hola! Soy el **Anuncio Problema/Solución** 🎯\n\nCreo **5 anuncios** que exponen el dolor de tu clienta y entregan la solución sin rodeos.\n\nPara empezar, cuéntame:\n\n1. ¿Cuál es tu **producto**?\n2. ¿Quién es el **experto** detrás de él?\n3. ¿Cuál es tu **nicho**?"
+    },
+    "agente-11": {
+      "nome": "Anuncio Mini-Clase",
+      "desc": "Crea 5 anuncios que enseñan un paso y abren al siguiente nivel.",
+      "abertura": "¡Hola! Soy el **Anuncio Mini-Clase** 🎓\n\nCreo **5 anuncios** que enseñan un paso en la práctica y abren la puerta al siguiente nivel.\n\nPara empezar, cuéntame:\n\n1. ¿Cuál es tu **producto**?\n2. ¿Quién es el **experto** detrás de él?\n3. ¿Cuál es tu **nicho**?"
+    },
+    "agente-12": {
+      "nome": "Analizar Mi Perfil",
+      "desc": "Manda la captura de tu perfil y mejora foto, nombre y bio."
+    }
   }
 }

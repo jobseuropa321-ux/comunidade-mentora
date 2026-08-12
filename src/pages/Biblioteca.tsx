@@ -8,7 +8,7 @@ import {
 import { supabase, SUPABASE_READY } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { AGENTS } from '@/data/agents';
+import { useAgents } from '@/data/agents';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 import { formatDateNumeric } from '@/lib/formatLocale';
 import { useCurrentLang, type SupportedLang } from '@/i18n/LanguageProvider';
@@ -100,6 +100,7 @@ const LIBRARY_SECTIONS = [
 ───────────────────────────────────────────── */
 const ModelsOverview: React.FC = () => {
   const lang = useCurrentLang();
+  const AGENTS = useAgents();
   const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -299,6 +300,7 @@ const ModelsOverview: React.FC = () => {
 ───────────────────────────────────────────── */
 const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
   const lang = useCurrentLang();
+  const AGENTS = useAgents();
   const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   const { toast } = useToast();

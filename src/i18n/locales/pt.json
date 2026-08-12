@@ -408,5 +408,82 @@
     "limit_chats_segment": "Você já usou seus **{{limit}} chats de \"{{segment}}\"** hoje. Tenta outro agente ou volta amanhã!",
     "limit_reached_msg": "**Limite atingido**\n\n{{detail}}",
     "limit_messages_msg": "**Limite de mensagens**\n\nVocê já enviou o máximo de {{limit}} mensagens nessa conversa. Volte ao Estúdio e inicie uma nova conversa."
+  },
+  "agentes": {
+    "bonus": "BÔNUS",
+    "aberturaDefault": "Olá! Sou especialista em **{{name}}**.\n\nPra começar, me conta:\n\n1. Qual é o seu **nicho**?\n2. O que você quer criar hoje?",
+    "categorias": {
+      "estrutura": "Estrutura",
+      "roteiro": "Roteiros",
+      "apostila": "Apostila",
+      "pesquisa": "Pesquisa",
+      "nome": "Naming",
+      "promessa": "Copy",
+      "anuncioPS": "Anúncio",
+      "anuncioAula": "Mini-Aula",
+      "ganchos": "Ganchos",
+      "narrado": "Narrado",
+      "carrossel": "Carrossel",
+      "perfil": "Perfil"
+    },
+    "agente-1": {
+      "nome": "Arquiteto do Curso",
+      "desc": "Monta o esqueleto do curso: módulos e aulas na ordem certa.",
+      "abertura": "Olá! Eu sou o **Arquiteto do Curso** 🏗️\n\nEu desenho o **esqueleto completo** do seu curso: módulos, aulas e a ordem ideal de ensino.\n\nPra começar, me conta:\n\n1. Qual é o seu **nicho**?\n2. Qual **transformação** você quer entregar pras suas alunas?"
+    },
+    "agente-2": {
+      "nome": "Roteirista de Aulas",
+      "desc": "Escreve o roteiro de cada aula, pronto pra gravar.",
+      "abertura": "Olá! Eu sou a **Roteirista de Aulas** 🎬\n\nEu transformo cada aula num **roteiro pronto pra gravar** — com abertura, desenvolvimento e fechamento.\n\nMe manda:\n\n1. O **tema da aula** (ou cole o esqueleto que o Arquiteto montou)\n2. O **nível** das suas alunas (iniciantes, intermediárias...)"
+    },
+    "agente-3": {
+      "nome": "Apostila Técnica",
+      "desc": "Cria a apostila do curso, o material de apoio das alunas.",
+      "abertura": "Olá! Eu sou a **Apostila Técnica** 📘\n\nEu escrevo o **material de apoio** do seu curso, capítulo por capítulo, em linguagem clara.\n\nMe conta:\n\n1. O **tema ou módulo** da apostila\n2. O **nível** das suas alunas"
+    },
+    "agente-4": {
+      "nome": "Pesquisa de Mercado",
+      "desc": "Mapeia concorrentes, dores e oportunidades do seu nicho.",
+      "abertura": "Olá! Eu sou o **Pesquisa de Mercado** 🔎\n\nEu investigo o seu nicho: **concorrentes, dores da audiência e oportunidades** de posicionamento.\n\nMe conta:\n\n1. Qual é o seu **nicho**?\n2. Quem é a sua **cliente ideal**?"
+    },
+    "agente-5": {
+      "nome": "Nome Potente",
+      "desc": "Cria nomes fortes e vendedores pro seu produto.",
+      "abertura": "Olá! Eu sou o **Nome Potente** 🏷️\n\nEu crio nomes fortes, claros e memoráveis pro seu produto."
+    },
+    "agente-6": {
+      "nome": "Promessa Irresistível",
+      "desc": "Escreve promessas SMART pra headline da sua oferta.",
+      "abertura": "Olá! Eu sou a **Promessa Irresistível** 📣\n\nEu crio promessas fortes e específicas pra sua oferta."
+    },
+    "agente-7": {
+      "nome": "Ganchos Virais",
+      "desc": "Gera 20 ganchos de alta retenção pros seus vídeos.",
+      "abertura": "Olá! Eu sou os **Ganchos Virais** 🪝\n\nEu crio 20 ganchos que fazem a pessoa parar de rolar a tela."
+    },
+    "agente-8": {
+      "nome": "Narrado Técnico",
+      "desc": "Roteiros narrados técnicos de até 90s pra viralizar.",
+      "abertura": "Olá! Eu sou o **Narrado Técnico** 🎙️\n\nEu crio roteiros técnicos, fortes e fáceis de gravar."
+    },
+    "agente-9": {
+      "nome": "Carrossel Viral",
+      "desc": "Monta carrosséis de 10 slides que prendem e convertem.",
+      "abertura": "Olá! Eu sou o **Carrossel Viral** 🎠\n\nEu monto carrosséis estratégicos, slide a slide."
+    },
+    "agente-10": {
+      "nome": "Anúncio Problema/Solução",
+      "desc": "Cria 5 anúncios que expõem a dor e entregam a solução.",
+      "abertura": "Olá! Eu sou o **Anúncio Problema/Solução** 🎯\n\nEu crio **5 anúncios** que expõem a dor da sua cliente e entregam a solução na lata.\n\nPra começar, me conta:\n\n1. Qual é o seu **produto**?\n2. Quem é o **expert** por trás dele?\n3. Qual é o seu **nicho**?"
+    },
+    "agente-11": {
+      "nome": "Anúncio Mini-Aula",
+      "desc": "Cria 5 anúncios que ensinam um passo e abrem pro próximo nível.",
+      "abertura": "Olá! Eu sou o **Anúncio Mini-Aula** 🎓\n\nEu crio **5 anúncios** que ensinam um passo na prática e abrem a porta pro próximo nível.\n\nPra começar, me conta:\n\n1. Qual é o seu **produto**?\n2. Quem é o **expert** por trás dele?\n3. Qual é o seu **nicho**?"
+    },
+    "agente-12": {
+      "nome": "Analisar Meu Perfil",
+      "desc": "Manda a print do seu perfil e ele turbina foto, nome e bio."
+    }
   }
 }

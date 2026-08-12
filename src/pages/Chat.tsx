@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { readFnError } from '@/lib/functionsError';
-import { AGENTS, CATEGORIES, defaultOpening, type Agent } from '@/data/agents';
+import { useAgents, CATEGORIES, categoryLabel, defaultOpening, type Agent } from '@/data/agents';
 import VoiceField from '@/components/VoiceField';
 import { Robot, SceneFX, ACCENT, type RobotKind } from '@/components/estudio/AgentRobot';
 import AnalisarPerfilAgent from '@/components/estudio/AnalisarPerfilAgent';
@@ -147,6 +147,7 @@ const AgentCard: React.FC<{ agent: Agent; index: number; reduce: boolean; onOpen
   agent, index, reduce, onOpen,
 }) => {
   const TXT = useTxt();
+  const { t } = useTranslation();
   const kind = agent.category as RobotKind;
   const cat = CATEGORIES.find(c => c.id === agent.category);
   const a = ACCENT[kind] ?? ACCENT.estrutura;
@@ -178,7 +179,7 @@ const AgentCard: React.FC<{ agent: Agent; index: number; reduce: boolean; onOpen
         <div className="flex items-center gap-1.5 mb-1">
           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cat?.dot ?? ''}`} />
           <span className={`text-[8px] font-black uppercase tracking-[0.18em] ${cat?.color ?? ''}`}>
-            {agent.bonus ? 'BÔNUS' : `${TXT.agent_word} ${num}`} · {cat?.label}
+            {agent.bonus ? t('agentes.bonus') : `${TXT.agent_word} ${num}`} · {categoryLabel(cat?.id, t)}
           </span>
         </div>
         <h3 className="text-[17px] leading-tight font-bold text-[#1E1B11] mb-1">{agent.name}</h3>
@@ -218,6 +219,7 @@ const BonusDivider: React.FC = () => (
 
 const FormatsGrid: React.FC = () => {
   const TXT = useTxt();
+  const AGENTS = useAgents();
   const navigate = useLocalizedNavigate();
   const reduce = useReducedMotion() ?? false;
 
@@ -292,7 +294,8 @@ const FormatsGrid: React.FC = () => {
 interface Message { role: 'user' | 'ia'; content: string; display?: string }
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
-const INITIAL_MSG = (agent: Agent) => agent.openingMessage ?? defaultOpening(agent.name);
+const INITIAL_MSG = (agent: Agent, t: (k: string, o?: Record<string, unknown>) => string) =>
+  agent.openingMessage ?? defaultOpening(agent.name, t);
 
 const renderBold = (text: string) =>
   text.split(/(\*\*[^*]+\*\*)/g).map((p, i) =>
@@ -843,12 +846,13 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   const TXT = useTxt();
   const { user } = useAuth();
   const { toast } = useToast();
+  const AGENTS = useAgents();
   const agent = AGENTS.find(f => f.slug === formatSlug);
   const cat = CATEGORIES.find(c => c.id === agent?.category);
 
   // Lazy + defensivo: nunca desreferencia `agent` indefinido no 1º render
   const [messages, setMessages] = useState<Message[]>(() =>
-    agent ? [{ role: 'ia', content: INITIAL_MSG(agent) }] : []
+    agent ? [{ role: 'ia', content: INITIAL_MSG(agent, t) }] : []
   );
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -971,7 +975,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       if (error) {
         const errData = await readFnError(error);
         if (errData?.error === 'limite_atingido') {
-          const msgLimit = TXT.limit_chats_segment(errData.limit, cat?.label ?? '');
+          const msgLimit = TXT.limit_chats_segment(errData.limit, categoryLabel(cat?.id, t));
           setMessages(prev => [...prev, { role: 'ia', content: TXT.limit_reached_msg(msgLimit) }]);
           return;
         }
@@ -1051,7 +1055,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     setSkeletonId(null);
     if (agent.slug === 'agente-2') { setMessages([]); setStage('picker'); return; }
     if (INTAKE[agent.slug]) { setMessages([]); setStage('form'); return; }
-    setMessages([{ role: 'ia', content: INITIAL_MSG(agent) }]);
+    setMessages([{ role: 'ia', content: INITIAL_MSG(agent, t) }]);
   };
 
   const openSaveModal = (idx: number) => {
@@ -1326,7 +1330,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
             {cat && <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cat.dot}`} />}
-            {cat && <span className={`text-[8px] font-black uppercase tracking-widest ${cat.color}`}>{cat.label}</span>}
+            {cat && <span className={`text-[8px] font-black uppercase tracking-widest ${cat.color}`}>{categoryLabel(cat.id, t)}</span>}
           </div>
           <p className="text-[13px] font-bold text-[#1E1B11] truncate">{agent.name}</p>
         </div>
@@ -1537,6 +1541,7 @@ const Chat: React.FC = () => {
   const { formatSlug } = useParams<{ formatSlug?: string }>();
   // Só monta o agente se o slug existir em AGENTS — slug desconhecido
   // (bookmark antigo, slug renomeado) volta pra grade em vez de quebrar.
+  const AGENTS = useAgents();
   const agent = formatSlug ? AGENTS.find(a => a.slug === formatSlug) : undefined;
   if (!agent) return <FormatsGrid />;
   // Agente-FERRAMENTA (não é chat): tem tela própria.
