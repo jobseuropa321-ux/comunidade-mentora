@@ -1,3 +1,24 @@
+-- ⚠️ DESATIVADA POR DECISÃO DO DONO DO PRODUTO (2026-08-12).
+--
+-- Extensão .INERTE de propósito: assim `supabase db push` não aplica.
+-- Renomeie para .sql só se decidir assumir o risco descrito abaixo.
+--
+-- O RISCO QUE MOTIVOU A DECISÃO: são 685 assinaturas ativas. Se a análise
+-- estiver errada em algum caminho de código, o sintoma é a tela de login
+-- dizendo "acesso não liberado" para TODAS ao mesmo tempo, em silêncio —
+-- nada quebra, nada loga erro. O rollback é um GRANT de uma linha, mas até
+-- alguém perceber já houve estrago.
+--
+-- O QUE FICA EM ABERTO: a falha continua lá. `check_email_subscription` é
+-- SECURITY DEFINER com EXECUTE para `anon`, e a chave anônima está no bundle
+-- do frontend. Qualquer pessoa consegue chamar a RPC com um e-mail arbitrário
+-- e descobrir se aquele e-mail é cliente — e, pelo status devolvido, se
+-- cancelou ou pediu reembolso. É enumeração da base de clientes.
+--
+-- SE FOR RETOMAR: faça em horário de baixo movimento, com alguém testando o
+-- login logo depois, e com este comando de rollback já colado no terminal:
+--   GRANT EXECUTE ON FUNCTION public.check_email_subscription(text) TO anon;
+
 -- Fecha a enumeração da base de clientes.
 --
 -- O PROBLEMA: check_email_subscription é SECURITY DEFINER e tem EXECUTE para

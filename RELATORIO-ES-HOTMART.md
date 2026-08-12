@@ -167,36 +167,32 @@ de cadastrar conteúdo.
 
 ---
 
-## Migrations escritas e NÃO aplicadas
+## Migrations
 
-Estão em `supabase/migrations/`. Aplicar com:
+Aplicadas em produção em 2026-08-12 (o nome do arquivo já bate com a versão
+registrada no banco, então `supabase db push` não tenta reaplicar):
 
-```bash
-supabase db push          # aplica todas as pendentes
-```
+| Arquivo | O que fez |
+|---|---|
+| `20260812152357_subscriptions_allow_hotmart_provider.sql` | `hotmart` no CHECK de `provider` — destravou o webhook |
+| `20260812152409_modules_cover_url_es.sql` | coluna da capa em espanhol |
+| `20260812152428_community_posts_locale.sql` | `locale` na comunidade + CHECK + índice + view recriada |
+| `20260812153114_modules_lessons_texto_es.sql` | texto de módulo e aula em espanhol |
 
-| Arquivo | O que faz | Urgência |
-|---|---|---|
-| `20260812020000_subscriptions_allow_hotmart_provider.sql` | adiciona `hotmart` ao CHECK de `provider` | **bloqueador do webhook.** Sem ela todo insert da Hotmart falha por violação de constraint |
-| `20260812020100_community_posts_locale.sql` | coluna `locale` com CHECK e índice, e recria a view `community_posts_enriched` | necessária antes do primeiro aluno ES postar |
-| `20260812020200_modules_cover_url_es.sql` | coluna da capa em espanhol | quando houver capas |
-| `20260812020300_check_email_subscription_revoke_anon.sql` | fecha a enumeração da base | ver a seção abaixo |
-| `20260812020400_expire_subscriptions_cron.sql.INERTE` | cron de expiração | **desativada de propósito** (extensão `.INERTE`) |
+**NÃO aplicadas, com extensão `.INERTE` para o `db push` não pegar:**
 
-Sobre a última: hoje o único cron do banco é `heal-hubla-webhook`, ou seja,
-**nenhuma assinatura do DAM expira por tempo**. Ligar o cron sem ninguém olhando
-corta o acesso de qualquer aluno cujo `expires_at` esteja errado — e esse projeto
-já teve exatamente esse incidente, quando o `expiresAt` da Hubla (uma janela de
-~1h do checkout) foi gravado como validade do plano. A migration traz as duas
-queries para você olhar antes de renomear para `.sql`.
+`20260812020300_check_email_subscription_revoke_anon.sql.INERTE` — desativada
+por decisão do dono do produto. A falha continua aberta: a RPC é SECURITY
+DEFINER com EXECUTE para `anon`, e como a chave anônima está no bundle,
+qualquer pessoa consegue descobrir se um e-mail é cliente e se cancelou ou pediu
+reembolso. O motivo de não aplicar é o tamanho do estrago no caso de erro: 685
+assinaturas ativas, e o sintoma seria a tela de login negando acesso a todas ao
+mesmo tempo, em silêncio. O arquivo tem o comando de rollback no cabeçalho.
 
-**Atenção à view.** A `community_posts_enriched` lista as colunas uma a uma. Se
-alguém aplicar só o `ALTER TABLE ... ADD COLUMN locale` sem recriar a view, a
-coluna não chega no frontend e o filtro por idioma vira no-op silencioso: os dois
-idiomas passam a ver a mesma comunidade e ninguém recebe erro. A migration já faz
-as duas coisas.
-
----
+`20260812020400_expire_subscriptions_cron.sql.INERTE` — cron de expiração.
+Hoje nenhuma assinatura do DAM expira por tempo. Ligar sem conferir os dados
+corta acesso de quem tiver `expires_at` errado, e este projeto já teve esse
+incidente com a validade da Hubla. As queries de conferência estão no arquivo.
 
 ## Variáveis de ambiente a configurar
 
