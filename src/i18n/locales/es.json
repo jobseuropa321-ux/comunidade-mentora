@@ -885,7 +885,8 @@
         "label": "Deja 5 me gusta en publicaciones de otros creadores",
         "hint": "Una comunidad fuerte crece junta"
       }
-    }
+    },
+    "missaoConcluida": "Misión completada"
   },
   "intake": {
     "perguntas": {
@@ -1143,5 +1144,20 @@
       "agente-9": "Generar carrusel"
     },
     "semConteudo": "La IA no devolvió contenido"
+  },
+  "a11y": {
+    "colunaAnterior": "Mover a la columna anterior",
+    "colunaProxima": "Mover a la columna siguiente",
+    "mesAnterior": "Mes anterior",
+    "mesProximo": "Mes siguiente",
+    "virarCamera": "Girar cámara",
+    "gravarTranscrever": "Grabar audio y transcribir",
+    "escolherRoteiro": "Elegir guion para grabar",
+    "voltarEstudio": "Volver al Estudio"
+  },
+  "notificacoes": {
+    "n1": "¡Buenísima pregunta! El gancho ideal depende de tu nicho — te respondí con un ejemplo práctico.",
+    "n3": "¡Probé el guion de lista y llegó a 40k visualizaciones! Gracias por el consejo 🔥",
+    "equipe": "Equipo Amentora"
   }
 }

@@ -118,7 +118,7 @@ const Estudio: React.FC = () => {
           onClick={() => setEspelhado((v) => !v)}
           className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center active:scale-90 transition-transform"
           style={{ WebkitTapHighlightColor: 'transparent' }}
-          aria-label="Virar câmera"
+          aria-label={t('a11y.virarCamera')}
         >
           <RotateCcw className="w-[18px] h-[18px] text-white" strokeWidth={2.5} />
         </button>

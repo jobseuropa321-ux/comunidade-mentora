@@ -76,7 +76,7 @@ const KanbanCard: React.FC<{
         <button
           onClick={() => onMover(roteiro.id, -1)}
           disabled={!podeVoltar}
-          aria-label="Mover para coluna anterior"
+          aria-label={t('a11y.colunaAnterior')}
           style={{ WebkitTapHighlightColor: 'transparent' }}
           className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-90 ${
             podeVoltar
@@ -96,7 +96,7 @@ const KanbanCard: React.FC<{
         <button
           onClick={() => onMover(roteiro.id, 1)}
           disabled={!podeAvancar}
-          aria-label="Mover para próxima coluna"
+          aria-label={t('a11y.colunaProxima')}
           style={{ WebkitTapHighlightColor: 'transparent' }}
           className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-90 ${
             podeAvancar

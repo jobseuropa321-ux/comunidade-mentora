@@ -168,7 +168,10 @@ const Header: React.FC = () => {
             ) : (
               <div className="max-h-[60vh] overflow-y-auto">
                 {items.map((it) => {
-                  const name = it.actor_name || t('header.alguem');
+                  // Notificação de exemplo vem sem nome/texto prontos: o mock
+                  // guarda a CHAVE para o texto seguir o idioma da tela.
+                  const name = it.actor_name || (it.previewKey ? t('notificacoes.equipe') : t('header.alguem'));
+                  const previewText = it.previewKey ? t(it.previewKey) : it.preview;
                   const Icon = it.type === 'lesson_reply'
                     ? MessageSquareText
                     : it.type === 'community_like'
@@ -199,9 +202,9 @@ const Header: React.FC = () => {
                         <p className="text-[12px] text-[#1E1B11] leading-snug">
                           <span className="font-bold">{name}</span> {t(actionKey(it.type))}
                         </p>
-                        {it.preview && (
+                        {previewText && (
                           <p className="text-[11px] text-[#5B4041] mt-0.5 line-clamp-2 [overflow-wrap:anywhere]">
-                            {it.preview}
+                            {previewText}
                           </p>
                         )}
                         <p className="text-[10px] text-[#5B4041]/60 mt-0.5">{timeAgo(it.created_at, lang)}</p>

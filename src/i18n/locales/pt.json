@@ -885,7 +885,8 @@
         "label": "Deixe 5 curtidas em posts de outros criadores",
         "hint": "Comunidade forte cresce junto"
       }
-    }
+    },
+    "missaoConcluida": "Missão concluída"
   },
   "intake": {
     "perguntas": {
@@ -1143,5 +1144,20 @@
       "agente-9": "Gerar carrossel"
     },
     "semConteudo": "A IA não retornou conteúdo"
+  },
+  "a11y": {
+    "colunaAnterior": "Mover para coluna anterior",
+    "colunaProxima": "Mover para próxima coluna",
+    "mesAnterior": "Mês anterior",
+    "mesProximo": "Próximo mês",
+    "virarCamera": "Virar câmera",
+    "gravarTranscrever": "Gravar áudio e transcrever",
+    "escolherRoteiro": "Escolher roteiro para gravar",
+    "voltarEstudio": "Voltar pro Estúdio"
+  },
+  "notificacoes": {
+    "n1": "Ótima pergunta! O gancho ideal depende do seu nicho — te respondi com um exemplo prático.",
+    "n3": "Testei o roteiro de lista e bateu 40k de views! Obrigado pela dica 🔥",
+    "equipe": "Equipe Amentora"
   }
 }

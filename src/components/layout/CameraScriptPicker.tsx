@@ -56,7 +56,7 @@ const CameraScriptPicker: React.FC<Props> = ({ open, onClose }) => {
         }}
         role="dialog"
         aria-modal="true"
-        aria-label="Escolher roteiro para gravar"
+        aria-label={t('a11y.escolherRoteiro')}
       >
         <div className="flex justify-center pt-3 pb-1">
           <div className="w-10 h-1 rounded-full bg-[#BE0D3E]/25" />

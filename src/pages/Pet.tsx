@@ -113,7 +113,7 @@ const Pet: React.FC = () => {
     setMissions(prev =>
       prev.map(m => {
         if (m.id !== id || m.done) return m;
-        gainXp(m.xp, 'Missão concluída');
+        gainXp(m.xp, t('pet.missaoConcluida'));
         return { ...m, done: true };
       })
     );

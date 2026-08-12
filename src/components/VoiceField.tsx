@@ -91,7 +91,7 @@ const VoiceField: React.FC<VoiceFieldProps> = ({
           ref={fieldRef as React.RefObject<HTMLTextAreaElement>}
           value={value}
           onChange={e => onChange(e.target.value)}
-          placeholder={transcribing ? 'Transcrevendo áudio...' : placeholder}
+          placeholder={transcribing ? t('chat.transcribing') : placeholder}
           autoFocus={autoFocus}
           rows={rows}
           disabled={disabled || transcribing}
@@ -131,7 +131,7 @@ const VoiceField: React.FC<VoiceFieldProps> = ({
           type="button"
           onClick={handleMic}
           disabled={disabled || transcribing}
-          aria-label="Gravar áudio e transcrever"
+          aria-label={t('a11y.gravarTranscrever')}
           className={`absolute ${anchor} w-8 h-8 flex items-center justify-center rounded-xl bg-[#BE0D3E]/[0.08] hover:bg-[#BE0D3E]/15 disabled:opacity-40 transition-colors`}
           style={{ WebkitTapHighlightColor: 'transparent' }}
         >

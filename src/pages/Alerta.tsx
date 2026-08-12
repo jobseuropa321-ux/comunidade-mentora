@@ -124,7 +124,7 @@ const Alerta: React.FC = () => {
             disabled
             className="w-8 h-8 rounded-xl flex items-center justify-center text-[#5B4041]/30 cursor-not-allowed"
             style={{ WebkitTapHighlightColor: 'transparent' }}
-            aria-label="Mês anterior"
+            aria-label={t('a11y.mesAnterior')}
           >
             <ChevronLeft size={18} />
           </button>
@@ -136,7 +136,7 @@ const Alerta: React.FC = () => {
             disabled
             className="w-8 h-8 rounded-xl flex items-center justify-center text-[#5B4041]/30 cursor-not-allowed"
             style={{ WebkitTapHighlightColor: 'transparent' }}
-            aria-label="Próximo mês"
+            aria-label={t('a11y.mesProximo')}
           >
             <ChevronRight size={18} />
           </button>

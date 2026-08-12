@@ -5,7 +5,9 @@ export interface NotificationItem {
   type: 'lesson_reply' | 'community_like' | 'community_comment';
   actor_name: string;
   actor_avatar: string | null;
-  preview: string;
+  preview?: string;
+  /** Chave de tradução para o texto de exemplo (mock). */
+  previewKey?: string;
   created_at: string;
   is_read: boolean;
   post_id?: string;
@@ -21,9 +23,9 @@ const SEED: NotificationItem[] = [
   {
     id: 'n1',
     type: 'lesson_reply',
-    actor_name: 'Equipe Amentora',
+    actor_name: '',   // resolvido no render (notificacoes.equipe)
     actor_avatar: null,
-    preview: 'Ótima pergunta! O gancho ideal depende do seu nicho — te respondi com um exemplo prático.',
+    previewKey: 'notificacoes.n1',
     created_at: minutesAgo(4),
     is_read: false,
     module_slug: 'fundamentos',
@@ -44,7 +46,7 @@ const SEED: NotificationItem[] = [
     type: 'community_comment',
     actor_name: 'Rafael Dias',
     actor_avatar: null,
-    preview: 'Testei o roteiro de lista e bateu 40k de views! Obrigado pela dica 🔥',
+    previewKey: 'notificacoes.n3',
     created_at: minutesAgo(3 * 60),
     is_read: true,
     post_id: 'p2',
