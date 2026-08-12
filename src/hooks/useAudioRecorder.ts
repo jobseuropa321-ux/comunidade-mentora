@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-/* Textos de erro (PT) */
+/* O hook devolve CHAVE de tradução, não texto pronto: quem exibe (VoiceField,
+   Chat) resolve com t(). Assim o erro de microfone sai no idioma da tela sem
+   o hook precisar saber de i18n. */
 const TXT = {
-  no_support: 'Seu navegador não suporta gravação de áudio',
-  mic_denied: 'Acesso ao microfone negado. Habilita nas configurações do navegador.',
-  mic_not_found: 'Nenhum microfone encontrado.',
-  start_failed: 'Não foi possível iniciar a gravação.',
+  no_support: 'audio.semSuporte',
+  mic_denied: 'audio.micNegado',
+  mic_not_found: 'audio.micNaoEncontrado',
+  start_failed: 'audio.falhaIniciar',
 };
 
 function pickMimeType(): string {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { trackAscension } from '@/lib/ascension';
+import { useTranslation } from 'react-i18next';
 
 /* ══════════════════════════════════════════════════════════════════════
    OFERTA · VIRAL EM 1 MINUTO — primeira seção da /pagb dentro do app.
@@ -21,11 +22,8 @@ const DELAY_KEY = 'vsl_first_visit_ts';
 const VTURB_ACCOUNT_ID = '30c1fd3f-8014-4648-b3ff-9d8977fda8b8';
 const VTURB_PLAYER_ID = '6a690216565ffb31f360a35b';
 const VTURB_VIDEO_ID = '6a6901b622215083f60b5679';
-/** Textos da faixa (2 linhas, cada uma numa linha só). */
-const BAR_LINE_1 = 'APRENDA NESSA AULA COMO VIRALIZAR';
-const BAR_LINE_2 = 'NO FINAL TEMOS UMA SURPRESA...';
-/** Botão que aparece depois da trava. */
-const CTA_TEXT = 'Quero meu acesso com desconto agora';
+/* Os textos da faixa e do botão vêm do dicionário — resolvidos dentro do
+   componente, não aqui, porque t() é hook. */
 /** Checkout da Hubla (vai direto pro pagamento, sem passar pela página de vendas). */
 const CTA_HREF = 'https://pay.hub.la/soO8SrabzW3POhfXgl16';
 /* ───────────────────────────────────────────────────────────────────── */
@@ -136,6 +134,7 @@ const DelayGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const OfertaViral1Min: React.FC = () => {
+  const { t } = useTranslation();
   // Passo 2 do funil: abriu a aula com a VSL. O ref evita contar duas vezes
   // no StrictMode (dev monta → desmonta → monta).
   const jaContou = React.useRef(false);
@@ -224,8 +223,8 @@ const OfertaViral1Min: React.FC = () => {
 
       {/* 1) FAIXA */}
       <div className="urgency-bar">
-        <span>{BAR_LINE_1}</span>
-        <span>{BAR_LINE_2}</span>
+        <span>{t('oferta.aprenda')}</span>
+        <span>{t('oferta.surpresa')}</span>
       </div>
 
       <header className="hero">
@@ -247,7 +246,7 @@ const OfertaViral1Min: React.FC = () => {
                 className="alpha-btn"
                 onClick={() => trackAscension('cta')}
               >
-                <span className="btn-content">{CTA_TEXT}</span>
+                <span className="btn-content">{t('oferta.cta')}</span>
               </a>
             </div>
           </DelayGate>

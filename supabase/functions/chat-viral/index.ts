@@ -40,8 +40,52 @@ function buildCorsHeaders(origin: string | null) {
    - { error: 'limite_mensagens', limit }       → máx de mensagens na sessão
 ───────────────────────────────────────────────────────────────── */
 
+const SUPPORTED_LANGS = ['pt', 'es'] as const;
+type Lang = (typeof SUPPORTED_LANGS)[number];
+const parseLang = (raw: unknown): Lang =>
+  typeof raw === 'string' && (SUPPORTED_LANGS as readonly string[]).includes(raw) ? (raw as Lang) : 'pt';
+
+/* Erros no idioma da aluna.
+   O frontend imprime este texto sem tratar, então erro em português saía
+   cru no meio de uma tela em espanhol — o "Algo salió mal / Erro interno"
+   que o kit documenta. */
+const MSG = {
+  pt: {
+    naoAutenticado: 'Nao autenticado',
+    configuracao: 'Erro de configuracao',
+    sessaoInvalida: 'Sessao invalida',
+    formatSlug: 'formatSlug obrigatorio',
+    modeloNaoEncontrado: 'Modelo nao encontrado',
+    erroInterno: 'Erro interno',
+  },
+  es: {
+    naoAutenticado: 'No autenticado',
+    configuracao: 'Error de configuración',
+    sessaoInvalida: 'Sesión no válida',
+    formatSlug: 'formatSlug es obligatorio',
+    modeloNaoEncontrado: 'Modelo no encontrado',
+    erroInterno: 'Error interno',
+  },
+} as const;
+
+/* Reforço de idioma no system prompt.
+ *
+ * Os prompts do chat vivem no banco (viral_models.prompt) e estão escritos em
+ * português. Diferente do analisar-perfil, aqui NÃO dá pra fazer replaceAll de
+ * frases específicas: cada modelo tem o seu texto e um deles pode mudar a
+ * qualquer momento pelo painel. Então o reforço é acrescentado no fim, que
+ * funciona para qualquer prompt e não quebra em silêncio quando o texto muda.
+ */
+const langReinforcement = (prompt: string, lang: Lang): string =>
+  lang !== 'es' ? prompt : prompt +
+    '\n\n═══════════════════════════════════════\n' +
+    'IDIOMA OBLIGATORIO: respondes SIEMPRE en ESPAÑOL. Aunque estas ' +
+    'instrucciones estén escritas en portugués, TODA tu respuesta debe estar ' +
+    'en español, manteniendo el mismo formato y estructura pedidos arriba.';
+
 serve(async (req) => {
   const corsHeaders = buildCorsHeaders(req.headers.get('Origin'));
+  let lang: Lang = 'pt';
 
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -51,7 +95,7 @@ serve(async (req) => {
     // ── AUTH: exige JWT valido ──────────────────────────────────
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Nao autenticado' }), {
+      return new Response(JSON.stringify({ error: MSG[lang].naoAutenticado }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -60,7 +104,7 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
     if (!supabaseUrl || !anonKey) {
-      return new Response(JSON.stringify({ error: 'Erro de configuracao' }), {
+      return new Response(JSON.stringify({ error: MSG[lang].configuracao }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -72,17 +116,18 @@ serve(async (req) => {
     });
     const { data: { user }, error: authError } = await userClient.auth.getUser();
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Sessao invalida' }), {
+      return new Response(JSON.stringify({ error: MSG[lang].sessaoInvalida }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
     // ────────────────────────────────────────────────────────────
 
-    const { formatSlug, messages, sessionId, segment } = await req.json();
+    const { formatSlug, messages, sessionId, segment, lang: rawLang } = await req.json();
+    lang = parseLang(rawLang);
 
     if (!formatSlug || typeof formatSlug !== 'string') {
-      return new Response(JSON.stringify({ error: 'formatSlug obrigatorio' }), {
+      return new Response(JSON.stringify({ error: MSG[lang].formatSlug }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -133,7 +178,7 @@ serve(async (req) => {
     // Supabase client com service_role — bypassa RLS pra ler o prompt
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     if (!serviceRoleKey) {
-      return new Response(JSON.stringify({ error: 'Erro de configuracao' }), {
+      return new Response(JSON.stringify({ error: MSG[lang].configuracao }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -147,7 +192,7 @@ serve(async (req) => {
       .single();
 
     if (fetchError || !model?.prompt) {
-      return new Response(JSON.stringify({ error: 'Modelo nao encontrado' }), {
+      return new Response(JSON.stringify({ error: MSG[lang].modeloNaoEncontrado }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -155,14 +200,14 @@ serve(async (req) => {
 
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openaiKey) {
-      return new Response(JSON.stringify({ error: 'Erro de configuracao' }), {
+      return new Response(JSON.stringify({ error: MSG[lang].configuracao }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const openaiMessages = [
-      { role: 'system', content: model.prompt },
+      { role: 'system', content: langReinforcement(model.prompt, lang) },
       ...messages.map((m: { role: string; content: string }) => ({
         role: m.role === 'ia' ? 'assistant' : 'user',
         content: m.content,
@@ -198,7 +243,7 @@ serve(async (req) => {
 
   } catch (err) {
     console.error('chat-viral error:', err);
-    return new Response(JSON.stringify({ error: 'Erro interno' }), {
+    return new Response(JSON.stringify({ error: MSG[lang].erroInterno }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

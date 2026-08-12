@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { ArrowLeft, ShieldCheck, BookOpen, Radio, KeyRound, TrendingUp, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminCourses from '@/components/admin/AdminCourses';
 import AdminLive from '@/components/admin/AdminLive';
 import AdminAccess from '@/components/admin/AdminAccess';
 import AdminAscensao from '@/components/admin/AdminAscensao';
+import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
 type Tab = 'cursos' | 'aovivo' | 'acessos' | 'ascensao';
 
 const Admin: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { isExpert, loading } = useAuth();
   const [tab, setTab] = useState<Tab>('cursos');
 

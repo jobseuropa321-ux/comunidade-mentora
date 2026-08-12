@@ -15,6 +15,10 @@ export interface Module {
   slug: string;
   title1: string;
   title2: string;
+  /** Versões em espanhol. NULL cai no texto em português. */
+  title1_es?: string | null;
+  title2_es?: string | null;
+  descricao_es?: string | null;
   tag: string | null;
   tag_color: string | null;
   descricao: string;
@@ -26,6 +30,11 @@ export interface Module {
   position: number;
   is_published: boolean;
   cover_url: string | null;
+  /** Capa em espanhol. Opcional de propósito: a coluna ainda não existe no
+   *  banco de produção (a migration está escrita, não aplicada), então as
+   *  queries com select('*') simplesmente não trazem o campo e o app cai no
+   *  cover_url normal. */
+  cover_url_es?: string | null;
   material_url: string | null;
   home_section: 'inicio' | 'modulos' | 'materiais' | null;
   created_at?: string;
@@ -36,6 +45,9 @@ export interface Lesson {
   id: string;
   module_id: string;
   titulo: string;
+  titulo_es?: string | null;
+  descricao_es?: string | null;
+  conteudo_es?: string | null;
   duracao: string;
   descricao: string | null;
   conteudo: string | null;

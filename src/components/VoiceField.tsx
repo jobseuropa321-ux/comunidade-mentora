@@ -3,6 +3,8 @@ import { Mic, Loader2, X, Square } from 'lucide-react';
 import { supabase, SUPABASE_READY } from '@/integrations/supabase/client';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrentLang } from '@/i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
 
 /* ─────────────────────────────────────────────────────────────
    Campo de texto (input OU textarea) com MICROFONE embutido.
@@ -32,6 +34,8 @@ const VoiceField: React.FC<VoiceFieldProps> = ({
   value, onChange, placeholder, multiline = true, rows = 4, autoFocus, disabled, className = '', maxLength,
 }) => {
   const { toast } = useToast();
+  const lang = useCurrentLang();
+  const { t } = useTranslation();
   const [transcribing, setTranscribing] = useState(false);
   const fieldRef = useRef<HTMLTextAreaElement | HTMLInputElement>(null);
   const {
@@ -39,7 +43,8 @@ const VoiceField: React.FC<VoiceFieldProps> = ({
     startRecording, stopRecording, cancelRecording,
   } = useAudioRecorder();
 
-  useEffect(() => { if (recorderError) toast({ title: recorderError }); }, [recorderError, toast]);
+  // recorderError é uma CHAVE de tradução (ver useAudioRecorder).
+  useEffect(() => { if (recorderError) toast({ title: t(recorderError) }); }, [recorderError, toast, t]);
 
   const handleMic = async () => {
     if (transcribing || disabled) return;
@@ -51,21 +56,23 @@ const VoiceField: React.FC<VoiceFieldProps> = ({
         const form = new FormData();
         const ext = (blob.type.split('/')[1] || 'webm').split(';')[0];
         form.append('audio', blob, `audio.${ext}`);
+        // Sem isso o Whisper chuta o idioma e às vezes traduz o áudio.
+        form.append('language', lang);
         const { data, error } = await supabase.functions.invoke('transcribe-audio', { body: form });
         if (error) throw error;
         const text = (data?.transcription ?? '').trim();
-        if (!text) { toast({ title: 'Não consegui entender o áudio. Tenta de novo.' }); return; }
+        if (!text) { toast({ title: t('audio.naoEntendi') }); return; }
         const next = value.trim() ? `${value.trim()} ${text}` : text;
         onChange(maxLength ? next.slice(0, maxLength) : next);
         requestAnimationFrame(() => fieldRef.current?.focus());
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Erro ao transcrever';
-        toast({ title: 'Falha na transcrição', description: msg });
+        const msg = err instanceof Error ? err.message : t('audio.erroTranscrever');
+        toast({ title: t('audio.falhaTranscricao'), description: msg });
       } finally {
         setTranscribing(false);
       }
     } else {
-      if (!SUPABASE_READY) { toast({ title: 'Disponível quando o backend for conectado 🛠️' }); return; }
+      if (!SUPABASE_READY) { toast({ title: t('audio.backendPendente') }); return; }
       await startRecording();
     }
   };
@@ -84,7 +91,7 @@ const VoiceField: React.FC<VoiceFieldProps> = ({
           ref={fieldRef as React.RefObject<HTMLTextAreaElement>}
           value={value}
           onChange={e => onChange(e.target.value)}
-          placeholder={transcribing ? 'Transcrevendo áudio...' : placeholder}
+          placeholder={transcribing ? t('chat.transcribing') : placeholder}
           autoFocus={autoFocus}
           rows={rows}
           disabled={disabled || transcribing}
@@ -124,7 +131,7 @@ const VoiceField: React.FC<VoiceFieldProps> = ({
           type="button"
           onClick={handleMic}
           disabled={disabled || transcribing}
-          aria-label="Gravar áudio e transcrever"
+          aria-label={t('a11y.gravarTranscrever')}
           className={`absolute ${anchor} w-8 h-8 flex items-center justify-center rounded-xl bg-[#BE0D3E]/[0.08] hover:bg-[#BE0D3E]/15 disabled:opacity-40 transition-colors`}
           style={{ WebkitTapHighlightColor: 'transparent' }}
         >

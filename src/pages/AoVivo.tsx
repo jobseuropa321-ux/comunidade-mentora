@@ -4,28 +4,31 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { useLiveStatus } from '@/hooks/useLiveStatus';
 import { getUpcomingLives } from '@/data/liveSchedule';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDateShort, localeTag } from '@/lib/formatLocale';
+import { useCurrentLang, type SupportedLang } from '@/i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
 
 const cardSpring = { type: 'spring', stiffness: 220, damping: 24 } as const;
 
 /* ─────────────────────────────────────────────────────────────
  *  TEXTOS DA TELA (troque à vontade — é toda a "escrita" daqui)
  * ───────────────────────────────────────────────────────────── */
-const TXT = {
-  title: 'Mentoria Ao Vivo',
-  subtitle: 'Aulas e encontros semanais ao vivo com os mentores, ensinando e tirando dúvidas em tempo real!',
-  badge: 'Ao vivo',
-  fallback_title: 'Aula ao vivo',
-  presenter_prefix: 'com',
-  watch_btn: 'Assistir ao vivo',
-  no_live: 'Sem live no momento',
-  no_live_desc: 'Quando começar uma aula ao vivo, ela aparece aqui.',
-  upcoming: 'Próximas aulas',
-  no_upcoming: 'Nenhuma aula agendada',
-  no_upcoming_desc: 'Quando uma nova aula ao vivo for marcada, ela aparece aqui com data e horário.',
-  replays: 'Replays',
-  no_replays: 'Em breve, replays aqui',
-  no_replays_desc: 'As gravações das aulas ao vivo ficam disponíveis nesta área pra você assistir quando quiser.',
-};
+const makeTxt = (t: (k: string) => string) => ({
+  title: t('aoVivo.title'),
+  subtitle: t('aoVivo.subtitle'),
+  badge: t('aoVivo.badge'),
+  fallback_title: t('aoVivo.fallback_title'),
+  presenter_prefix: t('aoVivo.presenter_prefix'),
+  watch_btn: t('aoVivo.watch_btn'),
+  no_live: t('aoVivo.no_live'),
+  no_live_desc: t('aoVivo.no_live_desc'),
+  upcoming: t('aoVivo.upcoming'),
+  no_upcoming: t('aoVivo.no_upcoming'),
+  no_upcoming_desc: t('aoVivo.no_upcoming_desc'),
+  replays: t('aoVivo.replays'),
+  no_replays: t('aoVivo.no_replays'),
+  no_replays_desc: t('aoVivo.no_replays_desc'),
+});
 
 interface Replay {
   id: string;
@@ -37,10 +40,11 @@ interface Replay {
   recorded_at: string | null;
 }
 
-const formatBRDate = (iso: string | null): string => {
+// Antes cravado em pt-BR: a data do card da live saía "12 AGO" para a aluna
+// espanhola no meio de uma tela em espanhol.
+const formatShortDate = (iso: string | null, lang: SupportedLang): string => {
   if (!iso) return '';
-  const d = new Date(iso + 'T00:00:00');
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '').toUpperCase();
+  return formatDateShort(iso + 'T00:00:00', lang).replace('.', '').toUpperCase();
 };
 
 /** Detecta YouTube e retorna URL de embed. Se não for YouTube, retorna null (cai no fluxo "abrir nova aba"). */
@@ -124,6 +128,9 @@ const LiveCover: React.FC<{
 );
 
 const AoVivo: React.FC = () => {
+  const lang = useCurrentLang();
+  const { t } = useTranslation();
+  const TXT = makeTxt(t);
   const reduce = useReducedMotion() ?? false;
   const { status, loading } = useLiveStatus();
   const isLive = status.is_active && !!status.stream_url;
@@ -286,9 +293,10 @@ const AoVivo: React.FC = () => {
           >
             {upcoming.map((l) => {
               const d = new Date(l.date + 'T00:00:00');
-              const day = d.toLocaleDateString('pt-BR', { day: '2-digit' });
-              const month = d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '').toUpperCase();
-              const weekday = d.toLocaleDateString('pt-BR', { weekday: 'long' });
+              const tag = localeTag(lang);
+              const day = d.toLocaleDateString(tag, { day: '2-digit' });
+              const month = d.toLocaleDateString(tag, { month: 'short' }).replace('.', '').toUpperCase();
+              const weekday = d.toLocaleDateString(tag, { weekday: 'long' });
               return (
                 <div
                   key={l.date}
@@ -379,7 +387,7 @@ const AoVivo: React.FC = () => {
                 <div className="absolute inset-x-0 bottom-0 p-3 text-left">
                   <p className="text-[11px] font-black text-white leading-tight mb-0.5 line-clamp-2 drop-shadow">{r.title}</p>
                   {r.recorded_at && (
-                    <p className="text-[9px] text-white/75 font-semibold">{formatBRDate(r.recorded_at)}</p>
+                    <p className="text-[9px] text-white/75 font-semibold">{formatShortDate(r.recorded_at, lang)}</p>
                   )}
                 </div>
               </button>

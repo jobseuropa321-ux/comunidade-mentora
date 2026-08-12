@@ -18,7 +18,7 @@ export default defineConfig(() => ({
       srcDir: "public",
       filename: "sw.js",
       manifest: false, // usamos o /public/manifest.webmanifest direto
-      includeAssets: ["logo-app.svg", "manifest.webmanifest"],
+      includeAssets: ["logo-app.svg", "manifest.webmanifest", "manifest-es.webmanifest"],
       injectManifest: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico,webmanifest,woff2}"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,

@@ -8,9 +8,11 @@ const AppLayout: React.FC = () => {
   useAppUsageTracking();
   const location = useLocation();
   // Oculta header apenas dentro de um chat aberto (com slug), não na grid
-  const isChatOpen = /^\/chat\/.+/.test(location.pathname);
-  const isModuleOpen = /^\/modulo\/.+/.test(location.pathname);
-  const isAulaOpen   = /^\/modulo\/.+\/aula\/.+/.test(location.pathname);
+  // O `(?:es\/)?` aceita o prefixo de idioma: sem ele, as telas cheias do
+  // espanhol continuariam mostrando header e navbar por cima.
+  const isChatOpen = /^\/(?:es\/)?chat\/.+/.test(location.pathname);
+  const isModuleOpen = /^\/(?:es\/)?modulo\/.+/.test(location.pathname);
+  const isAulaOpen   = /^\/(?:es\/)?modulo\/.+\/aula\/.+/.test(location.pathname);
 
   return (
     <div className="min-h-screen bg-[#FFF7E6]">

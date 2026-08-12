@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, Send, RotateCcw, Mic,
   Library as LibraryIcon, Save, Check, Loader2, X,
@@ -11,74 +11,80 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { readFnError } from '@/lib/functionsError';
-import { AGENTS, CATEGORIES, defaultOpening, type Agent } from '@/data/agents';
+import { useAgents, CATEGORIES, categoryLabel, defaultOpening, type Agent } from '@/data/agents';
 import VoiceField from '@/components/VoiceField';
 import { Robot, SceneFX, ACCENT, type RobotKind } from '@/components/estudio/AgentRobot';
 import AnalisarPerfilAgent from '@/components/estudio/AnalisarPerfilAgent';
+import { useLocalizedNavigate, useCurrentLang } from '@/i18n/LanguageProvider';
+import { withAiLangMessages } from '@/i18n/aiLang';
+import { useTranslation } from 'react-i18next';
 
 /* ─────────────────────────────────────────────
    TEXTOS DA TELA (toda a "escrita" daqui)
 ───────────────────────────────────────────── */
-const TXT = {
-  grid_title: 'Estúdio de Criação',
-  grid_subtitle: 'Crie seu curso em minutos usando IA. Um agente pra cada etapa — e bônus de viralização.',
-  your_models: 'Seus Cursos',
-  library: 'Biblioteca',
-  create_btn: 'Começar',
-  agent_word: 'Agente',
-  saved: 'Salvo',
-  save: 'Salvar',
-  saving_lesson: 'Salvando aula...',
-  retry_save: 'Tentar salvar',
-  answer_required: 'Sua resposta é necessária',
-  answer_below: 'Responda no campo abaixo',
-  next_lesson: 'Criar próxima aula',
-  next_lesson_hint: 'Ou digite “próxima” no campo de mensagem.',
-  next_lesson_extra: 'Criar mais uma aula',
-  resume_badge: (n: number) => `Parou na aula ${n}`,
-  resume_restart: 'Recomeçar do zero',
-  resume_loading: 'Buscando as aulas que você já escreveu...',
-  resume_display: (curso: string, n: number) =>
-    `📋 Voltando pro curso "${curso}".\n\nVocê parou na Aula ${n} — é só seguir daqui.`,
-  next_lesson_extra_hint: 'As aulas do esqueleto acabaram. Siga enquanto quiser — quando achar que está bom, é só sair (tudo já está na Biblioteca).',
-  lesson_saved: 'Aula salva automaticamente ✨',
-  placeholder: 'Descreva seu nicho e tema...',
-  transcribing: 'Transcrevendo áudio...',
-  recording: 'Gravando...',
-  keyboard_hint: 'Enter para enviar · Shift+Enter para nova linha',
-  cancel_recording: 'Cancelar gravação',
-  stop_recording: 'Parar e transcrever',
-  record_audio: 'Gravar áudio',
-  save_to_library: 'Salvar na Biblioteca',
-  save_modal_label: 'Dê um nome pra encontrar depois',
-  save_modal_placeholder: 'Ex: Esqueleto do curso de confeitaria',
-  save_course_label: 'Nome do curso',
-  exit_title: 'Salvar antes de sair?',
-  exit_desc: 'Você gerou um conteúdo que ainda não foi salvo. Quer guardar na Biblioteca antes de sair?',
-  exit_discard: 'Sair sem salvar',
-  exit_save: 'Salvar e sair',
-  cancel: 'Cancelar',
-  saving: 'Salvando...',
-  toast_name_required: 'Dá um nome antes de salvar',
-  toast_save_error: 'Erro ao salvar',
-  toast_saved: 'Salvo na Biblioteca ✨',
-  toast_audio_error: 'Não consegui entender o áudio. Tenta de novo.',
-  toast_transcription_failed: 'Falha na transcrição',
-  toast_transcription_error: 'Erro ao transcrever',
-  error_prefix: 'Deu ruim ao gerar 😔',
-  error_retry: 'Tenta de novo em instantes.',
-  unknown_error: 'Erro desconhecido',
-  // Sem backend ainda (ver docs/backend/PLANO-IMPLEMENTACAO.md):
-  backend_pending:
-    '**Backend em preparação** 🛠️\n\nOs agentes de IA vão responder de verdade assim que o Supabase do projeto for conectado. A tela já está pronta pra isso.',
-  toast_backend_pending: 'Disponível quando o backend for conectado 🛠️',
-  // Mensagens de limite (o backend manda { error, limit } e a UI monta o aviso)
+/* Os textos vivem no dicionário (src/i18n/locales). makeTxt monta o mesmo
+   objeto TXT que os componentes já usavam — inclusive as funções que
+   interpolam — só que resolvido no idioma da URL.
+
+   É um hook porque TXT é consumido por 6 componentes desta tela; assim cada
+   um pega `const TXT = useTxt()` e nada mais muda no corpo deles. */
+const makeTxt = (t: (k: string, o?: Record<string, unknown>) => string) => ({
+  grid_title: t('chat.grid_title'),
+  grid_subtitle: t('chat.grid_subtitle'),
+  your_models: t('chat.your_models'),
+  library: t('chat.library'),
+  create_btn: t('chat.create_btn'),
+  agent_word: t('chat.agent_word'),
+  saved: t('chat.saved'),
+  save: t('chat.save'),
+  saving_lesson: t('chat.saving_lesson'),
+  retry_save: t('chat.retry_save'),
+  answer_required: t('chat.answer_required'),
+  answer_below: t('chat.answer_below'),
+  next_lesson: t('chat.next_lesson'),
+  next_lesson_hint: t('chat.next_lesson_hint'),
+  next_lesson_extra: t('chat.next_lesson_extra'),
+  resume_badge: (n: number) => t('chat.resume_badge', { n }),
+  resume_restart: t('chat.resume_restart'),
+  resume_loading: t('chat.resume_loading'),
+  resume_display: (curso: string, n: number) => t('chat.resume_display', { curso, n }),
+  next_lesson_extra_hint: t('chat.next_lesson_extra_hint'),
+  lesson_saved: t('chat.lesson_saved'),
+  placeholder: t('chat.placeholder'),
+  transcribing: t('chat.transcribing'),
+  recording: t('chat.recording'),
+  keyboard_hint: t('chat.keyboard_hint'),
+  cancel_recording: t('chat.cancel_recording'),
+  stop_recording: t('chat.stop_recording'),
+  record_audio: t('chat.record_audio'),
+  save_to_library: t('chat.save_to_library'),
+  save_modal_label: t('chat.save_modal_label'),
+  save_modal_placeholder: t('chat.save_modal_placeholder'),
+  save_course_label: t('chat.save_course_label'),
+  exit_title: t('chat.exit_title'),
+  exit_desc: t('chat.exit_desc'),
+  exit_discard: t('chat.exit_discard'),
+  exit_save: t('chat.exit_save'),
+  cancel: t('chat.cancel'),
+  saving: t('chat.saving'),
+  toast_name_required: t('chat.toast_name_required'),
+  toast_save_error: t('chat.toast_save_error'),
+  toast_saved: t('chat.toast_saved'),
+  toast_audio_error: t('chat.toast_audio_error'),
+  toast_transcription_failed: t('chat.toast_transcription_failed'),
+  toast_transcription_error: t('chat.toast_transcription_error'),
+  error_prefix: t('chat.error_prefix'),
+  error_retry: t('chat.error_retry'),
+  unknown_error: t('chat.unknown_error'),
+  backend_pending: t('chat.backend_pending'),
+  toast_backend_pending: t('chat.toast_backend_pending'),
   limit_chats_segment: (limit: number | undefined, segment: string) =>
-    `Você já usou seus **${limit ?? ''} chats de "${segment}"** hoje. Tenta outro agente ou volta amanhã!`,
-  limit_reached_msg: (detail: string) => `**Limite atingido**\n\n${detail}`,
-  limit_messages_msg: (limit: number) =>
-    `**Limite de mensagens**\n\nVocê já enviou o máximo de ${limit} mensagens nessa conversa. Volte ao Estúdio e inicie uma nova conversa.`,
-};
+    t('chat.limit_chats_segment', { limit: limit ?? '', segment }),
+  limit_reached_msg: (detail: string) => t('chat.limit_reached_msg', { detail }),
+  limit_messages_msg: (limit: number) => t('chat.limit_messages_msg', { limit }),
+});
+
+const useTxt = () => makeTxt(useTranslation().t);
 
 /* ID de sessão com fallback — crypto.randomUUID não existe em contexto
    não-HTTPS (ex.: testar o PWA via IP na rede local) nem em Safari antigo. */
@@ -140,6 +146,8 @@ const cardVariants = {
 const AgentCard: React.FC<{ agent: Agent; index: number; reduce: boolean; onOpen: () => void }> = ({
   agent, index, reduce, onOpen,
 }) => {
+  const TXT = useTxt();
+  const { t } = useTranslation();
   const kind = agent.category as RobotKind;
   const cat = CATEGORIES.find(c => c.id === agent.category);
   const a = ACCENT[kind] ?? ACCENT.estrutura;
@@ -171,7 +179,7 @@ const AgentCard: React.FC<{ agent: Agent; index: number; reduce: boolean; onOpen
         <div className="flex items-center gap-1.5 mb-1">
           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cat?.dot ?? ''}`} />
           <span className={`text-[8px] font-black uppercase tracking-[0.18em] ${cat?.color ?? ''}`}>
-            {agent.bonus ? 'BÔNUS' : `${TXT.agent_word} ${num}`} · {cat?.label}
+            {agent.bonus ? t('agentes.bonus') : `${TXT.agent_word} ${num}`} · {categoryLabel(cat?.id, t)}
           </span>
         </div>
         <h3 className="text-[17px] leading-tight font-bold text-[#1E1B11] mb-1">{agent.name}</h3>
@@ -210,7 +218,9 @@ const BonusDivider: React.FC = () => (
 );
 
 const FormatsGrid: React.FC = () => {
-  const navigate = useNavigate();
+  const TXT = useTxt();
+  const AGENTS = useAgents();
+  const navigate = useLocalizedNavigate();
   const reduce = useReducedMotion() ?? false;
 
   return (
@@ -284,7 +294,8 @@ const FormatsGrid: React.FC = () => {
 interface Message { role: 'user' | 'ia'; content: string; display?: string }
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
-const INITIAL_MSG = (agent: Agent) => agent.openingMessage ?? defaultOpening(agent.name);
+const INITIAL_MSG = (agent: Agent, t: (k: string, o?: Record<string, unknown>) => string) =>
+  agent.openingMessage ?? defaultOpening(agent.name, t);
 
 const renderBold = (text: string) =>
   text.split(/(\*\*[^*]+\*\*)/g).map((p, i) =>
@@ -299,6 +310,7 @@ const Bubble: React.FC<{
   saved?: boolean;
   saveStatus?: SaveStatus;
 }> = ({ msg, onSave, saved, saveStatus = 'idle' }) => {
+  const TXT = useTxt();
   const isIA = msg.role === 'ia';
   const lastMeaningfulLine = msg.content.split('\n').map(line => line.trim()).filter(Boolean).pop() ?? '';
   const asksForReply = isIA && /[?？]$/.test(lastMeaningfulLine);
@@ -375,16 +387,16 @@ const Typing: React.FC = () => (
    As respostas são compiladas na 1ª mensagem enviada à IA.
 ═════════════════════════════════════════════ */
 const ARCHITECT_QUESTIONS: {
-  key: string; label: string; hint: string; placeholder: string; required: boolean; multiline: boolean;
+  key: string; grupo: string; required: boolean; multiline: boolean;
 }[] = [
-  { key: 'sobre', label: 'Sobre você e sua técnica', hint: 'Quem é você, sua experiência e o diferencial do seu método.', placeholder: 'Ex.: Sou cabeleireiro há 14 anos, especialista em mechas...', required: true, multiline: true },
-  { key: 'produto', label: 'Que tipo de produto você quer criar?', hint: 'Formato, quantos módulos e quantas aulas por módulo, profundidade.', placeholder: 'Ex.: Um curso completo mas direto, no máximo 4 módulos...', required: true, multiline: true },
-  { key: 'nome', label: 'Nome provisório do produto', hint: 'Se já tiver um nome em mente. Vira o nome padrão ao salvar (pode deixar em branco).', placeholder: 'Ex.: Morena Iluminada das Gringas', required: false, multiline: false },
-  { key: 'dor', label: 'Qual a dor principal que ele resolve?', hint: 'O problema que o seu aluno vive hoje.', placeholder: 'Ex.: O medo de manchar o cabelo da cliente...', required: true, multiline: true },
-  { key: 'ideia', label: 'Qual a ideia central do produto?', hint: 'A essência do curso. Pode incluir preço e tempo de consumo.', placeholder: 'Ex.: Um curso low ticket, direto ao ponto, assistível em 1 ou 2 dias...', required: true, multiline: true },
-  { key: 'aprender', label: 'O que o aluno precisa aprender a fazer?', hint: 'As habilidades e resultados que ele leva.', placeholder: 'Ex.: Fazer as mechas estratégicas, matização, correção de cor...', required: true, multiline: true },
-  { key: 'transformacao', label: 'Qual a transformação final?', hint: 'Onde o aluno chega ao terminar o curso.', placeholder: 'Ex.: Estar preparado para fazer uma morena iluminada de excelência em qualquer cabelo...', required: true, multiline: true },
-  { key: 'estrutura', label: 'Já tem ideia de estrutura?', hint: 'Se sim, descreva o que imagina. Se não, deixe em branco que eu monto do zero.', placeholder: 'Ex.: Não tenho ideia ainda...', required: false, multiline: true },
+  { key: 'sobre', grupo: 'architect', required: true, multiline: true },
+  { key: 'produto', grupo: 'architect', required: true, multiline: true },
+  { key: 'nome', grupo: 'architect', required: false, multiline: false },
+  { key: 'dor', grupo: 'architect', required: true, multiline: true },
+  { key: 'ideia', grupo: 'architect', required: true, multiline: true },
+  { key: 'aprender', grupo: 'architect', required: true, multiline: true },
+  { key: 'transformacao', grupo: 'architect', required: true, multiline: true },
+  { key: 'estrutura', grupo: 'architect', required: false, multiline: true },
 ];
 
 const compileBriefing = (a: Record<string, string>) => {
@@ -408,11 +420,11 @@ Monte o esqueleto completo do meu curso com base nisso.`;
    Independente do esqueleto: o Apostila monta a própria estrutura.
 ═════════════════════════════════════════════ */
 const APOSTILA_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
-  { key: 'expert', label: 'Nome da expert ou autora do método', hint: 'Quem assina a apostila (o método leva esse nome).', placeholder: 'Ex.: Método Ana Souza', required: true, multiline: false },
-  { key: 'tecnica', label: 'Nome da técnica, curso ou profissão', hint: 'O que a apostila vai ensinar. Vira o nome padrão ao salvar.', placeholder: 'Ex.: Morena Iluminada das Gringas', required: true, multiline: true },
-  { key: 'conteudo', label: 'Explique em detalhes o que quer ensinar', hint: 'Quanto mais detalhe, mais completa a apostila. Pode escrever bastante.', placeholder: 'Ex.: Ensinar morena iluminada à mão livre e com papel, correção de cor e matização...', required: true, multiline: true },
-  { key: 'nivel', label: 'Para qual nível?', hint: 'Iniciantes, intermediários, avançados ou todos os níveis.', placeholder: 'Ex.: Todos os níveis', required: true, multiline: false },
-  { key: 'estilo', label: 'Que estilo de apostila?', hint: 'Mais técnica, mais simples, mais premium ou equilibrada.', placeholder: 'Ex.: Premium e equilibrada', required: true, multiline: false },
+  { key: 'expert', grupo: 'apostila', required: true, multiline: false },
+  { key: 'tecnica', grupo: 'apostila', required: true, multiline: true },
+  { key: 'conteudo', grupo: 'apostila', required: true, multiline: true },
+  { key: 'nivel', grupo: 'apostila', required: true, multiline: false },
+  { key: 'estilo', grupo: 'apostila', required: true, multiline: false },
 ];
 
 const compileApostila = (a: Record<string, string>) => {
@@ -430,11 +442,11 @@ Use essas respostas e comece a apostila direto pela PARTE 1 DE 4. Não faça per
 
 /* ── Formulário do PESQUISA DE MERCADO (agente-4) — também independente ── */
 const PESQUISA_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
-  { key: 'nicho', label: 'Qual nicho você quer atuar?', hint: 'O mercado ou tema do seu produto.', placeholder: 'Ex.: Alongamento de unhas em gel', required: true, multiline: false },
-  { key: 'publico', label: 'Quem é o seu público-alvo?', hint: 'Idade, gênero, profissão, nível de conhecimento e o que mais souber (localização: Brasil).', placeholder: 'Ex.: Mulheres 20-40, manicures iniciantes querendo se especializar...', required: true, multiline: true },
-  { key: 'ensina', label: 'O que você sabe ensinar de melhor?', hint: 'Sua principal habilidade ou entrega.', placeholder: 'Ex.: Molde F1 com acabamento perfeito...', required: true, multiline: true },
-  { key: 'ajudou', label: 'Já ajudou alguém com isso?', hint: 'Resultados ou histórias, se tiver (pode deixar em branco).', placeholder: 'Ex.: Já formei 30 alunas presencialmente...', required: false, multiline: true },
-  { key: 'diferencial', label: 'Tem algum diferencial?', hint: 'O que te separa dos concorrentes.', placeholder: 'Ex.: Método próprio de aplicação sem bolhas...', required: false, multiline: true },
+  { key: 'nicho', grupo: 'pesquisa', required: true, multiline: false },
+  { key: 'publico', grupo: 'pesquisa', required: true, multiline: true },
+  { key: 'ensina', grupo: 'pesquisa', required: true, multiline: true },
+  { key: 'ajudou', grupo: 'pesquisa', required: false, multiline: true },
+  { key: 'diferencial', grupo: 'pesquisa', required: false, multiline: true },
 ];
 
 const compilePesquisa = (a: Record<string, string>) => {
@@ -452,13 +464,13 @@ Faça a pesquisa aprofundada e me entregue os 5 pontos (dores do público, princ
 
 /* ── Nome Potente (agente-5) ── */
 const NOME_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
-  { key: 'tipo', label: 'Que tipo de produto é?', hint: 'Curso, mentoria, ebook, desafio...', placeholder: 'Ex.: Curso', required: true, multiline: false },
-  { key: 'nome_prov', label: 'Nome provisório (se tiver)', hint: 'Se já tem um nome em mente. Pode deixar em branco.', placeholder: 'Ex.: Molde F1 do zero', required: false, multiline: false },
-  { key: 'tema', label: 'Tema principal do produto', hint: 'O que ele ensina de fato.', placeholder: 'Ex.: Ensinar a fazer o primeiro molde F1', required: true, multiline: true },
-  { key: 'publico', label: 'Público-alvo específico', hint: 'Pra quem é.', placeholder: 'Ex.: Nail designers iniciantes', required: true, multiline: false },
-  { key: 'transformacao', label: 'Transformação que entrega', hint: 'O resultado que o aluno terá.', placeholder: 'Ex.: Fazer o primeiro alongamento em molde F1', required: true, multiline: true },
-  { key: 'diferencial', label: 'Diferencial (se tiver)', hint: 'O que te destaca. Pode deixar em branco.', placeholder: 'Ex.: A pessoa aprende em pouco tempo', required: false, multiline: true },
-  { key: 'linguagem', label: 'Linguagem desejada pro nome', hint: 'O tom do nome.', placeholder: 'Ex.: Informal', required: true, multiline: false },
+  { key: 'tipo', grupo: 'nome', required: true, multiline: false },
+  { key: 'nome_prov', grupo: 'nome', required: false, multiline: false },
+  { key: 'tema', grupo: 'nome', required: true, multiline: true },
+  { key: 'publico', grupo: 'nome', required: true, multiline: false },
+  { key: 'transformacao', grupo: 'nome', required: true, multiline: true },
+  { key: 'diferencial', grupo: 'nome', required: false, multiline: true },
+  { key: 'linguagem', grupo: 'nome', required: true, multiline: false },
 ];
 const compileNome = (a: Record<string, string>) => {
   const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
@@ -477,13 +489,13 @@ Crie as sugestões de nome com base nisso.`;
 
 /* ── Promessa Irresistível (agente-6) ── */
 const PROMESSA_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
-  { key: 'nome', label: 'Nome do produto', hint: 'O nome escolhido ou provisório.', placeholder: 'Ex.: Molde F1 das Gringas', required: true, multiline: false },
-  { key: 'tipo', label: 'Tipo de produto', hint: 'Curso, mentoria, ebook, desafio, planilha...', placeholder: 'Ex.: Curso online', required: true, multiline: false },
-  { key: 'tema', label: 'Tema central do produto', hint: 'Sobre o que é.', placeholder: 'Ex.: Unhas em molde F1', required: true, multiline: false },
-  { key: 'publico', label: 'Público-alvo específico', hint: 'Pra quem é.', placeholder: 'Ex.: Manicures iniciantes sem tempo', required: true, multiline: true },
-  { key: 'transformacao', label: 'Transformação após o produto', hint: 'O que o aluno consegue depois.', placeholder: 'Ex.: Fazer a primeira unha em molde F1', required: true, multiline: true },
-  { key: 'tempo', label: 'Resultado em quanto tempo?', hint: 'O prazo da transformação.', placeholder: 'Ex.: 7 dias', required: true, multiline: false },
-  { key: 'diferencial', label: 'Diferencial que acelera (se tiver)', hint: 'Método validado, com IA, prático... Pode deixar em branco.', placeholder: 'Ex.: Método validado por 200 alunas', required: false, multiline: true },
+  { key: 'nome', grupo: 'promessa', required: true, multiline: false },
+  { key: 'tipo', grupo: 'promessa', required: true, multiline: false },
+  { key: 'tema', grupo: 'promessa', required: true, multiline: false },
+  { key: 'publico', grupo: 'promessa', required: true, multiline: true },
+  { key: 'transformacao', grupo: 'promessa', required: true, multiline: true },
+  { key: 'tempo', grupo: 'promessa', required: true, multiline: false },
+  { key: 'diferencial', grupo: 'promessa', required: false, multiline: true },
 ];
 const compilePromessa = (a: Record<string, string>) => {
   const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
@@ -502,11 +514,11 @@ Crie as promessas SMART com base nisso.`;
 
 /* ── Ganchos Virais (agente-7 · bônus) ── */
 const GANCHOS_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
-  { key: 'nicho', label: 'Qual é o seu nicho?', hint: 'O mercado onde você atua.', placeholder: 'Ex.: Nail designer', required: true, multiline: false },
-  { key: 'ensina', label: 'O que você ensina, vende ou entrega?', hint: 'Explique com detalhes.', placeholder: 'Ex.: Ensino manicures a fazer molde F1 com acabamento profissional...', required: true, multiline: true },
-  { key: 'nivel', label: 'Com qual nível de pessoa quer falar?', hint: 'Iniciante, intermediário, avançado ou todos.', placeholder: 'Ex.: Iniciante', required: true, multiline: false },
-  { key: 'objetivo', label: 'Qual o objetivo dos ganchos?', hint: 'Atrair clientes, vender curso, crescer no Instagram, autoridade, engajamento...', placeholder: 'Ex.: Atrair alunas pro curso', required: true, multiline: false },
-  { key: 'dor', label: 'Alguma dor ou desejo específico?', hint: 'Se não souber, deixe em branco que eu defino.', placeholder: 'Ex.: Medo de não conseguir clientes', required: false, multiline: true },
+  { key: 'nicho', grupo: 'ganchos', required: true, multiline: false },
+  { key: 'ensina', grupo: 'ganchos', required: true, multiline: true },
+  { key: 'nivel', grupo: 'ganchos', required: true, multiline: false },
+  { key: 'objetivo', grupo: 'ganchos', required: true, multiline: false },
+  { key: 'dor', grupo: 'ganchos', required: false, multiline: true },
 ];
 const compileGanchos = (a: Record<string, string>) => {
   const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
@@ -523,7 +535,7 @@ Agora gere os 20 ganchos, seguindo exatamente o formato definido.`;
 
 /* ── Narrado Técnico (agente-8 · bônus) ── */
 const NARRADO_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
-  { key: 'entrada', label: 'Qual seu nicho OU um gancho pronto?', hint: 'Mande só o nicho (que eu escolho o tema) OU cole um gancho que você já tem.', placeholder: 'Ex.: Nail designer  —ou—  "o erro que faz o molde F1 descolar"', required: true, multiline: true },
+  { key: 'entrada', grupo: 'narrado', required: true, multiline: true },
 ];
 const compileNarrado = (a: Record<string, string>) => {
   const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
@@ -534,11 +546,11 @@ Identifique se é um NICHO ou um GANCHO pronto e crie o roteiro narrado técnico
 
 /* ── Carrossel Viral (agente-9 · bônus) ── */
 const CARROSSEL_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
-  { key: 'nicho', label: 'Qual é o seu nicho?', hint: 'O mercado onde você atua.', placeholder: 'Ex.: Nail designer', required: true, multiline: false },
-  { key: 'faz', label: 'O que você faz nesse nicho?', hint: 'Explique com detalhes.', placeholder: 'Ex.: Ensino e faço alongamento em molde F1...', required: true, multiline: true },
-  { key: 'tema', label: 'Tema, gancho ou ideia (se tiver)', hint: 'Se já tem um tema pro carrossel. Deixe em branco que eu crio.', placeholder: 'Ex.: 5 erros no molde F1', required: false, multiline: true },
-  { key: 'foco', label: 'Foco do carrossel', hint: 'Viralização, autoridade, ensino técnico, conversão, conexão ou misto.', placeholder: 'Ex.: Autoridade', required: true, multiline: false },
-  { key: 'cta', label: 'CTA final', hint: 'Seguir, comentar, compartilhar, salvar, direct, curso, mentoria, atendimento...', placeholder: 'Ex.: Seguir', required: true, multiline: false },
+  { key: 'nicho', grupo: 'carrossel', required: true, multiline: false },
+  { key: 'faz', grupo: 'carrossel', required: true, multiline: true },
+  { key: 'tema', grupo: 'carrossel', required: false, multiline: true },
+  { key: 'foco', grupo: 'carrossel', required: true, multiline: false },
+  { key: 'cta', grupo: 'carrossel', required: true, multiline: false },
 ];
 const compileCarrossel = (a: Record<string, string>) => {
   const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
@@ -556,57 +568,39 @@ Agora monte o carrossel completo no formato exato definido, com análise estrat�
 /* Configuração de cada "entrevista" (formulário) por agente. */
 interface IntakeConfig {
   questions: typeof ARCHITECT_QUESTIONS;
-  subtitle: string;
-  submitLabel: string;
   compile: (a: Record<string, string>) => { briefing: string; courseName: string };
 }
 const INTAKE: Record<string, IntakeConfig> = {
   'agente-1': {
     questions: ARCHITECT_QUESTIONS,
-    subtitle: 'Vamos montar o esqueleto do seu curso',
-    submitLabel: 'Gerar esqueleto',
     compile: a => ({ briefing: compileBriefing(a), courseName: (a['nome'] ?? '').trim() }),
   },
   'agente-3': {
     questions: APOSTILA_QUESTIONS,
-    subtitle: 'Vamos montar a sua apostila',
-    submitLabel: 'Gerar apostila',
     compile: a => ({ briefing: compileApostila(a), courseName: (a['tecnica'] ?? '').trim() }),
   },
   'agente-4': {
     questions: PESQUISA_QUESTIONS,
-    subtitle: 'Vamos pesquisar o seu mercado',
-    submitLabel: 'Pesquisar mercado',
     compile: a => ({ briefing: compilePesquisa(a), courseName: `Pesquisa — ${(a['nicho'] ?? '').trim()}`.trim() }),
   },
   'agente-5': {
     questions: NOME_QUESTIONS,
-    subtitle: 'Vamos criar um nome potente',
-    submitLabel: 'Gerar nomes',
     compile: a => ({ briefing: compileNome(a), courseName: ((a['nome_prov'] || a['tema']) ?? '').trim() }),
   },
   'agente-6': {
     questions: PROMESSA_QUESTIONS,
-    subtitle: 'Vamos criar sua promessa',
-    submitLabel: 'Gerar promessas',
     compile: a => ({ briefing: compilePromessa(a), courseName: ((a['nome'] || a['tema']) ?? '').trim() }),
   },
   'agente-7': {
     questions: GANCHOS_QUESTIONS,
-    subtitle: 'Vamos criar seus ganchos',
-    submitLabel: 'Gerar 20 ganchos',
     compile: a => ({ briefing: compileGanchos(a), courseName: `Ganchos — ${(a['nicho'] ?? '').trim()}`.trim() }),
   },
   'agente-8': {
     questions: NARRADO_QUESTIONS,
-    subtitle: 'Vamos criar seu roteiro',
-    submitLabel: 'Gerar roteiro',
     compile: a => ({ briefing: compileNarrado(a), courseName: `Roteiro — ${(a['entrada'] ?? '').trim().slice(0, 40)}`.trim() }),
   },
   'agente-9': {
     questions: CARROSSEL_QUESTIONS,
-    subtitle: 'Vamos criar seu carrossel',
-    submitLabel: 'Gerar carrossel',
     compile: a => ({ briefing: compileCarrossel(a), courseName: `Carrossel — ${(a['nicho'] ?? '').trim()}`.trim() }),
   },
 };
@@ -615,6 +609,8 @@ const AgentIntakeForm: React.FC<{
   agent: Agent; config: IntakeConfig; reduce: boolean; onBack: () => void;
   onSubmit: (briefing: string, courseName: string) => void;
 }> = ({ agent, config, reduce, onBack, onSubmit }) => {
+  const TXT = useTxt();
+  const { t } = useTranslation();
   const kind = agent.category as RobotKind;
   const acc = ACCENT[kind];
   const [step, setStep] = useState(0);
@@ -642,7 +638,7 @@ const AgentIntakeForm: React.FC<{
         <div className="relative px-4 pt-3 pb-4 flex flex-col items-center">
           <Robot kind={kind} reduce={reduce} />
           <p className="text-white text-[15px] font-black mt-1">{agent.name}</p>
-          <p className="text-white/80 text-[11px]">{config.subtitle}</p>
+          <p className="text-white/80 text-[11px]">{t(`intake.subtitles.${agent.slug}`)}</p>
         </div>
       </div>
 
@@ -663,16 +659,16 @@ const AgentIntakeForm: React.FC<{
           {TXT.answer_required}
         </div>
         <h2 className="text-[20px] font-black text-[#1E1B11] leading-tight">
-          {q.label}
+          {t(`intake.perguntas.${q.grupo}.${q.key}.label`)}
           {!q.required && <span className="text-[#5B4041]/40 text-[12px] font-medium"> · opcional</span>}
         </h2>
-        <p className="text-[12px] text-[#5B4041]/70 mt-1.5 mb-4">{q.hint}</p>
+        <p className="text-[12px] text-[#5B4041]/70 mt-1.5 mb-4">{t(`intake.perguntas.${q.grupo}.${q.key}.hint`)}</p>
         <VoiceField
           key={q.key}
           multiline={q.multiline}
           value={val}
           onChange={v => setAnswers(p => ({ ...p, [q.key]: v }))}
-          placeholder={q.placeholder}
+          placeholder={t(`intake.perguntas.${q.grupo}.${q.key}.placeholder`)}
           autoFocus
           rows={5}
         />
@@ -692,7 +688,9 @@ const AgentIntakeForm: React.FC<{
           className="flex-1 py-3 rounded-2xl text-[12px] font-black uppercase tracking-widest text-white flex items-center justify-center gap-1.5 disabled:opacity-30 transition-opacity"
           style={{ background: 'linear-gradient(135deg, #BE0D3E, #E06B85)', WebkitTapHighlightColor: 'transparent' }}
         >
-          {isLast ? <><Sparkles size={14} /> {config.submitLabel}</> : <>Próxima <ArrowRight size={14} /></>}
+          {isLast
+            ? <><Sparkles size={14} /> {t(`intake.submits.${agent.slug}`)}</>
+            : <>{t('intake.proxima')} <ArrowRight size={14} /></>}
         </button>
       </div>
     </div>
@@ -709,6 +707,7 @@ const SkeletonPicker: React.FC<{
   agent: Agent; userId?: string; reduce: boolean;
   onBack: () => void; onPick: (it: SkeletonItem, retomar: boolean) => void; onCreate: () => void;
 }> = ({ agent, userId, reduce, onBack, onPick, onCreate }) => {
+  const TXT = useTxt();
   const kind = agent.category as RobotKind;
   const [items, setItems] = useState<SkeletonItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -826,15 +825,19 @@ const SkeletonPicker: React.FC<{
 };
 
 const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
+  const lang = useCurrentLang();
+  const { t } = useTranslation();
+  const TXT = useTxt();
   const { user } = useAuth();
   const { toast } = useToast();
+  const AGENTS = useAgents();
   const agent = AGENTS.find(f => f.slug === formatSlug);
   const cat = CATEGORIES.find(c => c.id === agent?.category);
 
   // Lazy + defensivo: nunca desreferencia `agent` indefinido no 1º render
   const [messages, setMessages] = useState<Message[]>(() =>
-    agent ? [{ role: 'ia', content: INITIAL_MSG(agent) }] : []
+    agent ? [{ role: 'ia', content: INITIAL_MSG(agent, t) }] : []
   );
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -866,8 +869,9 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   const [transcribing, setTranscribing] = useState(false);
 
   useEffect(() => {
-    if (recorderError) toast({ title: recorderError });
-  }, [recorderError, toast]);
+    // recorderError é CHAVE de tradução (ver useAudioRecorder).
+    if (recorderError) toast({ title: t(recorderError) });
+  }, [recorderError, toast, t]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -940,15 +944,23 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       const { data, error } = await supabase.functions.invoke('chat-viral', {
         body: {
           formatSlug,
-          messages: contextoParaIA(next).map(m => ({ role: m.role, content: m.content })),
+          // Técnica A do guia: diretiva de idioma anexada à última mensagem do
+          // usuário. O prompt system da function continua em português — a IA
+          // acompanha o idioma da aluna sem precisar reescrever/deployar prompt.
+          messages: withAiLangMessages(
+            contextoParaIA(next).map(m => ({ role: m.role, content: m.content })),
+            lang,
+          ),
           sessionId: sessionIdRef.current,
           segment: agent?.category,
+          // Reforço de idioma no system prompt e erros no idioma da aluna.
+          lang,
         },
       });
       if (error) {
         const errData = await readFnError(error);
         if (errData?.error === 'limite_atingido') {
-          const msgLimit = TXT.limit_chats_segment(errData.limit, cat?.label ?? '');
+          const msgLimit = TXT.limit_chats_segment(errData.limit, categoryLabel(cat?.id, t));
           setMessages(prev => [...prev, { role: 'ia', content: TXT.limit_reached_msg(msgLimit) }]);
           return;
         }
@@ -960,7 +972,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       }
       if (data?.error) throw new Error(data.error);
       const reply = String(data?.reply ?? '').trim();
-      if (!reply) throw new Error('A IA não retornou conteúdo');
+      if (!reply) throw new Error(t('intake.semConteudo'));
       const replyIdx = next.length;
       setMessages([...next, { role: 'ia', content: reply }]);
       if (lessonToSave) {
@@ -1028,7 +1040,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     setSkeletonId(null);
     if (agent.slug === 'agente-2') { setMessages([]); setStage('picker'); return; }
     if (INTAKE[agent.slug]) { setMessages([]); setStage('form'); return; }
-    setMessages([{ role: 'ia', content: INITIAL_MSG(agent) }]);
+    setMessages([{ role: 'ia', content: INITIAL_MSG(agent, t) }]);
   };
 
   const openSaveModal = (idx: number) => {
@@ -1221,6 +1233,9 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
         const form = new FormData();
         const ext = (blob.type.split('/')[1] || 'webm').split(';')[0];
         form.append('audio', blob, `audio.${ext}`);
+        // Técnica C: sem o parâmetro de idioma o Whisper chuta — e às vezes
+        // TRADUZ o áudio em vez de transcrever.
+        form.append('language', lang);
         const { data, error } = await supabase.functions.invoke('transcribe-audio', { body: form });
         if (error) throw error;
         const text = (data?.transcription ?? '').trim();
@@ -1300,7 +1315,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
             {cat && <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cat.dot}`} />}
-            {cat && <span className={`text-[8px] font-black uppercase tracking-widest ${cat.color}`}>{cat.label}</span>}
+            {cat && <span className={`text-[8px] font-black uppercase tracking-widest ${cat.color}`}>{categoryLabel(cat.id, t)}</span>}
           </div>
           <p className="text-[13px] font-bold text-[#1E1B11] truncate">{agent.name}</p>
         </div>
@@ -1511,6 +1526,7 @@ const Chat: React.FC = () => {
   const { formatSlug } = useParams<{ formatSlug?: string }>();
   // Só monta o agente se o slug existir em AGENTS — slug desconhecido
   // (bookmark antigo, slug renomeado) volta pra grade em vez de quebrar.
+  const AGENTS = useAgents();
   const agent = formatSlug ? AGENTS.find(a => a.slug === formatSlug) : undefined;
   if (!agent) return <FormatsGrid />;
   // Agente-FERRAMENTA (não é chat): tem tela própria.

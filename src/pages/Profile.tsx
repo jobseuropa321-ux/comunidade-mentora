@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/contexts/PlanContext';
 import {
@@ -16,6 +16,8 @@ import {
 import { compressImage } from '@/lib/imageCompression';
 import { normalizeInstagramHandle, instagramUrl } from '@/lib/instagram';
 import { supabase } from '@/integrations/supabase/client';
+import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
 
 /* ─────────────────────────────────────────────────────────────
  *  CONFIG — troque pelos dados do app
@@ -57,7 +59,8 @@ const Profile: React.FC = () => {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   const handleLogout = async () => {
@@ -70,9 +73,9 @@ const Profile: React.FC = () => {
     const cleanedInstagram = normalizeInstagramHandle(instagram);
     const { error } = await updateProfile({ full_name: fullName, instagram: cleanedInstagram || null });
     if (error) {
-      toast({ title: 'Erro', description: 'Não foi possível atualizar o perfil', variant: 'destructive' });
+      toast({ title: t('profile.erro'), description: t('profile.falhaPerfil'), variant: 'destructive' });
     } else {
-      toast({ title: 'Perfil atualizado!', description: 'Suas informações foram salvas' });
+      toast({ title: t('profile.perfilAtualizado'), description: t('profile.infoSalvas') });
       setIsEditing(false);
     }
     setIsSaving(false);
@@ -84,7 +87,7 @@ const Profile: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
     if (file.size > 25 * 1024 * 1024) {
-      toast({ title: 'Arquivo muito grande', description: 'Máximo 25MB', variant: 'destructive' });
+      toast({ title: t('profile.arquivoGrande'), description: t('profile.maximo25'), variant: 'destructive' });
       return;
     }
     setIsUploadingAvatar(true);
@@ -106,10 +109,10 @@ const Profile: React.FC = () => {
 
       const { error } = await updateProfile({ avatar_url: avatarUrl });
       if (error) throw error;
-      toast({ title: 'Avatar atualizado!' });
+      toast({ title: t('profile.avatarAtualizado') });
     } catch (error) {
       console.error(error);
-      toast({ title: 'Erro', description: 'Não foi possível atualizar o avatar', variant: 'destructive' });
+      toast({ title: t('profile.erro'), description: t('profile.falhaAvatar'), variant: 'destructive' });
     } finally {
       setIsUploadingAvatar(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -125,16 +128,16 @@ const Profile: React.FC = () => {
 
       const { error } = await updateProfile({ avatar_url: null });
       if (error) throw error;
-      toast({ title: 'Avatar removido' });
+      toast({ title: t('profile.avatarRemovido') });
     } catch (error) {
       console.error(error);
-      toast({ title: 'Erro', description: 'Não foi possível remover o avatar', variant: 'destructive' });
+      toast({ title: t('profile.erro'), description: t('profile.falhaRemoverAvatar'), variant: 'destructive' });
     } finally {
       setIsUploadingAvatar(false);
     }
   };
 
-  const planLabel = plan === 'expert' ? 'Expert' : plan === 'app' ? 'App Completo' : 'Apenas Curso';
+  const planLabel = plan === 'expert' ? t('profile.planoExpert') : plan === 'app' ? t('profile.planoCompleto') : t('profile.planoCurso');
   const planColor = hasFullAccess ? '#F6B43A' : '#BE0D3E';
 
   return (
@@ -199,12 +202,12 @@ const Profile: React.FC = () => {
               <DropdownMenuContent align="center" className="bg-white border-[#BE0D3E]/20 text-[#1E1B11] shadow-[0_10px_30px_rgba(190,13,62,0.2)]">
                 <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="gap-2 cursor-pointer hover:bg-[#FFF7E6] focus:bg-[#FFF7E6]">
                   <ImagePlus className="w-4 h-4 text-[#BE0D3E]" />
-                  <span>Alterar foto</span>
+                  <span>{t('profile.alterarFoto')}</span>
                 </DropdownMenuItem>
                 {profile?.avatar_url && (
                   <DropdownMenuItem onClick={handleRemoveAvatar} className="gap-2 cursor-pointer text-[#BE0D3E] hover:bg-[#FFF7E6] focus:bg-[#FFF7E6]">
                     <Trash2 className="w-4 h-4" />
-                    <span>Remover foto</span>
+                    <span>{t('profile.removerFoto')}</span>
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
@@ -216,7 +219,7 @@ const Profile: React.FC = () => {
             className="text-[24px] font-black text-white leading-tight"
             style={{ textShadow: '0 2px 10px rgba(148,0,45,0.55), 0 1px 2px rgba(148,0,45,0.8)' }}
           >
-            {profile?.full_name || 'Usuário'}
+            {profile?.full_name || t('profile.usuario')}
           </h1>
           <p
             className="text-[12px] text-white font-semibold mt-1"
@@ -295,7 +298,7 @@ const Profile: React.FC = () => {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     className="w-full bg-transparent text-sm font-bold text-[#1E1B11] placeholder:text-[#5B4041]/40 outline-none border-b border-[#BE0D3E]/30 focus:border-[#BE0D3E] pb-0.5"
-                    placeholder="Seu nome"
+                    placeholder={t('profile.seuNome')}
                     autoFocus
                   />
                 ) : (
@@ -329,7 +332,7 @@ const Profile: React.FC = () => {
                       value={instagram}
                       onChange={(e) => setInstagram(e.target.value)}
                       className="w-full bg-transparent text-sm font-bold text-[#1E1B11] placeholder:text-[#5B4041]/40 outline-none border-b border-[#BE0D3E]/30 focus:border-[#BE0D3E] pb-0.5"
-                      placeholder="seu_usuario"
+                      placeholder={t('profile.seuUsuario')}
                       autoCapitalize="none"
                       autoCorrect="off"
                     />
@@ -344,7 +347,7 @@ const Profile: React.FC = () => {
                     @{normalizeInstagramHandle(profile.instagram)}
                   </a>
                 ) : (
-                  <p className="text-sm font-bold text-[#1E1B11]/40 truncate">Adicione seu @</p>
+                  <p className="text-sm font-bold text-[#1E1B11]/40 truncate">{t('profile.adicioneArroba')}</p>
                 )}
               </div>
             </div>
@@ -357,13 +360,13 @@ const Profile: React.FC = () => {
             <div className="flex-1">
               <div className="flex items-center gap-1.5 mb-1">
                 <Crown size={14} className="text-[#1E1B11]" fill={hasFullAccess ? '#BE0D3E' : 'none'} />
-                <span className="text-[9px] font-black uppercase tracking-widest text-[#1E1B11]">Seu plano</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-[#1E1B11]">{t('profile.seuPlano')}</span>
               </div>
               <h3 className="text-[20px] font-black text-[#1E1B11] leading-tight">{planLabel}</h3>
               <p className="text-[11px] text-[#1E1B11]/70 font-medium mt-1 leading-snug">
                 {hasFullAccess
-                  ? 'Acesso completo a todas as ferramentas e conteúdos do app.'
-                  : 'Você tem acesso apenas à área de cursos. Faça upgrade pra desbloquear tudo.'}
+                  ? t('profile.acessoCompleto')
+                  : t('profile.acessoParcial')}
               </p>
             </div>
             {!hasFullAccess && (
@@ -380,8 +383,8 @@ const Profile: React.FC = () => {
             <>
               <ActionRow
                 icon={<ShieldCheck className="w-4 h-4 text-[#BE0D3E]" strokeWidth={2.5} />}
-                label="Admin"
-                hint="Gerenciar cursos, lives, push, usuários"
+                label={t('profile.menu.adminLabel')}
+                hint={t('profile.menu.adminHint')}
                 onClick={() => navigate('/admin')}
               />
               <div className="h-px bg-[#BE0D3E]/8 mx-4" />
@@ -389,15 +392,15 @@ const Profile: React.FC = () => {
           )}
           <ActionRow
             icon={<Shield className="w-4 h-4 text-[#BE0D3E]" strokeWidth={2.5} />}
-            label="Privacidade"
-            hint="Termos e política"
+            label={t('profile.menu.privacidadeLabel')}
+            hint={t('profile.menu.privacidadeHint')}
             onClick={() => toast({ title: 'Em breve', description: 'Estamos preparando essa seção' })}
           />
           <div className="h-px bg-[#BE0D3E]/8 mx-4" />
           <ActionRow
             icon={<HelpCircle className="w-4 h-4 text-[#BE0D3E]" strokeWidth={2.5} />}
             label="Suporte"
-            hint="Tire suas dúvidas"
+            hint={t('profile.menu.suporteHint')}
             onClick={() => toast({ title: 'Em breve', description: 'Canal de suporte em preparação' })}
           />
         </section>

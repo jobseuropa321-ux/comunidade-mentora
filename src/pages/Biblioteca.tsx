@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, Library as LibraryIcon, Copy, Check,
   Pencil, Trash2, X, Save, BookOpen, Search, Clock3,
@@ -8,39 +8,44 @@ import {
 import { supabase, SUPABASE_READY } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { AGENTS } from '@/data/agents';
+import { useAgents } from '@/data/agents';
+import { useTranslation } from 'react-i18next';
+import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
+import { formatDateNumeric, localeTag } from '@/lib/formatLocale';
+import { useCurrentLang, type SupportedLang } from '@/i18n/LanguageProvider';
 
 /* ─────────────────────────────────────────────
    TEXTOS DA TELA (toda a "escrita" daqui)
 ───────────────────────────────────────────── */
-const TXT = {
-  back: 'Voltar',
-  title: 'Biblioteca',
-  subtitle: 'Seu acervo criativo, organizado por etapa',
-  empty: 'Biblioteca vazia',
-  empty_desc: 'Os conteúdos criados pelos agentes aparecem aqui assim que forem salvos.',
-  saved_one: 'salvo',
-  saved_many: 'salvos',
-  model_empty: 'Nenhum roteiro salvo nesse modelo ainda.',
-  save_title: 'Salvar título',
-  cancel: 'Cancelar',
-  copied: 'Copiado',
-  copy: 'Copiar',
-  rename: 'Renomear',
-  delete: 'Excluir',
-  briefing: 'Seu briefing',
-  ai_response: 'Resposta da IA',
-  edit: 'Editar',
-  save: 'Salvar',
-  toast_error: 'Erro',
-  toast_title_updated: 'Título atualizado',
-  toast_delete_error: 'Erro ao deletar',
-  toast_removed: 'Removido da biblioteca',
-  toast_updated: 'Roteiro atualizado',
-  load_error: 'Não foi possível carregar a Biblioteca',
-  search_placeholder: 'Buscar por agente ou etapa...',
-  no_results: 'Nenhum conteúdo encontrado nessa busca.',
-};
+/* Textos do dicionário, mantendo a forma do objeto TXT. */
+const makeTxt = (t: (k: string) => string) => ({
+  back: t('biblioteca.back'),
+  title: t('biblioteca.title'),
+  subtitle: t('biblioteca.subtitle'),
+  empty: t('biblioteca.empty'),
+  empty_desc: t('biblioteca.empty_desc'),
+  saved_one: t('biblioteca.saved_one'),
+  saved_many: t('biblioteca.saved_many'),
+  model_empty: t('biblioteca.model_empty'),
+  save_title: t('biblioteca.save_title'),
+  cancel: t('biblioteca.cancel'),
+  copied: t('biblioteca.copied'),
+  copy: t('biblioteca.copy'),
+  rename: t('biblioteca.rename'),
+  delete: t('biblioteca.delete'),
+  briefing: t('biblioteca.briefing'),
+  ai_response: t('biblioteca.ai_response'),
+  edit: t('biblioteca.edit'),
+  save: t('biblioteca.save'),
+  toast_error: t('biblioteca.toast_error'),
+  toast_title_updated: t('biblioteca.toast_title_updated'),
+  toast_delete_error: t('biblioteca.toast_delete_error'),
+  toast_removed: t('biblioteca.toast_removed'),
+  toast_updated: t('biblioteca.toast_updated'),
+  load_error: t('biblioteca.load_error'),
+  search_placeholder: t('biblioteca.search_placeholder'),
+  no_results: t('biblioteca.no_results'),
+});
 
 interface SavedItem {
   id: string;
@@ -59,10 +64,7 @@ const renderBold = (text: string) =>
       : <span key={i}>{p}</span>
   );
 
-const formatDate = (ts: string) => {
-  const d = new Date(ts);
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-};
+const formatDate = (ts: string, lang: SupportedLang) => formatDateNumeric(ts, lang);
 
 interface LibraryGroup {
   slug: string;
@@ -74,22 +76,16 @@ interface LibraryGroup {
 const LIBRARY_SECTIONS = [
   {
     id: 'curso',
-    title: 'Construção do curso',
-    description: 'Estrutura, aulas e material de apoio',
     slugs: ['agente-1', 'agente-2', 'agente-3'],
     Icon: Layers3,
   },
   {
     id: 'estrategia',
-    title: 'Estratégia e oferta',
-    description: 'Pesquisa, nome e promessa do produto',
     slugs: ['agente-4', 'agente-5', 'agente-6'],
     Icon: Sparkles,
   },
   {
     id: 'conteudo',
-    title: 'Conteúdo e divulgação',
-    description: 'Roteiros, anúncios e formatos virais',
     slugs: ['agente-7', 'agente-8', 'agente-9', 'agente-10', 'agente-11', 'agente-12'],
     Icon: BookOpen,
   },
@@ -99,7 +95,11 @@ const LIBRARY_SECTIONS = [
    ACERVO ORGANIZADO POR ETAPA
 ───────────────────────────────────────────── */
 const ModelsOverview: React.FC = () => {
-  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const TXT = makeTxt(t);
+  const lang = useCurrentLang();
+  const AGENTS = useAgents();
+  const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const [groups, setGroups] = useState<LibraryGroup[]>([]);
@@ -145,13 +145,13 @@ const ModelsOverview: React.FC = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  const normalizedSearch = search.trim().toLocaleLowerCase('pt-BR');
+  const normalizedSearch = search.trim().toLocaleLowerCase(localeTag(lang));
   const filteredGroups = groups.filter(group =>
     !normalizedSearch
-    || group.name.toLocaleLowerCase('pt-BR').includes(normalizedSearch)
+    || group.name.toLocaleLowerCase(localeTag(lang)).includes(normalizedSearch)
     || LIBRARY_SECTIONS.some(section =>
       section.slugs.includes(group.slug)
-      && section.title.toLocaleLowerCase('pt-BR').includes(normalizedSearch)
+      && t(`biblioteca.secoes.${section.id}.title`).toLocaleLowerCase(localeTag(lang)).includes(normalizedSearch)
     )
   );
   const visibleSections = LIBRARY_SECTIONS
@@ -182,7 +182,7 @@ const ModelsOverview: React.FC = () => {
           <div className="min-w-0 flex-1">
             <div className="mb-2 flex items-center gap-2">
               <LibraryIcon size={18} className="shrink-0 text-[#FFD27A]" />
-              <span className="text-[9px] font-black uppercase tracking-[0.22em] text-white/75">Seu acervo criativo</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.22em] text-white/75">{t('biblioteca.seuAcervo')}</span>
             </div>
             <h2 className="text-[30px] font-black leading-none tracking-tight text-white">{TXT.title}</h2>
             <p className="mt-2 text-[11px] leading-relaxed text-white/75">{TXT.subtitle}</p>
@@ -232,8 +232,8 @@ const ModelsOverview: React.FC = () => {
                   <section.Icon size={15} />
                 </div>
                 <div>
-                  <h3 className="text-[14px] font-black leading-tight text-[#1E1B11]">{section.title}</h3>
-                  <p className="text-[9px] text-[#5B4041]/60">{section.description}</p>
+                  <h3 className="text-[14px] font-black leading-tight text-[#1E1B11]">{t(`biblioteca.secoes.${section.id}.title`)}</h3>
+                  <p className="text-[9px] text-[#5B4041]/60">{t(`biblioteca.secoes.${section.id}.description`)}</p>
                 </div>
               </div>
 
@@ -258,7 +258,7 @@ const ModelsOverview: React.FC = () => {
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock3 size={9} />
-                            {formatDate(group.latest)}
+                            {formatDate(group.latest, lang)}
                           </span>
                         </div>
                       </div>
@@ -272,7 +272,7 @@ const ModelsOverview: React.FC = () => {
 
           {unclassified.length > 0 && (
             <section>
-              <h3 className="mb-2.5 px-1 text-[14px] font-black text-[#1E1B11]">Outros conteúdos</h3>
+              <h3 className="mb-2.5 px-1 text-[14px] font-black text-[#1E1B11]">{t('biblioteca.outrosConteudos')}</h3>
               <div className="grid gap-2.5 sm:grid-cols-2">
                 {unclassified.map(group => (
                   <button
@@ -297,7 +297,11 @@ const ModelsOverview: React.FC = () => {
    LISTA DE ITENS DE UM MODELO
 ───────────────────────────────────────────── */
 const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
-  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const TXT = makeTxt(t);
+  const lang = useCurrentLang();
+  const AGENTS = useAgents();
+  const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -445,7 +449,7 @@ const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
             >
               <p className="text-[13px] font-black text-[#1E1B11] leading-tight mb-1.5 line-clamp-2">{item.title}</p>
               <p className="text-[10px] text-[#5B4041]/70 line-clamp-2 mb-2">{item.ai_response.slice(0, 150)}…</p>
-              <p className="text-[9px] text-[#5B4041]/50">{formatDate(item.created_at)}</p>
+              <p className="text-[9px] text-[#5B4041]/50">{formatDate(item.created_at, lang)}</p>
             </button>
           ))}
         </div>
@@ -478,7 +482,7 @@ const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
                     <h3 className="text-[16px] font-black text-[#1E1B11] leading-tight">{openItem.title}</h3>
                   )}
                   <p className="text-[10px] text-[#5B4041]/70 mt-1">
-                    {openItem.model_name} · {formatDate(openItem.created_at)}
+                    {openItem.model_name} · {formatDate(openItem.created_at, lang)}
                   </p>
                 </div>
 

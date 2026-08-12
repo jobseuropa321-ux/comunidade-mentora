@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { usePlan } from '@/contexts/PlanContext';
 import UpgradeModal from '@/components/UpgradeModal';
 import { Lock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface PlanGateProps {
   children: React.ReactNode;
@@ -18,8 +19,14 @@ const PlanGate: React.FC<PlanGateProps> = ({
   requiresFull = true,
   allowTrial = false,
 }) => {
+  const { t } = useTranslation();
   const { hasFullAccess, canUseChatTrial } = usePlan();
   const [showModal, setShowModal] = useState(false);
+
+  // featureName chega como CHAVE de tradução vinda das rotas (que são JSX de
+  // módulo e não podem chamar hook), ou já resolvida vinda do Header/BottomNav.
+  // t() devolve a própria string quando não é chave, então os dois casos passam.
+  const featureLabel = featureName ? t(featureName, { defaultValue: featureName }) : undefined;
 
   // Determina se tem acesso
   const hasAccess = hasFullAccess || (allowTrial && canUseChatTrial);
@@ -57,10 +64,10 @@ const PlanGate: React.FC<PlanGateProps> = ({
             <Lock size={22} className="text-white" />
           </div>
           <p className="text-[14px] font-black text-[#1E1B11] mb-1">
-            {featureName ?? 'Funcionalidade bloqueada'}
+            {featureLabel ?? t('planGate.bloqueada')}
           </p>
           <p className="text-[11px] text-[#5B4041] mb-5 leading-relaxed max-w-[220px]">
-            Disponível apenas no plano completo do app
+            {t('planGate.apenasPlanoCompleto')}
           </p>
           <button
             className="px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white"
@@ -69,13 +76,13 @@ const PlanGate: React.FC<PlanGateProps> = ({
               boxShadow: '0 6px 20px rgba(255,45,122,0.45)',
             }}
           >
-            Assinar agora
+            {t('planGate.assinarAgora')}
           </button>
         </div>
       </div>
 
       {showModal && (
-        <UpgradeModal featureName={featureName} onClose={() => setShowModal(false)} />
+        <UpgradeModal featureName={featureLabel} onClose={() => setShowModal(false)} />
       )}
     </div>
   );

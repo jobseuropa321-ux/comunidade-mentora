@@ -3,6 +3,9 @@ import { MessageSquareText, Send, Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useTranslation } from 'react-i18next';
+import { useCurrentLang } from '@/i18n/LanguageProvider';
+import { timeAgoShort } from '@/lib/formatLocale';
 
 interface Props {
   lessonId: string;
@@ -21,19 +24,6 @@ interface Comment {
   created_at: string;
   profile: CommentProfile | null;
 }
-
-/* Tempo relativo em pt-BR (mesmo helper da Comunidade). */
-const timeAgo = (isoStr: string): string => {
-  const diff = Math.max(0, Date.now() - new Date(isoStr).getTime());
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return 'agora';
-  if (m < 60) return `há ${m} min`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `há ${h} h`;
-  const d = Math.floor(h / 24);
-  if (d < 7) return `há ${d} d`;
-  return new Date(isoStr).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-};
 
 const Avatar: React.FC<{ profile: CommentProfile | null }> = ({ profile }) => {
   if (profile?.avatar_url) {
@@ -57,6 +47,8 @@ const Avatar: React.FC<{ profile: CommentProfile | null }> = ({ profile }) => {
 };
 
 const LessonForum: React.FC<Props> = ({ lessonId }) => {
+  const { t } = useTranslation();
+  const lang = useCurrentLang();
   const { user, profile } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [draft, setDraft] = useState('');
@@ -89,7 +81,7 @@ const LessonForum: React.FC<Props> = ({ lessonId }) => {
         }
       } catch (error) {
         console.error(error);
-        if (!cancelled) toast.error('Erro ao carregar comentários');
+        if (!cancelled) toast.error(t('forum.erroCarregar'));
       }
     })();
     return () => { cancelled = true; };
@@ -119,7 +111,7 @@ const LessonForum: React.FC<Props> = ({ lessonId }) => {
       setDraft('');
     } catch (error) {
       console.error(error);
-      toast.error('Erro ao enviar comentário');
+      toast.error(t('forum.erroEnviar'));
     } finally {
       setSending(false);
     }
@@ -131,10 +123,10 @@ const LessonForum: React.FC<Props> = ({ lessonId }) => {
     try {
       const { error } = await supabase.from('lesson_comments').delete().eq('id', commentId);
       if (error) throw error;
-      toast.success('Comentário excluído');
+      toast.success(t('forum.comentarioExcluido'));
     } catch (error) {
       console.error(error);
-      toast.error('Erro ao excluir comentário');
+      toast.error(t('forum.erroExcluir'));
       if (removed) setComments((prev) => [...prev, removed].sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       ));
@@ -146,12 +138,12 @@ const LessonForum: React.FC<Props> = ({ lessonId }) => {
       <div className="flex items-end justify-between mb-3">
         <div>
           <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50">
-            Dúvidas da aula
+            {t('forum.duvidasDaAula')}
           </p>
           <div className="flex items-center gap-1.5 mt-1">
             <MessageSquareText size={16} className="text-[#BE0D3E]" strokeWidth={2.5} />
             <h3 className="text-lg font-black tracking-tight text-[#1E1B11]">
-              {comments.length} {comments.length === 1 ? 'comentário' : 'comentários'}
+              {t('forum.comentario', { count: comments.length })}
             </h3>
           </div>
         </div>
@@ -160,7 +152,7 @@ const LessonForum: React.FC<Props> = ({ lessonId }) => {
       <div className="viral-card p-4 mb-4">
         <textarea
           className="input-instagram w-full resize-none"
-          placeholder="Tire sua dúvida sobre a aula..."
+          placeholder={t('forum.placeholder')}
           rows={3}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
@@ -203,7 +195,7 @@ const LessonForum: React.FC<Props> = ({ lessonId }) => {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-black text-sm text-[#1E1B11] tracking-tight">
-                      {comment.profile?.full_name || 'Aluna'}
+                      {comment.profile?.full_name || t('forum.aluna')}
                     </span>
                     {isMe && (
                       <span
@@ -213,13 +205,13 @@ const LessonForum: React.FC<Props> = ({ lessonId }) => {
                         Você
                       </span>
                     )}
-                    <span className="text-[11px] font-bold text-[#5B4041]">{timeAgo(comment.created_at)}</span>
+                    <span className="text-[11px] font-bold text-[#5B4041]">{timeAgoShort(comment.created_at, lang)}</span>
                     {isMe && (
                       <button
                         type="button"
                         onClick={() => handleDelete(comment.id)}
                         className="ml-auto text-[#5B4041]/40 hover:text-[#BE0D3E] active:scale-95 transition-all"
-                        aria-label="Excluir comentário"
+                        aria-label={t('forum.excluirComentario')}
                       >
                         <Trash2 size={14} strokeWidth={2.5} />
                       </button>

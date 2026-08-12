@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
 
 export interface BannerSlide {
   src: string;
@@ -48,10 +49,12 @@ const BannerImg: React.FC<{
 
 /* Envolve o slide no link certo: caminho começando com "/" é rota do app
    (navega sem recarregar); o resto é link externo e abre em outra aba. */
-const BannerLink: React.FC<{ href: string; className?: string; children: React.ReactNode }> = ({ href, className, children }) =>
-  href.startsWith('/')
-    ? <Link to={href} className={className}>{children}</Link>
+const BannerLink: React.FC<{ href: string; className?: string; children: React.ReactNode }> = ({ href, className, children }) => {
+  const lang = useCurrentLang();
+  return href.startsWith('/')
+    ? <Link to={localizedPath(href, lang)} className={className}>{children}</Link>
     : <a href={href} target="_blank" rel="noopener noreferrer" className={className}>{children}</a>;
+};
 
 const BannerCarousel: React.FC<Props> = ({ banners: rawBanners, autoRotateMs = 6000, height = 180, heightDesktop }) => {
   const scrollerRef = useRef<HTMLDivElement>(null);

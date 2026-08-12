@@ -16,7 +16,7 @@
    - a UI nunca confia no shape cru da IA — quem normaliza é a function.
 ═════════════════════════════════════════════ */
 import React, { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import {
   ArrowLeft, Camera, Loader2, Check, Copy, Upload, UserRound, AtSign,
   X, Library as LibraryIcon, Sparkles,
@@ -27,48 +27,55 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Robot, ACCENT, type RobotKind } from '@/components/estudio/AgentRobot';
 import type { Agent } from '@/data/agents';
+import { useLocalizedNavigate, useCurrentLang } from '@/i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
+import { formatDateNumeric } from '@/lib/formatLocale';
 
 /* ── Textos da tela ────────────────────────────────────────────── */
-const TXT = {
-  subtitle: 'Deixa seu perfil irresistível',
-  intro: 'Me mostra seu perfil que eu te ajudo a deixar ele irresistível pras suas futuras alunas 💛 É rapidinho:',
-  step1: 'Abra seu perfil no Instagram',
-  step2: 'Tire uma print do topo, mostrando sua FOTO, seu NOME e a BIO',
-  step3: 'Envie a print aqui embaixo',
-  step4: 'Eu analiso e te dou as dicas de ouro ✨',
-  upload: 'Enviar print do perfil',
-  upload_hint: 'Aceita PNG, JPG ou WEBP — até 10MB · 5 análises por dia',
-  analyzing: 'Tô analisando seu perfil 👀',
-  analyzing_hint: 'Isso leva uns segundinhos...',
-  retry: 'Tentar de novo',
-  not_profile: 'Hmm, não consegui enxergar direito seu perfil nessa print 🥺 Tira de novo mostrando sua foto, seu nome e a bio numa imagem só, beleza?',
-  foto_label: 'Foto de perfil',
-  nome_label: 'Nome de exibição',
-  nome_suggestions: 'Sugestões prontas (toque pra copiar)',
-  bio_label: 'Bio',
-  bio_suggestion: 'Bio sugerida',
-  copy_bio: 'Copiar bio',
-  copied: 'Copiado!',
-  analyze_another: 'Analisar outra print',
-  save_library: 'Salvar na Biblioteca',
-  saved_library: 'Salvo na Biblioteca',
-  saving: 'Salvando...',
-  nota_top: 'Tá ótimo!',
-  nota_boa: 'Tá bom!',
-  nota_dica: 'Dica 💡',
-  limit_reached: (limit: number) => `Você já usou suas ${limit} análises de perfil de hoje 💛 Volta amanhã que tem mais!`,
-  invalid_file: 'Envie uma imagem (print) do seu perfil.',
-  too_large: 'Envie uma print de até 10MB.',
-  read_image: 'Não consegui ler essa imagem. Tenta outra print.',
-  session_expired: 'Sessão expirada. Faça login novamente.',
-  empty_reply: 'A IA não retornou a análise. Tenta de novo.',
-  timeout: 'Demorou demais. Tenta de novo.',
-  unknown: 'Erro desconhecido',
-  backend_pending: 'Análise de perfil disponível quando o backend for conectado 🛠️',
-  copy_failed: 'Não consegui copiar. Selecione o texto e copie na mão.',
-  toast_saved: 'Salvo na Biblioteca ✨',
-  toast_save_error: 'Erro ao salvar',
-};
+/* Textos vindos do dicionário, mantendo a forma do objeto TXT que o
+   componente já usava. */
+type Txt = ReturnType<typeof makeTxt>;
+
+const makeTxt = (t: (k: string, o?: Record<string, unknown>) => string) => ({
+  subtitle: t('perfilIA.subtitle'),
+  intro: t('perfilIA.intro'),
+  step1: t('perfilIA.step1'),
+  step2: t('perfilIA.step2'),
+  step3: t('perfilIA.step3'),
+  step4: t('perfilIA.step4'),
+  upload: t('perfilIA.upload'),
+  upload_hint: t('perfilIA.upload_hint'),
+  analyzing: t('perfilIA.analyzing'),
+  analyzing_hint: t('perfilIA.analyzing_hint'),
+  retry: t('perfilIA.retry'),
+  not_profile: t('perfilIA.not_profile'),
+  foto_label: t('perfilIA.foto_label'),
+  nome_label: t('perfilIA.nome_label'),
+  nome_suggestions: t('perfilIA.nome_suggestions'),
+  bio_label: t('perfilIA.bio_label'),
+  bio_suggestion: t('perfilIA.bio_suggestion'),
+  copy_bio: t('perfilIA.copy_bio'),
+  copied: t('perfilIA.copied'),
+  analyze_another: t('perfilIA.analyze_another'),
+  save_library: t('perfilIA.save_library'),
+  saved_library: t('perfilIA.saved_library'),
+  saving: t('perfilIA.saving'),
+  nota_top: t('perfilIA.nota_top'),
+  nota_boa: t('perfilIA.nota_boa'),
+  nota_dica: t('perfilIA.nota_dica'),
+  limit_reached: (limit: number) => t('perfilIA.limit_reached', { limit }),
+  invalid_file: t('perfilIA.invalid_file'),
+  too_large: t('perfilIA.too_large'),
+  read_image: t('perfilIA.read_image'),
+  session_expired: t('perfilIA.session_expired'),
+  empty_reply: t('perfilIA.empty_reply'),
+  timeout: t('perfilIA.timeout'),
+  unknown: t('perfilIA.unknown'),
+  backend_pending: t('perfilIA.backend_pending'),
+  copy_failed: t('perfilIA.copy_failed'),
+  toast_saved: t('perfilIA.toast_saved'),
+  toast_save_error: t('perfilIA.toast_save_error'),
+});
 
 /* ── Shape que a edge function devolve (já normalizado lá) ─────── */
 export interface ProfileAnalysis {
@@ -85,7 +92,7 @@ const TIMEOUT_MS = 90_000;          // visão + reasoning é lento; 90s é folga
 const DEFAULT_LIMIT = 5;
 
 /* Selo de nota — não existe nota negativa (decisão de produto). */
-const nota = (n: string): { bg: string; fg: string; label: string } => {
+const nota = (n: string, TXT: Txt): { bg: string; fg: string; label: string } => {
   if (n === 'otima' || n === 'otimo') return { bg: '#C8F000', fg: '#41520A', label: TXT.nota_top };
   if (n === 'dica') return { bg: '#F6B43A', fg: '#5B3A00', label: TXT.nota_dica };
   return { bg: '#FF2D7A', fg: '#FFFFFF', label: TXT.nota_boa };
@@ -115,7 +122,7 @@ const copyText = async (text: string): Promise<boolean> => {
 };
 
 /* Vira o texto que fica guardado na Biblioteca. */
-const analysisToText = (a: ProfileAnalysis): string => [
+const analysisToText = (a: ProfileAnalysis, TXT: Txt, t: (k: string) => string): string => [
   a.saudacao,
   '',
   `**${TXT.foto_label}**`,
@@ -123,17 +130,20 @@ const analysisToText = (a: ProfileAnalysis): string => [
   '',
   `**${TXT.nome_label}**`,
   a.nome.feedback,
-  a.nome.sugestoes.length ? `Sugestões:\n${a.nome.sugestoes.map(s => `• ${s}`).join('\n')}` : '',
+  a.nome.sugestoes.length ? `${t('perfilIA.sugestoesLabel')}\n${a.nome.sugestoes.map(s => `• ${s}`).join('\n')}` : '',
   '',
   `**${TXT.bio_label}**`,
   a.bio.feedback,
-  a.bio.sugestao ? `Bio sugerida:\n${a.bio.sugestao}` : '',
+  a.bio.sugestao ? `${t('perfilIA.bioSugeridaLabel')}\n${a.bio.sugestao}` : '',
   '',
   a.fechamento,
 ].filter(l => l !== undefined && l !== null && l !== '').join('\n');
 
 const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
+  const lang = useCurrentLang();
+  const { t } = useTranslation();
+  const TXT = makeTxt(t);
   const { user } = useAuth();
   const { toast } = useToast();
   const reduce = !!useReducedMotion();
@@ -214,6 +224,8 @@ const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
           image_base64: base64,
           image_mime: file.type,
           assistant_name: agent.name,
+          // A function usa isto para responder no idioma da aluna.
+          lang,
         }),
         signal: controller.signal,
       });
@@ -260,14 +272,14 @@ const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
     if (!result || !user || saveState !== 'idle') return;
     if (!SUPABASE_READY) { toast({ title: TXT.backend_pending }); return; }
     setSaveState('saving');
-    const title = `Análise do meu perfil — ${new Date().toLocaleDateString('pt-BR')}`;
+    const title = t('perfilIA.tituloAnalise', { data: formatDateNumeric(new Date(), lang) });
     const { error: saveError } = await supabase.from('saved_viral_outputs').insert({
       user_id: user.id,
       model_slug: agent.slug,
       model_name: agent.name,
       title,
       user_input: 'Print do topo do meu perfil do Instagram',
-      ai_response: analysisToText(result),
+      ai_response: analysisToText(result, TXT, t),
     });
     if (saveError) {
       setSaveState('idle');
@@ -289,7 +301,7 @@ const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
           onClick={() => navigate('/chat')}
           className="absolute top-3 left-3 z-10 w-8 h-8 flex items-center justify-center text-white/90"
           style={{ WebkitTapHighlightColor: 'transparent' }}
-          aria-label="Voltar pro Estúdio"
+          aria-label={t('a11y.voltarEstudio')}
         >
           <ArrowLeft size={18} />
         </button>
@@ -404,9 +416,9 @@ const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
                       </div>
                       <span
                         className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full"
-                        style={{ background: nota(result.foto.nota).bg, color: nota(result.foto.nota).fg }}
+                        style={{ background: nota(result.foto.nota, TXT).bg, color: nota(result.foto.nota, TXT).fg }}
                       >
-                        {nota(result.foto.nota).label}
+                        {nota(result.foto.nota, TXT).label}
                       </span>
                     </div>
                     <p className="text-[12.5px] text-[#5B4041] leading-relaxed">{result.foto.feedback}</p>
@@ -423,9 +435,9 @@ const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
                       </div>
                       <span
                         className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full"
-                        style={{ background: nota(result.nome.nota).bg, color: nota(result.nome.nota).fg }}
+                        style={{ background: nota(result.nome.nota, TXT).bg, color: nota(result.nome.nota, TXT).fg }}
                       >
-                        {nota(result.nome.nota).label}
+                        {nota(result.nome.nota, TXT).label}
                       </span>
                     </div>
                     {result.nome.feedback && (

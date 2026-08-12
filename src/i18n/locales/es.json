@@ -1,0 +1,1184 @@
+{
+  "nav": {
+    "home": "inicio",
+    "aoVivo": "en vivo",
+    "comunidade": "comunidad",
+    "cursos": "cursos",
+    "grupo": "grupo",
+    "titles": {
+      "home": "Inicio",
+      "aoVivo": "En vivo",
+      "comunidade": "Comunidad",
+      "cursos": "Cursos",
+      "grupoWhatsapp": "Grupo de WhatsApp"
+    }
+  },
+  "common": {
+    "voltar": "Volver",
+    "cancelar": "Cancelar",
+    "salvar": "Guardar",
+    "salvando": "Guardando...",
+    "excluir": "Eliminar",
+    "editar": "Editar",
+    "fechar": "Cerrar",
+    "confirmar": "Confirmar",
+    "continuar": "Continuar",
+    "carregando": "Cargando...",
+    "erro": "Algo salió mal",
+    "tentarNovamente": "Intentar de nuevo",
+    "copiar": "Copiar",
+    "copiado": "¡Copiado!",
+    "enviar": "Enviar",
+    "buscar": "Buscar",
+    "verMais": "Ver más",
+    "verTodos": "Ver todos"
+  },
+  "auth": {
+    "titulo": "Entrar en la comunidad",
+    "subtitulo": "Usa el correo de tu compra. La contraseña se envió allí en cuanto se activó tu acceso.",
+    "email": "Correo electrónico",
+    "senha": "Contraseña",
+    "entrar": "Entrar en la comunidad",
+    "esqueciSenha": "Olvidé mi contraseña",
+    "termos": "Al continuar, aceptas nuestros términos de uso y la política de privacidad.",
+    "erroTitulo": "No se pudo entrar",
+    "preenchaCampos": "Completa todos los campos.",
+    "credenciaisInvalidas": "Revisa tu correo y tu contraseña e inténtalo de nuevo.",
+    "negado": {
+      "not_found": {
+        "titulo": "Acceso no activado",
+        "msg": "No encontramos ninguna compra con ese correo. Usa el mismo correo con el que compraste."
+      },
+      "cancelled": {
+        "titulo": "Suscripción cancelada",
+        "msg": "Tu suscripción fue cancelada y el acceso está cerrado. Si crees que es un error, escribe al soporte."
+      },
+      "expired": {
+        "titulo": "Periodo de acceso terminado",
+        "msg": "El periodo contratado para este correo terminó. Para volver a entrar, renueva tu suscripción."
+      },
+      "refunded": {
+        "titulo": "Compra reembolsada",
+        "msg": "Tu compra fue reembolsada, así que el acceso se cerró."
+      }
+    }
+  },
+  "header": {
+    "perfil": "Perfil",
+    "logoApp": "Logo de la app",
+    "abrirBiblioteca": "Abrir Biblioteca",
+    "biblioteca": "Biblioteca",
+    "notificacoes": "Notificaciones",
+    "vazioTitulo": "Todavía no hay nada",
+    "vazioTexto": "Cuando alguien responda tus dudas\no haya novedades, aparece aquí",
+    "alguem": "Alguien",
+    "acao": {
+      "lesson_reply": "respondió tu pregunta",
+      "community_like": "le gustó tu publicación",
+      "community_comment": "comentó en tu publicación"
+    }
+  },
+  "home": {
+    "comecePorAqui": "Empieza por aquí",
+    "modulos": "Módulos",
+    "ferramentas": "Herramientas",
+    "ferramentasAvancadas": "Herramientas avanzadas",
+    "imagem": "Imagen",
+    "capa": "Portada",
+    "bannerAlt1": "Comunidad Digital — de la atención al digital",
+    "bannerAlt2": "Comunidad Digital — nuestra comunidad",
+    "upsellAlt": "Viral en 1 Minuto — deja de ser invisible con la app",
+    "bannerAlt3": "Comunidad del Salón a lo Digital"
+  },
+  "planGate": {
+    "bloqueada": "Función bloqueada",
+    "apenasPlanoCompleto": "Disponible solo en el plan completo de la app",
+    "assinarAgora": "Suscribirme ahora",
+    "features": {
+      "referencias": "Referencias",
+      "alerta": "Calendario de Alertas",
+      "dashboard": "Panel de Métricas",
+      "kanban": "Kanban de Guiones",
+      "comunidade": "Comunidad",
+      "modelosVirais": "Modelos Virales",
+      "biblioteca": "Biblioteca"
+    }
+  },
+  "upgrade": {
+    "titulo": "Función bloqueada",
+    "descricao": "Tienes acceso solo al área de cursos. Suscríbete al plan completo para desbloquear todo.",
+    "oQueDesbloqueia": "Lo que desbloqueas",
+    "cta": "Suscribirme al plan completo",
+    "rodape": "Tu acceso al curso sigue activo sin importar el plan",
+    "beneficios": [
+      "Referencias e inspiraciones virales",
+      "Calendario de alertas y contenidos",
+      "Modelos con IA (ilimitado)",
+      "Panel de métricas",
+      "Kanban de guiones",
+      "Comunidad exclusiva"
+    ]
+  },
+  "notFound": {
+    "titulo": "Página no encontrada",
+    "texto": "Ese contenido salió del aire o el enlace cambió de lugar. ¿Volvemos a la comunidad y seguimos viralizando?",
+    "voltar": "Volver al inicio",
+    "rodape": "Error 404 · Si crees que esto es un fallo, escríbenos al soporte."
+  },
+  "modulo": {
+    "naoEncontrado": "Módulo no encontrado",
+    "voltarInicio": "Volver al inicio",
+    "badgeFerramenta": "Herramienta",
+    "badgeMaterial": "Material",
+    "badgeModulo": "Módulo",
+    "materialApoio": "Material de apoyo",
+    "contagemAulas": "{{count}} clases",
+    "sobreEsteModulo": "Sobre este módulo",
+    "editarFotoIA": "Editar mi foto con IA",
+    "editarFotoIASub": "Prompts profesionales de edición listos para usar",
+    "verBaixarMaterial": "Ver y descargar material",
+    "abreNoDrive": "Se abre en Google Drive",
+    "materialEmBreve": "Material muy pronto",
+    "materialEmBreveSub": "En cuanto esté listo, el enlace para descargar aparece aquí.",
+    "seuProgresso": "Tu progreso",
+    "concluidasDe": "{{done}} de {{total}} clases completadas",
+    "cadernoDesafio": "Cuaderno del Reto",
+    "cadernoDesafioSub": "Marca tus metas y sigue tus 30 días",
+    "aulas": "Clases",
+    "concluida": "· completada",
+    "assistirAula": "Ver la clase"
+  },
+  "aula": {
+    "naoEncontrada": "Clase no encontrada",
+    "listaDeAulas": "Lista de clases",
+    "marcarConcluida": "Marcar como completada",
+    "desmarcarConcluida": "Clase completada · desmarcar",
+    "anterior": "Anterior",
+    "proxima": "Siguiente",
+    "atual": "Actual",
+    "resumo": "Resumen",
+    "materialComplementar": "Material complementario"
+  },
+  "community": {
+    "title": "Comunidad",
+    "heading": "¿Qué ha pasado por ahí?",
+    "subtitle": "Comparte tus resultados e inspira a las demás.",
+    "placeholder": "Comparte algo con la comunidad...",
+    "image_btn": "Imagen",
+    "image_optimizing": "Optimizando...",
+    "publish": "Publicar",
+    "empty_title": "Todavía no hay publicaciones",
+    "empty_desc": "¡Sé la primera en compartir!",
+    "comment_placeholder": "Escribe un comentario...",
+    "fullscreen_alt": "Imagen a pantalla completa",
+    "delete_post": "Eliminar publicación",
+    "delete_comment": "Eliminar comentario",
+    "remove_image": "Quitar imagen",
+    "send_comment": "Enviar comentario",
+    "user_fallback": "Usuaria",
+    "toast_post_published": "¡Publicación creada!",
+    "toast_post_error": "Error al publicar",
+    "toast_comment_deleted": "Comentario eliminado",
+    "toast_post_deleted": "Publicación eliminada",
+    "toast_empty_post": "Escribe algo o añade una imagen",
+    "toast_image_too_large": "Imagen demasiado grande. Máximo 25MB.",
+    "toast_load_error": "Error al cargar las publicaciones",
+    "toast_like_error": "Error al dar me gusta",
+    "toast_comment_error": "Error al comentar",
+    "toast_comment_delete_error": "Error al eliminar el comentario",
+    "toast_post_delete_error": "Error al eliminar la publicación"
+  },
+  "forum": {
+    "duvidasDaAula": "Dudas de la clase",
+    "comentario_one": "{{count}} comentario",
+    "comentario_other": "{{count}} comentarios",
+    "placeholder": "Escribe tu duda sobre la clase...",
+    "aluna": "Alumna",
+    "excluirComentario": "Eliminar comentario",
+    "erroCarregar": "Error al cargar los comentarios",
+    "erroEnviar": "Error al enviar el comentario",
+    "comentarioExcluido": "Comentario eliminado",
+    "erroExcluir": "Error al eliminar el comentario"
+  },
+  "reset": {
+    "voltarLogin": "Volver al inicio de sesión",
+    "tituloPedir": "Crear o recuperar contraseña",
+    "subPedir": "Escribe el correo que usaste en la compra. Te enviamos un enlace para crear tu contraseña de acceso.",
+    "emailCompra": "Correo de la compra",
+    "enviarLink": "Enviar enlace",
+    "emailInvalido": "Escribe un correo válido.",
+    "muitasTentativas": "Demasiados intentos seguidos. Espera unos minutos e inténtalo de nuevo.",
+    "falhaEnviar": "No se pudo enviar ahora. Inténtalo de nuevo en un momento.",
+    "linkEnviado": "¡Enlace enviado!",
+    "abraEmail": "Abre el correo <1>{{email}}</1> y toca el enlace para crear tu contraseña.",
+    "olheSpam": "¿No lo encuentras? Mira también en <1>spam</1> y en la pestaña <3>Promociones</3>.",
+    "enviarDeNovo": "Enviar de nuevo",
+    "novaSenha": "Nueva contraseña",
+    "escolhaSenha": "Elige una contraseña nueva para tu cuenta.",
+    "placeholderNova": "Nueva contraseña",
+    "placeholderConfirmar": "Confirmar contraseña",
+    "salvarSenha": "Guardar contraseña",
+    "senhaCurta": "La contraseña debe tener al menos 6 caracteres.",
+    "senhasDiferentes": "Las contraseñas no coinciden.",
+    "senhaIgualAtual": "La contraseña nueva tiene que ser distinta de la actual.",
+    "falhaSalvar": "No se pudo guardar. Abre otra vez el enlace del correo e inténtalo de nuevo.",
+    "senhaCriada": "¡Contraseña creada!",
+    "jaLogada": "Ya has iniciado sesión. ¡Bienvenida a la comunidad!",
+    "entrarComunidade": "Entrar en la comunidad"
+  },
+  "audio": {
+    "semSuporte": "Tu navegador no soporta la grabación de audio",
+    "micNegado": "Acceso al micrófono denegado. Actívalo en los ajustes del navegador.",
+    "micNaoEncontrado": "No se encontró ningún micrófono.",
+    "falhaIniciar": "No se pudo iniciar la grabación.",
+    "naoEntendi": "No entendí el audio. Inténtalo de nuevo.",
+    "falhaTranscricao": "Falló la transcripción",
+    "erroTranscrever": "Error al transcribir",
+    "backendPendente": "Disponible cuando se conecte el backend 🛠️"
+  },
+  "install": {
+    "leva30s": "Tarda 30 segundos",
+    "titulo": "Instala Amentora",
+    "subtitulo": "Convierte la comunidad en una app de verdad en tu móvil. Sin tienda, sin ocupar espacio, sin complicaciones — solo tres toques.",
+    "porQueVale": "Por qué vale la pena instalarla",
+    "beneficio1": "Acceso rápido — abre directo desde tu pantalla de inicio, sin buscar el enlace ni escribir la URL.",
+    "beneficio2": "Notificaciones de clases nuevas, retos y contenidos calientes directo en tu móvil.",
+    "beneficio3": "Funciona incluso con mala conexión — la comunidad abre rápido hasta con 3G flojito.",
+    "rodape": "Quien crea contenido de verdad no pierde tiempo abriendo el navegador. Se instala una vez y se usa todos los días.",
+    "iphone": {
+      "compartilhar": {
+        "titulo": "Toca en Compartir",
+        "descricao": "Abre Amentora en Safari y toca el icono de compartir (el cuadrado con la flecha hacia arriba), en la barra inferior del navegador."
+      },
+      "adicionar": {
+        "titulo": "Añadir a pantalla de inicio",
+        "descricao": "Desliza el menú que se abrió hasta encontrar la opción «Añadir a pantalla de inicio» y tócala."
+      },
+      "confirmar": {
+        "titulo": "Confirma el nombre de la app",
+        "descricao": "Déjalo como «Amentora» (o renómbralo a tu gusto) y toca «Añadir» en la esquina superior derecha."
+      },
+      "pronto": {
+        "titulo": "¡Listo! Icono en la pantalla",
+        "descricao": "La app aparece en tu pantalla de inicio igual que una app nativa, sin barra del navegador y con acceso instantáneo."
+      }
+    },
+    "android": {
+      "menu": {
+        "titulo": "Abre el menú de Chrome",
+        "descricao": "Con Amentora abierta en Chrome, toca los tres puntitos en la esquina superior derecha de la pantalla."
+      },
+      "instalar": {
+        "titulo": "Instalar aplicación",
+        "descricao": "Toca en «Instalar aplicación» o «Añadir a pantalla de inicio» (el texto puede cambiar un poco según la versión de Chrome)."
+      },
+      "confirmar": {
+        "titulo": "Confirma la instalación",
+        "descricao": "Aparecerá un cuadro preguntando si quieres instalarla. Toca «Instalar» para confirmar."
+      },
+      "pronto": {
+        "titulo": "¡Listo! Icono en la pantalla",
+        "descricao": "La app va directo a tu pantalla de inicio o al cajón de aplicaciones, lista para abrir con un toque."
+      }
+    }
+  },
+  "installPrompt": {
+    "close": "Cerrar",
+    "before_continue": "Antes de continuar",
+    "ios_headline": "Instala la app en tu iPhone",
+    "ios_sub": "Tarda 10 segundos. Desliza al lado para ver los pasos 👉",
+    "variant": "Versión {{n}}",
+    "next": "Siguiente",
+    "done": "Entendido, ya la instalé",
+    "skip": "Continuar sin instalar",
+    "android_headline": "Instala la app en Android",
+    "android_sub": "Es un solo toque. Se instala como una aplicación y abre directo desde la pantalla de inicio.",
+    "android_install": "Instalar ahora",
+    "android_wait": "Preparando la instalación...",
+    "steps": {
+      "menu": {
+        "title": "Abre el menú de Safari",
+        "desc": "Depende de tu iPhone: toca en «•••» en la barra O en el icono de compartir. Usa la versión que aparezca en tu dispositivo."
+      },
+      "compartilhar": {
+        "title": "Toca en «Compartir»",
+        "desc": "En el menú que se abra, toca la opción Compartir."
+      },
+      "verMais": {
+        "title": "Toca en «Ver más»",
+        "desc": "Si no encuentras la opción de añadir, baja y toca en Ver más."
+      },
+      "adicionar": {
+        "title": "Añadir a pantalla de inicio",
+        "desc": "Toca en «Añadir a pantalla de inicio»."
+      },
+      "confirmar": {
+        "title": "Toca en «Añadir»",
+        "desc": "Por último, solo toca Añadir (esquina superior) ¡y la app estará en tu pantalla de inicio! 🎉"
+      }
+    }
+  },
+  "aoVivo": {
+    "title": "Mentoría En Vivo",
+    "subtitle": "¡Clases y encuentros semanales en vivo con los mentores, enseñando y resolviendo dudas en tiempo real!",
+    "badge": "En vivo",
+    "fallback_title": "Clase en vivo",
+    "presenter_prefix": "con",
+    "watch_btn": "Ver en vivo",
+    "no_live": "No hay directo ahora mismo",
+    "no_live_desc": "Cuando empiece una clase en vivo, aparece aquí.",
+    "upcoming": "Próximas clases",
+    "no_upcoming": "No hay ninguna clase agendada",
+    "no_upcoming_desc": "Cuando se programe una nueva clase en vivo, aparece aquí con fecha y hora.",
+    "replays": "Repeticiones",
+    "no_replays": "Muy pronto, repeticiones aquí",
+    "no_replays_desc": "Las grabaciones de las clases en vivo quedan disponibles en esta zona para que las veas cuando quieras."
+  },
+  "profile": {
+    "erro": "Error",
+    "falhaPerfil": "No se pudo actualizar el perfil",
+    "perfilAtualizado": "¡Perfil actualizado!",
+    "infoSalvas": "Tus datos se han guardado",
+    "arquivoGrande": "Archivo demasiado grande",
+    "maximo25": "Máximo 25MB",
+    "avatarAtualizado": "¡Foto actualizada!",
+    "falhaAvatar": "No se pudo actualizar la foto",
+    "avatarRemovido": "Foto eliminada",
+    "falhaRemoverAvatar": "No se pudo eliminar la foto",
+    "alterarFoto": "Cambiar foto",
+    "removerFoto": "Quitar foto",
+    "usuario": "Usuaria",
+    "seuNome": "Tu nombre",
+    "seuUsuario": "tu_usuario",
+    "planoExpert": "Expert",
+    "planoCompleto": "App Completa",
+    "planoCurso": "Solo Curso",
+    "acessoCompleto": "Acceso completo a todas las herramientas y contenidos de la app.",
+    "acessoParcial": "Tienes acceso solo al área de cursos. Mejora tu plan para desbloquear todo.",
+    "adicioneArroba": "Añade tu @",
+    "seuPlano": "Tu plan",
+    "menu": {
+      "adminLabel": "Admin",
+      "adminHint": "Gestionar cursos, directos, push, usuarios",
+      "privacidadeLabel": "Privacidad",
+      "privacidadeHint": "Términos y política",
+      "suporteHint": "Resuelve tus dudas"
+    }
+  },
+  "chat": {
+    "grid_title": "Estudio de Creación",
+    "grid_subtitle": "Crea tu curso en minutos usando IA. Un agente para cada etapa — y bonus de viralización.",
+    "your_models": "Tus Cursos",
+    "library": "Biblioteca",
+    "create_btn": "Empezar",
+    "agent_word": "Agente",
+    "saved": "Guardado",
+    "save": "Guardar",
+    "saving_lesson": "Guardando la clase...",
+    "retry_save": "Intentar guardar",
+    "answer_required": "Hace falta tu respuesta",
+    "answer_below": "Responde en el campo de abajo",
+    "next_lesson": "Crear la siguiente clase",
+    "next_lesson_hint": "O escribe «siguiente» en el campo de mensaje.",
+    "next_lesson_extra": "Crear una clase más",
+    "resume_badge": "Se quedó en la clase {{n}}",
+    "resume_restart": "Empezar de cero",
+    "resume_loading": "Buscando las clases que ya escribiste...",
+    "resume_display": "📋 Volviendo al curso \"{{curso}}\".\n\nTe quedaste en la Clase {{n}} — sigue desde aquí.",
+    "next_lesson_extra_hint": "Las clases del esquema se acabaron. Sigue lo que quieras — cuando te parezca que está bien, solo sal (todo ya está en la Biblioteca).",
+    "lesson_saved": "Clase guardada automáticamente ✨",
+    "placeholder": "Describe tu nicho y tu tema...",
+    "transcribing": "Transcribiendo el audio...",
+    "recording": "Grabando...",
+    "keyboard_hint": "Enter para enviar · Shift+Enter para nueva línea",
+    "cancel_recording": "Cancelar la grabación",
+    "stop_recording": "Parar y transcribir",
+    "record_audio": "Grabar audio",
+    "save_to_library": "Guardar en la Biblioteca",
+    "save_modal_label": "Ponle un nombre para encontrarlo después",
+    "save_modal_placeholder": "Ej.: Esquema del curso de repostería",
+    "save_course_label": "Nombre del curso",
+    "exit_title": "¿Guardar antes de salir?",
+    "exit_desc": "Generaste contenido que todavía no se ha guardado. ¿Quieres guardarlo en la Biblioteca antes de salir?",
+    "exit_discard": "Salir sin guardar",
+    "exit_save": "Guardar y salir",
+    "cancel": "Cancelar",
+    "saving": "Guardando...",
+    "toast_name_required": "Ponle un nombre antes de guardar",
+    "toast_save_error": "Error al guardar",
+    "toast_saved": "Guardado en la Biblioteca ✨",
+    "toast_audio_error": "No entendí el audio. Inténtalo de nuevo.",
+    "toast_transcription_failed": "Falló la transcripción",
+    "toast_transcription_error": "Error al transcribir",
+    "error_prefix": "Algo salió mal al generar 😔",
+    "error_retry": "Inténtalo de nuevo en un momento.",
+    "unknown_error": "Error desconocido",
+    "backend_pending": "**Backend en preparación** 🛠️\n\nLos agentes de IA van a responder de verdad en cuanto se conecte el Supabase del proyecto. La pantalla ya está lista para eso.",
+    "toast_backend_pending": "Disponible cuando se conecte el backend 🛠️",
+    "limit_chats_segment": "Ya usaste tus **{{limit}} chats de \"{{segment}}\"** de hoy. ¡Prueba otro agente o vuelve mañana!",
+    "limit_reached_msg": "**Límite alcanzado**\n\n{{detail}}",
+    "limit_messages_msg": "**Límite de mensajes**\n\nYa enviaste el máximo de {{limit}} mensajes en esta conversación. Vuelve al Estudio e inicia una conversación nueva."
+  },
+  "agentes": {
+    "bonus": "BONUS",
+    "aberturaDefault": "¡Hola! Soy especialista en **{{name}}**.\n\nPara empezar, cuéntame:\n\n1. ¿Cuál es tu **nicho**?\n2. ¿Qué quieres crear hoy?",
+    "categorias": {
+      "estrutura": "Estructura",
+      "roteiro": "Guiones",
+      "apostila": "Apuntes",
+      "pesquisa": "Investigación",
+      "nome": "Naming",
+      "promessa": "Copy",
+      "anuncioPS": "Anuncio",
+      "anuncioAula": "Mini-Clase",
+      "ganchos": "Ganchos",
+      "narrado": "Narrado",
+      "carrossel": "Carrusel",
+      "perfil": "Perfil"
+    },
+    "agente-1": {
+      "nome": "Arquitecto del Curso",
+      "desc": "Monta el esqueleto del curso: módulos y clases en el orden correcto.",
+      "abertura": "¡Hola! Soy el **Arquitecto del Curso** 🏗️\n\nDiseño el **esqueleto completo** de tu curso: módulos, clases y el orden ideal de enseñanza.\n\nPara empezar, cuéntame:\n\n1. ¿Cuál es tu **nicho**?\n2. ¿Qué **transformación** quieres entregar a tus alumnas?"
+    },
+    "agente-2": {
+      "nome": "Guionista de Clases",
+      "desc": "Escribe el guion de cada clase, listo para grabar.",
+      "abertura": "¡Hola! Soy la **Guionista de Clases** 🎬\n\nConvierto cada clase en un **guion listo para grabar** — con apertura, desarrollo y cierre.\n\nEnvíame:\n\n1. El **tema de la clase** (o pega el esqueleto que montó el Arquitecto)\n2. El **nivel** de tus alumnas (principiantes, intermedias...)"
+    },
+    "agente-3": {
+      "nome": "Apuntes Técnicos",
+      "desc": "Crea los apuntes del curso, el material de apoyo de las alumnas.",
+      "abertura": "¡Hola! Soy los **Apuntes Técnicos** 📘\n\nEscribo el **material de apoyo** de tu curso, capítulo a capítulo, en lenguaje claro.\n\nCuéntame:\n\n1. El **tema o módulo** de los apuntes\n2. El **nivel** de tus alumnas"
+    },
+    "agente-4": {
+      "nome": "Investigación de Mercado",
+      "desc": "Mapea competidores, dolores y oportunidades de tu nicho.",
+      "abertura": "¡Hola! Soy la **Investigación de Mercado** 🔎\n\nInvestigo tu nicho: **competidores, dolores de la audiencia y oportunidades** de posicionamiento.\n\nCuéntame:\n\n1. ¿Cuál es tu **nicho**?\n2. ¿Quién es tu **clienta ideal**?"
+    },
+    "agente-5": {
+      "nome": "Nombre Potente",
+      "desc": "Crea nombres fuertes y vendedores para tu producto.",
+      "abertura": "¡Hola! Soy el **Nombre Potente** 🏷️\n\nCreo nombres fuertes, claros y memorables para tu producto."
+    },
+    "agente-6": {
+      "nome": "Promesa Irresistible",
+      "desc": "Escribe promesas SMART para el titular de tu oferta.",
+      "abertura": "¡Hola! Soy la **Promesa Irresistible** 📣\n\nCreo promesas fuertes y específicas para tu oferta."
+    },
+    "agente-7": {
+      "nome": "Ganchos Virales",
+      "desc": "Genera 20 ganchos de alta retención para tus vídeos.",
+      "abertura": "¡Hola! Soy los **Ganchos Virales** 🪝\n\nCreo 20 ganchos que hacen que la persona deje de deslizar la pantalla."
+    },
+    "agente-8": {
+      "nome": "Narrado Técnico",
+      "desc": "Guiones narrados técnicos de hasta 90s para viralizar.",
+      "abertura": "¡Hola! Soy el **Narrado Técnico** 🎙️\n\nCreo guiones técnicos, potentes y fáciles de grabar."
+    },
+    "agente-9": {
+      "nome": "Carrusel Viral",
+      "desc": "Monta carruseles de 10 diapositivas que enganchan y convierten.",
+      "abertura": "¡Hola! Soy el **Carrusel Viral** 🎠\n\nMonto carruseles estratégicos, diapositiva a diapositiva."
+    },
+    "agente-10": {
+      "nome": "Anuncio Problema/Solución",
+      "desc": "Crea 5 anuncios que exponen el dolor y entregan la solución.",
+      "abertura": "¡Hola! Soy el **Anuncio Problema/Solución** 🎯\n\nCreo **5 anuncios** que exponen el dolor de tu clienta y entregan la solución sin rodeos.\n\nPara empezar, cuéntame:\n\n1. ¿Cuál es tu **producto**?\n2. ¿Quién es el **experto** detrás de él?\n3. ¿Cuál es tu **nicho**?"
+    },
+    "agente-11": {
+      "nome": "Anuncio Mini-Clase",
+      "desc": "Crea 5 anuncios que enseñan un paso y abren al siguiente nivel.",
+      "abertura": "¡Hola! Soy el **Anuncio Mini-Clase** 🎓\n\nCreo **5 anuncios** que enseñan un paso en la práctica y abren la puerta al siguiente nivel.\n\nPara empezar, cuéntame:\n\n1. ¿Cuál es tu **producto**?\n2. ¿Quién es el **experto** detrás de él?\n3. ¿Cuál es tu **nicho**?"
+    },
+    "agente-12": {
+      "nome": "Analizar Mi Perfil",
+      "desc": "Manda la captura de tu perfil y mejora foto, nombre y bio."
+    }
+  },
+  "perfilIA": {
+    "subtitle": "Deja tu perfil irresistible",
+    "intro": "Enséñame tu perfil y te ayudo a dejarlo irresistible para tus futuras alumnas 💛 Es rapidito:",
+    "step1": "Abre tu perfil en Instagram",
+    "step2": "Haz una captura de la parte de arriba, mostrando tu FOTO, tu NOMBRE y la BIO",
+    "step3": "Envía la captura aquí abajo",
+    "step4": "Yo la analizo y te doy los consejos de oro ✨",
+    "upload": "Enviar captura del perfil",
+    "upload_hint": "Acepta PNG, JPG o WEBP — hasta 10MB · 5 análisis al día",
+    "analyzing": "Estoy analizando tu perfil 👀",
+    "analyzing_hint": "Esto tarda unos segunditos...",
+    "retry": "Intentar de nuevo",
+    "not_profile": "Mmm, no logré ver bien tu perfil en esa captura 🥺 Hazla otra vez mostrando tu foto, tu nombre y la bio en una sola imagen, ¿vale?",
+    "foto_label": "Foto de perfil",
+    "nome_label": "Nombre visible",
+    "nome_suggestions": "Sugerencias listas (toca para copiar)",
+    "bio_label": "Bio",
+    "bio_suggestion": "Bio sugerida",
+    "copy_bio": "Copiar bio",
+    "copied": "¡Copiado!",
+    "analyze_another": "Analizar otra captura",
+    "save_library": "Guardar en la Biblioteca",
+    "saved_library": "Guardado en la Biblioteca",
+    "saving": "Guardando...",
+    "nota_top": "¡Está genial!",
+    "nota_boa": "¡Está bien!",
+    "nota_dica": "Consejo 💡",
+    "limit_reached": "Ya usaste tus {{limit}} análisis de perfil de hoy 💛 ¡Vuelve mañana que hay más!",
+    "invalid_file": "Envía una imagen (captura) de tu perfil.",
+    "too_large": "Envía una captura de hasta 10MB.",
+    "read_image": "No pude leer esa imagen. Prueba con otra captura.",
+    "session_expired": "Sesión caducada. Inicia sesión otra vez.",
+    "empty_reply": "La IA no devolvió el análisis. Inténtalo de nuevo.",
+    "timeout": "Tardó demasiado. Inténtalo de nuevo.",
+    "unknown": "Error desconocido",
+    "backend_pending": "El análisis de perfil estará disponible cuando se conecte el backend 🛠️",
+    "copy_failed": "No pude copiar. Selecciona el texto y cópialo a mano.",
+    "toast_saved": "Guardado en la Biblioteca ✨",
+    "toast_save_error": "Error al guardar",
+    "tituloAnalise": "Análisis de mi perfil — {{data}}",
+    "sugestoesLabel": "Sugerencias:",
+    "bioSugeridaLabel": "Bio sugerida:"
+  },
+  "modelos": {
+    "formatosProntos": "Formatos listos",
+    "titulo": "Modelos que se vuelven virales",
+    "subtitulo": "Elige un formato probado por creadores de verdad. La IA monta el guion completo para ti en segundos.",
+    "todos": "Todos",
+    "vazio": "Todavía no hay ningún modelo con ese objetivo.",
+    "gerarRoteiro": "Generar guion",
+    "dicaRodape": "¿No sabes cuál usar? Empieza por <1>Problema → Solución</1> — es el formato que más convierte para quien está empezando.",
+    "objetivos": {
+      "Alcance": "Alcance",
+      "Engajamento": "Interacción",
+      "Vendas": "Ventas",
+      "Autoridade": "Autoridad"
+    },
+    "itens": {
+      "problema-solucao": {
+        "nome": "Problema → Solución",
+        "desc": "Muestra el dolor de la audiencia y lo resuelve en segundos. Retención alta."
+      },
+      "lista-x-coisas": {
+        "nome": "Lista de X cosas",
+        "desc": "«5 errores que...», «3 formas de...». Fácil de consumir y de guardar."
+      },
+      "pov": {
+        "nome": "POV",
+        "desc": "Pone al espectador en la escena. Genera identificación instantánea."
+      },
+      "antes-depois": {
+        "nome": "Antes y Después",
+        "desc": "Prueba visual de transformación. Buenísimo para vender resultado."
+      },
+      "storytelling-60s": {
+        "nome": "Storytelling 60s",
+        "desc": "Una historia corta con giro al final. Engancha hasta el último segundo."
+      },
+      "tutorial-rapido": {
+        "nome": "Tutorial rápido",
+        "desc": "Enseña algo práctico en pocos pasos. Construye autoridad rápido."
+      },
+      "erro-comum": {
+        "nome": "El error que todo el mundo comete",
+        "desc": "Señala un error común del nicho y muestra cómo evitarlo. Genera comentarios."
+      },
+      "bastidores": {
+        "nome": "Detrás de cámaras",
+        "desc": "Muestra el proceso real detrás del resultado. Crea conexión."
+      },
+      "comparativo": {
+        "nome": "Comparativa A vs B",
+        "desc": "Pone dos opciones lado a lado y señala la ganadora. Buenísimo gancho."
+      },
+      "trend-remix": {
+        "nome": "Reto / Remix de tendencia",
+        "desc": "Coge una tendencia del momento y la adapta a tu nicho. Fácil de viralizar."
+      }
+    }
+  },
+  "referencias": {
+    "bancoInspiracao": "Banco de inspiración",
+    "titulo": "Referencias virales",
+    "subtitulo": "Vídeos que petaron de verdad, separados por categoría. Estudia el gancho, el corte y el pie de foto",
+    "vazio": "Todavía no hay ninguna referencia aquí",
+    "vazioSub": "Cambia de categoría para ver más ejemplos.",
+    "dicaComunidade": "Consejo de la comunidad: guarda 3 referencias por semana y recrea el gancho con tu estilo — no copies el vídeo, copia la estructura.",
+    "salvar": "Guardar referencia",
+    "removerSalvo": "Quitar de guardados",
+    "categorias": {
+      "Todos": "Todas",
+      "Humor": "Humor",
+      "Educativo": "Educativo",
+      "Trend": "Tendencia",
+      "Bastidores": "Detrás de cámaras"
+    },
+    "itens": {
+      "ref-1": {
+        "titulo": "3 errores que hacen que tu vídeo muera en los primeros 2s",
+        "metrica": "2,4M visualizaciones"
+      },
+      "ref-2": {
+        "titulo": "Recreé el mismo audio 5 veces hasta viralizarlo (funcionó)",
+        "metrica": "318% de retención media"
+      },
+      "ref-3": {
+        "titulo": "POV: contratas a un freelance y desaparece",
+        "metrica": "5,1M visualizaciones"
+      },
+      "ref-4": {
+        "titulo": "La tendencia del «espejo triple» sigue petando (úsala así)",
+        "metrica": "892K me gusta"
+      },
+      "ref-5": {
+        "titulo": "Cómo guionizo 10 Reels en 40 minutos",
+        "metrica": "1,8M visualizaciones"
+      },
+      "ref-6": {
+        "titulo": "Detrás del vídeo que rompió el algoritmo (sin cortes)",
+        "metrica": "412% por encima de la media del canal"
+      }
+    }
+  },
+  "camera": {
+    "titulo": "Cámara rápida",
+    "subtitulo": "Elige un guion para grabar",
+    "rodape": "Toca un guion para abrir la cámara en el Estudio",
+    "categorias": {
+      "Retenção": "Retención",
+      "Transformação": "Transformación",
+      "Educativo": "Educativo",
+      "Tendência": "Tendencia",
+      "Storytelling": "Storytelling"
+    },
+    "itens": {
+      "gancho-3s-polemico": {
+        "titulo": "Gancho de 3s polémico",
+        "descricao": "Apertura que genera desacuerdo inmediato para frenar el scroll."
+      },
+      "antes-e-depois": {
+        "titulo": "Antes y después relámpago",
+        "descricao": "Muestra el resultado al principio y luego vuelve al proceso."
+      },
+      "lista-rapida-3-dicas": {
+        "titulo": "3 consejos en 30 segundos",
+        "descricao": "Formato lista con corte seco entre cada consejo — buenísimo para guardar."
+      },
+      "pov-tendencia": {
+        "titulo": "POV con la tendencia del momento",
+        "descricao": "Guion listo para encajar en un audio viral que está en alza ahora."
+      },
+      "storytime-virada": {
+        "titulo": "Storytime con giro al final",
+        "descricao": "Narrativa personal con plot twist para aguantar hasta el último segundo."
+      }
+    }
+  },
+  "biblioteca": {
+    "back": "Volver",
+    "title": "Biblioteca",
+    "subtitle": "Tu archivo creativo, organizado por etapa",
+    "empty": "Biblioteca vacía",
+    "empty_desc": "Los contenidos creados por los agentes aparecen aquí en cuanto se guardan.",
+    "saved_one": "guardado",
+    "saved_many": "guardados",
+    "model_empty": "Todavía no hay ningún guion guardado en este modelo.",
+    "save_title": "Guardar título",
+    "cancel": "Cancelar",
+    "copied": "Copiado",
+    "copy": "Copiar",
+    "rename": "Renombrar",
+    "delete": "Eliminar",
+    "briefing": "Tu briefing",
+    "ai_response": "Respuesta de la IA",
+    "edit": "Editar",
+    "save": "Guardar",
+    "toast_error": "Error",
+    "toast_title_updated": "Título actualizado",
+    "toast_delete_error": "Error al eliminar",
+    "toast_removed": "Eliminado de la biblioteca",
+    "toast_updated": "Guion actualizado",
+    "load_error": "No se pudo cargar la Biblioteca",
+    "search_placeholder": "Buscar por agente o etapa...",
+    "no_results": "No se encontró ningún contenido en esa búsqueda.",
+    "seuAcervo": "Tu archivo creativo",
+    "outrosConteudos": "Otros contenidos",
+    "secoes": {
+      "curso": {
+        "title": "Construcción del curso",
+        "description": "Estructura, clases y material de apoyo"
+      },
+      "estrategia": {
+        "title": "Estrategia y oferta",
+        "description": "Investigación, nombre y promesa del producto"
+      },
+      "conteudo": {
+        "title": "Contenido y difusión",
+        "description": "Guiones, anuncios y formatos virales"
+      }
+    }
+  },
+  "kanban": {
+    "organizacao": "Organización de contenido",
+    "titulo": "Mis guiones",
+    "subtitulo": "Saca la idea de la cabeza al papel, graba y publica. Usa las flechas para mover cada guion",
+    "novaIdeia": "Nueva idea",
+    "vazio": "Todavía no hay nada aquí",
+    "dica": "Consejo de la comunidad: mantén como máximo 3 guiones en «Grabando» a la vez — el foco es lo que más",
+    "colunas": {
+      "ideias": "Ideas",
+      "gravando": "Grabando",
+      "publicado": "Publicado"
+    },
+    "categorias": {
+      "Humor": "Humor",
+      "Educativo": "Educativo",
+      "Trend": "Tendencia",
+      "Bastidores": "Detrás de cámaras",
+      "Storytime": "Storytime"
+    },
+    "itens": {
+      "rt-1": "3 errores que frenan tu Reels en los primeros 2 segundos",
+      "rt-2": "POV: tu jefe descubre que editas vídeo de madrugada",
+      "rt-3": "Recreando la tendencia del audio «esto no estaba en los planes»",
+      "rt-4": "Detrás de cámaras: cómo grabo 5 vídeos en solo 1 hora",
+      "rt-5": "La vez que mi vídeo petó sin esperarlo (storytime)"
+    },
+    "novasIdeias": [
+      "Nuevo gancho: «nadie te contó esto sobre...»",
+      "Idea rápida: detrás del proceso creativo",
+      "Probar formato de lista con 3 consejos",
+      "Reaccionar a una tendencia nueva de la semana",
+      "Storytime sobre un error que se volvió aprendizaje"
+    ]
+  },
+  "alerta": {
+    "fiqueDeOlho": "Mantente atenta",
+    "titulo": "Calendario de alertas",
+    "subtitulo": "Las fechas correctas para publicar, según lo que está petando ahora.",
+    "hoje": "Hoy",
+    "proximosAlertas": "Próximas alertas",
+    "diaTag": "Día {{dia}} · {{tag}}",
+    "ativarNotificacoes": "Activar notificaciones de tendencias",
+    "alertaTrend": "Alerta de tendencia",
+    "itens": {
+      "trend": {
+        "titulo": "La tendencia del audio «Efecto Espejo» en alza",
+        "descricao": "El uso sube un 340% en las últimas 48h. Corre a entrar antes de que se sature.",
+        "tag": "Tendencia caliente"
+      },
+      "bastidor": {
+        "titulo": "Día de Reels de detrás de cámaras",
+        "descricao": "Tu público interactúa 2x más con contenido de rutina los miércoles.",
+        "tag": "Rutina"
+      },
+      "horario": {
+        "titulo": "Horario estrella: 19h–21h",
+        "descricao": "Pico de audiencia previsto para tu nicho en esa franja.",
+        "tag": "Horario estrella"
+      },
+      "hashtags": {
+        "titulo": "Reinicio de hashtags de la semana",
+        "descricao": "Renueva tu banco de hashtags antes de que pierdan alcance.",
+        "tag": "Mantenimiento"
+      }
+    }
+  },
+  "estudio": {
+    "titulo": "Estudio",
+    "previaCamera": "Vista previa de la cámara",
+    "iniciarGravacao": "Iniciar grabación",
+    "pararGravacao": "Parar grabación",
+    "toqueParaGravar": "Toca para grabar",
+    "gravandoToque": "Grabando — toca para parar",
+    "preparando": "Preparando...",
+    "roteiros": {
+      "gancho-3s": {
+        "titulo": "Gancho de 3 segundos",
+        "categoria": "Retención",
+        "texto": "Si publicas todos los días y nadie te ve... el problema no es el algoritmo, es tu primer segundo. Mira esto antes de grabar tu próximo vídeo."
+      },
+      "storytime-virou-caso": {
+        "titulo": "Storytime que se volvió caso",
+        "categoria": "Narrativa",
+        "texto": "Esto me pasó hace dos semanas y todavía no lo he superado. Estaba grabando un Reels normal, cuando de la nada... [pausa dramática] deja que te cuente desde el principio."
+      },
+      "lista-erros": {
+        "titulo": "3 errores que frenan tu crecimiento",
+        "categoria": "Educacional",
+        "texto": "Error número uno: publicar sin pensar en el primer corte. Error número dos: pie de foto gigante sin llamada a la acción. Error número tres: desaparecer tres días después de viralizar. Apunta."
+      },
+      "default": {
+        "titulo": "Guion libre",
+        "categoria": "Freestyle",
+        "texto": "¡Hola, comunidad! Hoy vine a contarles algo que nadie esperaba... y que va a cambiar la forma en que grabas contenido a partir de ahora."
+      }
+    }
+  },
+  "dashboard": {
+    "painel": "Panel de rendimiento",
+    "titulo": "Tus métricas",
+    "subtitulo": "Sigue el crecimiento de tu cuenta y descubre qué está funcionando para viralizar más.",
+    "ultimos7": "Últimos 7 días",
+    "visualizacoes": "Visualizaciones",
+    "vsSemanaAnterior": "vs. semana anterior · toca una barra para ver el día",
+    "topPosts": "Top publicaciones",
+    "melhoresSemana": "Las mejores de la semana",
+    "tiles": {
+      "seguidores": "Seguidores",
+      "alcance": "Alcance",
+      "engajamento": "Interacción",
+      "salvamentos": "Guardados"
+    },
+    "posts": {
+      "p1": "3 errores que hacen que tu Reels no se viralice",
+      "p2": "Cómo grabar 10 Reels en 1 hora (método por lotes)",
+      "p3": "El hook que triplicó mi alcance en 7 días"
+    }
+  },
+  "oferta": {
+    "aprenda": "APRENDE EN ESTA CLASE CÓMO VIRALIZAR",
+    "surpresa": "AL FINAL TENEMOS UNA SORPRESA...",
+    "cta": "Quiero mi acceso con descuento ahora"
+  },
+  "pet": {
+    "gamificacao": "Gamificación · Amentora",
+    "titulo": "Tu Mascota Creadora",
+    "subtitulo": "Cuida a {{nome}} todos los días y mantén viva tu racha.",
+    "subiuNivel": "¡Subió de nivel!",
+    "toqueCarinho": "toca a {{nome}} para hacerle mimos",
+    "deOfensiva": "de racha",
+    "faltamXp": "faltan {{xp}} XP para el nivel {{nivel}}",
+    "alimentar": "Alimentar",
+    "brincar": "Jugar",
+    "missoesDoDia": "Misiones del día",
+    "todasConcluidas": "¡Todas las misiones completadas!",
+    "naoPercaOfensiva": "¡No pierdas la racha!",
+    "toastXp": "+{{xp}} XP · {{acao}}",
+    "acaoAlimentou": "Alimentaste a {{nome}}",
+    "acaoBrincou": "Jugaste con {{nome}}",
+    "acaoCarinho": "Mimos",
+    "humor": {
+      "animada": "Animada",
+      "cochilando": "Dormitando"
+    },
+    "niveis": [
+      "Cachorrita Creadora",
+      "Gatita Curiosa",
+      "Creadora en Ascenso",
+      "Estrella en Alza",
+      "Fiera del Algoritmo",
+      "Leyenda de la Comunidad"
+    ],
+    "missoes": {
+      "reels": {
+        "label": "Publica 1 Reels o Short hoy",
+        "hint": "La constancia es lo que más alimenta el algoritmo"
+      },
+      "comentarios": {
+        "label": "Comenta en 3 publicaciones de la comunidad",
+        "hint": "La interacción genera reconocimiento entre los miembros"
+      },
+      "aula": {
+        "label": "Mira 1 clase del itinerario Amentora",
+        "hint": "Cada día un poco de técnica nueva"
+      },
+      "curtidas": {
+        "label": "Deja 5 me gusta en publicaciones de otros creadores",
+        "hint": "Una comunidad fuerte crece junta"
+      }
+    },
+    "missaoConcluida": "Misión completada"
+  },
+  "intake": {
+    "perguntas": {
+      "architect": {
+        "sobre": {
+          "label": "Sobre ti y tu técnica",
+          "hint": "Quién eres, tu experiencia y lo que diferencia a tu método.",
+          "placeholder": "Ej.: Soy peluquero desde hace 14 años, especialista en mechas..."
+        },
+        "produto": {
+          "label": "¿Qué tipo de producto quieres crear?",
+          "hint": "Formato, cuántos módulos y cuántas clases por módulo, profundidad.",
+          "placeholder": "Ej.: Un curso completo pero directo, máximo 4 módulos..."
+        },
+        "nome": {
+          "label": "Nombre provisional del producto",
+          "hint": "Si ya tienes un nombre en mente. Será el nombre por defecto al guardar (puedes dejarlo en blanco).",
+          "placeholder": "Ej.: Morena Iluminada de las Gringas"
+        },
+        "dor": {
+          "label": "¿Cuál es el dolor principal que resuelve?",
+          "hint": "El problema que tu alumna vive hoy.",
+          "placeholder": "Ej.: El miedo a manchar el pelo de la clienta..."
+        },
+        "ideia": {
+          "label": "¿Cuál es la idea central del producto?",
+          "hint": "La esencia del curso. Puedes incluir precio y tiempo de consumo.",
+          "placeholder": "Ej.: Un curso low ticket, directo al grano, que se ve en 1 o 2 días..."
+        },
+        "aprender": {
+          "label": "¿Qué necesita aprender a hacer la alumna?",
+          "hint": "Las habilidades y resultados que se lleva.",
+          "placeholder": "Ej.: Hacer las mechas estratégicas, matización, corrección de color..."
+        },
+        "transformacao": {
+          "label": "¿Cuál es la transformación final?",
+          "hint": "Dónde llega la alumna al terminar el curso.",
+          "placeholder": "Ej.: Estar preparada para hacer una morena iluminada de excelencia en cualquier pelo..."
+        },
+        "estrutura": {
+          "label": "¿Ya tienes idea de estructura?",
+          "hint": "Si sí, describe lo que imaginas. Si no, déjalo en blanco que la monto desde cero.",
+          "placeholder": "Ej.: Todavía no tengo ni idea..."
+        }
+      },
+      "apostila": {
+        "expert": {
+          "label": "Nombre de la experta o autora del método",
+          "hint": "Quién firma los apuntes (el método lleva ese nombre).",
+          "placeholder": "Ej.: Método Ana Souza"
+        },
+        "tecnica": {
+          "label": "Nombre de la técnica, curso o profesión",
+          "hint": "Lo que van a enseñar los apuntes. Será el nombre por defecto al guardar.",
+          "placeholder": "Ej.: Morena Iluminada de las Gringas"
+        },
+        "conteudo": {
+          "label": "Explica en detalle qué quieres enseñar",
+          "hint": "Cuanto más detalle, más completos los apuntes. Puedes escribir bastante.",
+          "placeholder": "Ej.: Enseñar morena iluminada a mano alzada y con papel, corrección de color y matización..."
+        },
+        "nivel": {
+          "label": "¿Para qué nivel?",
+          "hint": "Principiantes, intermedias, avanzadas o todos los niveles.",
+          "placeholder": "Ej.: Todos los niveles"
+        },
+        "estilo": {
+          "label": "¿Qué estilo de apuntes?",
+          "hint": "Más técnica, más simple, más premium o equilibrada.",
+          "placeholder": "Ej.: Premium y equilibrada"
+        }
+      },
+      "pesquisa": {
+        "nicho": {
+          "label": "¿En qué nicho quieres trabajar?",
+          "hint": "El mercado o tema de tu producto.",
+          "placeholder": "Ej.: Uñas de gel"
+        },
+        "publico": {
+          "label": "¿Quién es tu público objetivo?",
+          "hint": "Edad, género, profesión, nivel de conocimiento y lo que más sepas (ubicación: España).",
+          "placeholder": "Ej.: Mujeres de 20-40, manicuristas principiantes que quieren especializarse..."
+        },
+        "ensina": {
+          "label": "¿Qué sabes enseñar mejor?",
+          "hint": "Tu principal habilidad o entrega.",
+          "placeholder": "Ej.: Molde F1 con acabado perfecto..."
+        },
+        "ajudou": {
+          "label": "¿Ya has ayudado a alguien con esto?",
+          "hint": "Resultados o historias, si tienes (puedes dejarlo en blanco).",
+          "placeholder": "Ej.: Ya he formado a 30 alumnas presencialmente..."
+        },
+        "diferencial": {
+          "label": "¿Tienes algún diferencial?",
+          "hint": "Lo que te separa de la competencia.",
+          "placeholder": "Ej.: Método propio de aplicación sin burbujas..."
+        }
+      },
+      "nome": {
+        "tipo": {
+          "label": "¿Qué tipo de producto es?",
+          "hint": "Curso, mentoría, ebook, reto...",
+          "placeholder": "Ej.: Curso"
+        },
+        "nome_prov": {
+          "label": "Nombre provisional (si tienes)",
+          "hint": "Si ya tienes un nombre en mente. Puedes dejarlo en blanco.",
+          "placeholder": "Ej.: Molde F1 desde cero"
+        },
+        "tema": {
+          "label": "Tema principal del producto",
+          "hint": "Lo que enseña de verdad.",
+          "placeholder": "Ej.: Enseñar a hacer el primer molde F1"
+        },
+        "publico": {
+          "label": "Público objetivo específico",
+          "hint": "Para quién es.",
+          "placeholder": "Ej.: Nail designers principiantes"
+        },
+        "transformacao": {
+          "label": "Transformación que entrega",
+          "hint": "El resultado que tendrá la alumna.",
+          "placeholder": "Ej.: Hacer la primera extensión en molde F1"
+        },
+        "diferencial": {
+          "label": "Diferencial (si tienes)",
+          "hint": "Lo que te destaca. Puedes dejarlo en blanco.",
+          "placeholder": "Ej.: La persona aprende en poco tiempo"
+        },
+        "linguagem": {
+          "label": "Lenguaje deseado para el nombre",
+          "hint": "El tono del nombre.",
+          "placeholder": "Ej.: Informal"
+        }
+      },
+      "promessa": {
+        "nome": {
+          "label": "Nombre del producto",
+          "hint": "El nombre elegido o provisional.",
+          "placeholder": "Ej.: Molde F1 de las Gringas"
+        },
+        "tipo": {
+          "label": "Tipo de producto",
+          "hint": "Curso, mentoría, ebook, reto, plantilla...",
+          "placeholder": "Ej.: Curso online"
+        },
+        "tema": {
+          "label": "Tema central del producto",
+          "hint": "De qué va.",
+          "placeholder": "Ej.: Uñas en molde F1"
+        },
+        "publico": {
+          "label": "Público objetivo específico",
+          "hint": "Para quién es.",
+          "placeholder": "Ej.: Manicuristas principiantes sin tiempo"
+        },
+        "transformacao": {
+          "label": "Transformación después del producto",
+          "hint": "Lo que consigue la alumna después.",
+          "placeholder": "Ej.: Hacer la primera uña en molde F1"
+        },
+        "tempo": {
+          "label": "¿Resultado en cuánto tiempo?",
+          "hint": "El plazo de la transformación.",
+          "placeholder": "Ej.: 7 días"
+        },
+        "diferencial": {
+          "label": "Diferencial que acelera (si tienes)",
+          "hint": "Método validado, con IA, práctico... Puedes dejarlo en blanco.",
+          "placeholder": "Ej.: Método validado por 200 alumnas"
+        }
+      },
+      "ganchos": {
+        "nicho": {
+          "label": "¿Cuál es tu nicho?",
+          "hint": "El mercado en el que trabajas.",
+          "placeholder": "Ej.: Nail designer"
+        },
+        "ensina": {
+          "label": "¿Qué enseñas, vendes o entregas?",
+          "hint": "Explícalo con detalle.",
+          "placeholder": "Ej.: Enseño a manicuristas a hacer molde F1 con acabado profesional..."
+        },
+        "nivel": {
+          "label": "¿Con qué nivel de persona quieres hablar?",
+          "hint": "Principiante, intermedia, avanzada o todas.",
+          "placeholder": "Ej.: Principiante"
+        },
+        "objetivo": {
+          "label": "¿Cuál es el objetivo de los ganchos?",
+          "hint": "Atraer clientas, vender curso, crecer en Instagram, autoridad, interacción...",
+          "placeholder": "Ej.: Atraer alumnas al curso"
+        },
+        "dor": {
+          "label": "¿Algún dolor o deseo específico?",
+          "hint": "Si no lo sabes, déjalo en blanco que yo lo defino.",
+          "placeholder": "Ej.: Miedo a no conseguir clientas"
+        }
+      },
+      "narrado": {
+        "entrada": {
+          "label": "¿Tu nicho O un gancho ya hecho?",
+          "hint": "Manda solo el nicho (que yo elijo el tema) O pega un gancho que ya tengas.",
+          "placeholder": "Ej.: Nail designer  —o—  «el error que hace que el molde F1 se despegue»"
+        }
+      },
+      "carrossel": {
+        "nicho": {
+          "label": "¿Cuál es tu nicho?",
+          "hint": "El mercado en el que trabajas.",
+          "placeholder": "Ej.: Nail designer"
+        },
+        "faz": {
+          "label": "¿Qué haces en ese nicho?",
+          "hint": "Explícalo con detalle.",
+          "placeholder": "Ej.: Enseño y hago extensiones en molde F1..."
+        },
+        "tema": {
+          "label": "Tema, gancho o idea (si tienes)",
+          "hint": "Si ya tienes un tema para el carrusel. Déjalo en blanco que yo lo creo.",
+          "placeholder": "Ej.: 5 errores en el molde F1"
+        },
+        "foco": {
+          "label": "Foco del carrusel",
+          "hint": "Viralización, autoridad, enseñanza técnica, conversión, conexión o mixto.",
+          "placeholder": "Ej.: Autoridad"
+        },
+        "cta": {
+          "label": "CTA final",
+          "hint": "Seguir, comentar, compartir, guardar, mensaje directo, curso, mentoría, cita...",
+          "placeholder": "Ej.: Seguir"
+        }
+      }
+    },
+    "proxima": "Siguiente",
+    "subtitles": {
+      "agente-1": "Vamos a montar el esqueleto de tu curso",
+      "agente-3": "Vamos a montar tus apuntes",
+      "agente-4": "Vamos a investigar tu mercado",
+      "agente-5": "Vamos a crear un nombre potente",
+      "agente-6": "Vamos a crear tu promesa",
+      "agente-7": "Vamos a crear tus ganchos",
+      "agente-8": "Vamos a crear tu guion",
+      "agente-9": "Vamos a crear tu carrusel"
+    },
+    "submits": {
+      "agente-1": "Generar esqueleto",
+      "agente-3": "Generar apuntes",
+      "agente-4": "Investigar mercado",
+      "agente-5": "Generar nombres",
+      "agente-6": "Generar promesas",
+      "agente-7": "Generar ganchos",
+      "agente-8": "Generar guion",
+      "agente-9": "Generar carrusel"
+    },
+    "semConteudo": "La IA no devolvió contenido"
+  },
+  "a11y": {
+    "colunaAnterior": "Mover a la columna anterior",
+    "colunaProxima": "Mover a la columna siguiente",
+    "mesAnterior": "Mes anterior",
+    "mesProximo": "Mes siguiente",
+    "virarCamera": "Girar cámara",
+    "gravarTranscrever": "Grabar audio y transcribir",
+    "escolherRoteiro": "Elegir guion para grabar",
+    "voltarEstudio": "Volver al Estudio"
+  },
+  "notificacoes": {
+    "n1": "¡Buenísima pregunta! El gancho ideal depende de tu nicho — te respondí con un ejemplo práctico.",
+    "n3": "¡Probé el guion de lista y llegó a 40k visualizaciones! Gracias por el consejo 🔥",
+    "equipe": "Equipo Amentora"
+  },
+  "conteudoDb": {
+    "instructor": {
+      "Equipe Amentora": "Equipo Amentora"
+    },
+    "nivel": {
+      "Iniciante": "Principiante",
+      "Intermediário": "Intermedio",
+      "Avançado": "Avanzado",
+      "Todos os níveis": "Todos los niveles"
+    },
+    "tag": {
+      "NOVO": "NUEVO",
+      "PRO": "PRO"
+    },
+    "duracao": {
+      "A definir": "Por definir",
+      "Em breve": "Muy pronto",
+      "Aula gratuita": "Clase gratuita"
+    }
+  }
+}

@@ -1,21 +1,15 @@
 import React from 'react';
 import { X, Sparkles, Lock, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface UpgradeModalProps {
   onClose: () => void;
   featureName?: string;
 }
 
-const FEATURES = [
-  'Referências e inspirações virais',
-  'Calendário de alertas e conteúdos',
-  'Modelos com IA (ilimitado)',
-  'Dashboard de métricas',
-  'Kanban de roteiros',
-  'Comunidade exclusiva',
-];
-
 const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, featureName }) => {
+  const { t } = useTranslation();
+  const beneficios = t('upgrade.beneficios', { returnObjects: true }) as string[];
   return (
     <>
       {/* Overlay */}
@@ -64,7 +58,7 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, featureName }) => 
 
           {/* Texto */}
           <h2 className="text-[20px] font-black text-[#1E1B11] text-center leading-tight mb-2">
-            Funcionalidade bloqueada
+            {t('upgrade.titulo')}
           </h2>
           {featureName && (
             <p className="text-[12px] text-[#5B4041] text-center mb-1">
@@ -72,13 +66,13 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, featureName }) => 
             </p>
           )}
           <p className="text-[11px] text-[#5B4041] text-center mb-6 leading-relaxed">
-            Você tem acesso apenas à área de cursos. Assine o plano completo para desbloquear tudo.
+            {t('upgrade.descricao')}
           </p>
 
           {/* Lista de benefícios */}
           <div className="bg-white border border-[#BE0D3E]/15 rounded-2xl p-4 mb-5 space-y-2 shadow-[0_4px_14px_rgba(255,45,122,0.08)]">
-            <p className="text-[9px] font-black uppercase tracking-widest text-[#BE0D3E] mb-3">O que você desbloqueia</p>
-            {FEATURES.map(f => (
+            <p className="text-[9px] font-black uppercase tracking-widest text-[#BE0D3E] mb-3">{t('upgrade.oQueDesbloqueia')}</p>
+            {beneficios.map(f => (
               <div key={f} className="flex items-center gap-2.5">
                 <div className="w-4 h-4 rounded-full bg-[#F6B43A] flex items-center justify-center shrink-0">
                   <Check size={9} strokeWidth={3} className="text-[#1E1B11]" />
@@ -97,11 +91,11 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, featureName }) => 
             }}
           >
             <Sparkles size={15} />
-            Assinar o plano completo
+            {t('upgrade.cta')}
           </button>
 
           <p className="text-[9px] text-[#5B4041] text-center mt-3">
-            Seu acesso ao curso continua ativo independente do plano
+            {t('upgrade.rodape')}
           </p>
         </div>
       </div>

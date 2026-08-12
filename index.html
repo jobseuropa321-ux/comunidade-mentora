@@ -15,7 +15,49 @@
     <meta name="apple-mobile-web-app-title" content="Amentora" />
     <meta name="description" content="Amentora — área de membros, mentorias ao vivo e ferramentas para criar conteúdo que viraliza." />
     <link rel="apple-touch-icon" href="/logo-icon.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Amentora" />
+    <meta property="og:title" content="Amentora" />
+    <meta property="og:description" content="Amentora — área de membros, mentorias ao vivo e ferramentas para criar conteúdo que viraliza." />
+    <meta property="og:locale" content="pt_BR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Amentora" />
+    <meta name="twitter:description" content="Amentora — área de membros, mentorias ao vivo e ferramentas para criar conteúdo que viraliza." />
+    <!-- ═══════════════════════════════════════════════════════════════
+         IDIOMA — resolvido pela URL, antes do React subir.
+
+         O manifest é INJETADO aqui em vez de ficar num <link> estático:
+         no iOS o navegador chega a ler o manifest antes de o app trocar,
+         e a aluna espanhola instalava o PWA em português. Por isso não
+         existe nenhum <link rel="manifest"> fixo neste arquivo.
+
+         Também troca <title>, description e as og:/twitter:, que no app
+         original ficaram em português no /es.
+         ═══════════════════════════════════════════════════════════════ -->
+    <script>
+      (function () {
+        var isEs = location.pathname.split('/')[1] === 'es';
+
+        var link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = isEs ? '/manifest-es.webmanifest' : '/manifest.webmanifest';
+        document.head.appendChild(link);
+
+        if (isEs) {
+          document.documentElement.lang = 'es';
+          document.title = 'Amentora';
+          var desc = 'Área de miembros, mentorías en vivo y herramientas para crear contenido que se vuelve viral.';
+          var m = document.querySelector('meta[name="description"]');
+          if (m) m.setAttribute('content', desc);
+          var og = document.querySelector('meta[property="og:description"]');
+          if (og) og.setAttribute('content', desc);
+          var tw = document.querySelector('meta[name="twitter:description"]');
+          if (tw) tw.setAttribute('content', desc);
+          var ogl = document.querySelector('meta[property="og:locale"]');
+          if (ogl) ogl.setAttribute('content', 'es_ES');
+        }
+      })();
+    </script>
     <title>Amentora</title>
   </head>
   <body>
@@ -38,6 +80,9 @@
     <script>
       (function () {
         var KEY = 'dam_stale_build_recovery'; // mesma chave do src/lib/appRecovery.ts
+        // A tela de socorro roda fora do React, então não tem acesso ao i18next:
+        // lê o idioma direto da URL, igual ao resto do esquema.
+        function isEsPath() { return location.pathname.split('/')[1] === 'es'; }
         var done = false;
 
         function alreadyTried() {
@@ -78,12 +123,12 @@
             'justify-content:center;gap:18px;padding:0 32px;text-align:center;' +
             "font-family:'Be Vietnam Pro',-apple-system,BlinkMacSystemFont,sans-serif\">" +
             '<h1 style="font-family:\'Libre Caslon Text\',Georgia,serif;font-size:22px;color:#1E1B11;margin:0">' +
-            'Não conseguimos carregar o app</h1>' +
+            (isEsPath() ? 'No pudimos cargar la app' : 'Não conseguimos carregar o app') + '</h1>' +
             '<p style="font-size:14px;line-height:1.6;color:#5B4041;max-width:280px;margin:0">' +
-            'Verifique sua internet e toque no botão abaixo.</p>' +
+            (isEsPath() ? 'Revisa tu conexión y toca el botón de abajo.' : 'Verifique sua internet e toque no botão abaixo.') + '</p>' +
             '<button id="dam-retry" style="border:0;padding:13px 28px;border-radius:999px;color:#fff;' +
             'font-size:14px;font-weight:700;background:linear-gradient(180deg,#E63462 0%,#CB1B49 100%)">' +
-            'Tentar de novo</button></div>';
+            (isEsPath() ? 'Intentar de nuevo' : 'Tentar de novo') + '</button></div>';
           var btn = document.getElementById('dam-retry');
           if (btn) btn.onclick = function () { done = false; recover(); };
         }

@@ -1,0 +1,32 @@
+{
+  "name": "Amentora",
+  "short_name": "Amentora",
+  "description": "Área de miembros, mentorías en vivo y herramientas para crear contenido que se vuelve viral.",
+  "start_url": "/es/home",
+  "scope": "/es/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF7E6",
+  "theme_color": "#FFF7E6",
+  "lang": "es-ES",
+  "icons": [
+    {
+      "src": "/logo-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
