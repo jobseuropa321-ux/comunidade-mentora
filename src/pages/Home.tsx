@@ -6,6 +6,7 @@ import BannerCarousel from '@/components/BannerCarousel';
 import { trackAscension } from '@/lib/ascension';
 import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
+import { moduleCover } from '@/lib/moduleCover';
 
 // Pra adicionar/trocar banner: jogue o .webp em `public/covers/` e adicione aqui.
 // Slots sem arquivo somem do carrossel (BannerCarousel filtra 404).
@@ -36,15 +37,17 @@ const ImagePlaceholder: React.FC<{ label?: string; iconSize?: number; className?
 const ModuleCard: React.FC<{ modulo: Module; priority?: boolean }> = ({ modulo, priority = false }) => {
   const navigate = useLocalizedNavigate();
   const { t } = useTranslation();
+  const lang = useCurrentLang();
+  const capa = moduleCover(modulo, lang);
   return (
     <div
       onClick={() => navigate(`/modulo/${modulo.slug}`)}
       className="min-w-[148px] h-[200px] rounded-[1rem] border border-[#BE0D3E]/20 relative overflow-hidden shrink-0 shadow-[0_8px_20px_rgba(255,45,122,0.12)] bg-[#FFF9EE] cursor-pointer active:scale-[0.97] transition-transform"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
-      {modulo.cover_url ? (
+      {capa ? (
         <img
-          src={modulo.cover_url}
+          src={capa}
           alt={`${modulo.title1} ${modulo.title2}`}
           className="absolute inset-0 w-full h-full object-cover z-0 bg-[#FFF9EE]"
           loading={priority ? 'eager' : 'lazy'}
