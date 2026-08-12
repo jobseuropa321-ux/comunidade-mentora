@@ -88,19 +88,19 @@ const layoutRoutes = (
     <Route path="home" element={<Home />} />
     <Route path="ao-vivo" element={<AoVivo />} />
     <Route path="pet" element={<Pet />} />
-    <Route path="referencias" element={<PlanGate featureName="Referências"><Referencias /></PlanGate>} />
-    <Route path="alerta" element={<PlanGate featureName="Calendário de Alerta"><Alerta /></PlanGate>} />
+    <Route path="referencias" element={<PlanGate featureName="planGate.features.referencias"><Referencias /></PlanGate>} />
+    <Route path="alerta" element={<PlanGate featureName="planGate.features.alerta"><Alerta /></PlanGate>} />
     <Route path="modelos" element={<Modelos />} />
-    <Route path="dashboard" element={<PlanGate featureName="Dashboard de Métricas"><Dashboard /></PlanGate>} />
-    <Route path="kanban" element={<PlanGate featureName="Kanban de Roteiros"><Kanban /></PlanGate>} />
-    <Route path="community" element={<PlanGate featureName="Comunidade"><Community /></PlanGate>} />
+    <Route path="dashboard" element={<PlanGate featureName="planGate.features.dashboard"><Dashboard /></PlanGate>} />
+    <Route path="kanban" element={<PlanGate featureName="planGate.features.kanban"><Kanban /></PlanGate>} />
+    <Route path="community" element={<PlanGate featureName="planGate.features.comunidade"><Community /></PlanGate>} />
     <Route path="profile" element={<Profile />} />
     <Route path="admin" element={<Admin />} />
     <Route path="install" element={<Install />} />
-    <Route path="chat" element={<PlanGate featureName="Modelos Virais" allowTrial><Chat /></PlanGate>} />
-    <Route path="chat/:formatSlug" element={<PlanGate featureName="Modelos Virais" allowTrial><Chat /></PlanGate>} />
-    <Route path="biblioteca" element={<PlanGate featureName="Biblioteca" allowTrial><Biblioteca /></PlanGate>} />
-    <Route path="biblioteca/:modelSlug" element={<PlanGate featureName="Biblioteca" allowTrial><Biblioteca /></PlanGate>} />
+    <Route path="chat" element={<PlanGate featureName="planGate.features.modelosVirais" allowTrial><Chat /></PlanGate>} />
+    <Route path="chat/:formatSlug" element={<PlanGate featureName="planGate.features.modelosVirais" allowTrial><Chat /></PlanGate>} />
+    <Route path="biblioteca" element={<PlanGate featureName="planGate.features.biblioteca" allowTrial><Biblioteca /></PlanGate>} />
+    <Route path="biblioteca/:modelSlug" element={<PlanGate featureName="planGate.features.biblioteca" allowTrial><Biblioteca /></PlanGate>} />
     <Route path="modulo/:moduleId" element={<ModuleDetail />} />
     <Route path="modulo/:moduleId/aula/:aulaId" element={<AulaDetail />} />
   </>

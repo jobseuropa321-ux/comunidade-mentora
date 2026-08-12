@@ -32,5 +32,119 @@
     "buscar": "Buscar",
     "verMais": "Ver más",
     "verTodos": "Ver todos"
+  },
+  "auth": {
+    "titulo": "Entrar en la comunidad",
+    "subtitulo": "Usa el correo de tu compra. La contraseña se envió allí en cuanto se activó tu acceso.",
+    "email": "Correo electrónico",
+    "senha": "Contraseña",
+    "entrar": "Entrar en la comunidad",
+    "esqueciSenha": "Olvidé mi contraseña",
+    "termos": "Al continuar, aceptas nuestros términos de uso y la política de privacidad.",
+    "erroTitulo": "No se pudo entrar",
+    "preenchaCampos": "Completa todos los campos.",
+    "credenciaisInvalidas": "Revisa tu correo y tu contraseña e inténtalo de nuevo.",
+    "negado": {
+      "not_found": {
+        "titulo": "Acceso no activado",
+        "msg": "No encontramos ninguna compra con ese correo. Usa el mismo correo con el que compraste."
+      },
+      "cancelled": {
+        "titulo": "Suscripción cancelada",
+        "msg": "Tu suscripción fue cancelada y el acceso está cerrado. Si crees que es un error, escribe al soporte."
+      },
+      "expired": {
+        "titulo": "Periodo de acceso terminado",
+        "msg": "El periodo contratado para este correo terminó. Para volver a entrar, renueva tu suscripción."
+      },
+      "refunded": {
+        "titulo": "Compra reembolsada",
+        "msg": "Tu compra fue reembolsada, así que el acceso se cerró."
+      }
+    }
+  },
+  "header": {
+    "perfil": "Perfil",
+    "logoApp": "Logo de la app",
+    "abrirBiblioteca": "Abrir Biblioteca",
+    "biblioteca": "Biblioteca",
+    "notificacoes": "Notificaciones",
+    "vazioTitulo": "Todavía no hay nada",
+    "vazioTexto": "Cuando alguien responda tus dudas\no haya novedades, aparece aquí",
+    "alguem": "Alguien",
+    "acao": {
+      "lesson_reply": "respondió tu pregunta",
+      "community_like": "le gustó tu publicación",
+      "community_comment": "comentó en tu publicación"
+    }
+  },
+  "home": {
+    "comecePorAqui": "Empieza por aquí",
+    "modulos": "Módulos",
+    "ferramentas": "Herramientas",
+    "ferramentasAvancadas": "Herramientas avanzadas",
+    "imagem": "Imagen",
+    "capa": "Portada",
+    "bannerAlt1": "Comunidad Digital — de la atención al digital",
+    "bannerAlt2": "Comunidad Digital — nuestra comunidad",
+    "upsellAlt": "Viral en 1 Minuto — deja de ser invisible con la app"
+  },
+  "planGate": {
+    "bloqueada": "Función bloqueada",
+    "apenasPlanoCompleto": "Disponible solo en el plan completo de la app",
+    "assinarAgora": "Suscribirme ahora",
+    "features": {
+      "referencias": "Referencias",
+      "alerta": "Calendario de Alertas",
+      "dashboard": "Panel de Métricas",
+      "kanban": "Kanban de Guiones",
+      "comunidade": "Comunidad",
+      "modelosVirais": "Modelos Virales",
+      "biblioteca": "Biblioteca"
+    }
+  },
+  "upgrade": {
+    "titulo": "Función bloqueada",
+    "descricao": "Tienes acceso solo al área de cursos. Suscríbete al plan completo para desbloquear todo.",
+    "oQueDesbloqueia": "Lo que desbloqueas",
+    "cta": "Suscribirme al plan completo",
+    "rodape": "Tu acceso al curso sigue activo sin importar el plan",
+    "beneficios": [
+      "Referencias e inspiraciones virales",
+      "Calendario de alertas y contenidos",
+      "Modelos con IA (ilimitado)",
+      "Panel de métricas",
+      "Kanban de guiones",
+      "Comunidad exclusiva"
+    ]
+  },
+  "notFound": {
+    "titulo": "Página no encontrada",
+    "texto": "Ese contenido salió del aire o el enlace cambió de lugar. ¿Volvemos a la comunidad y seguimos viralizando?",
+    "voltar": "Volver al inicio",
+    "rodape": "Error 404 · Si crees que esto es un fallo, escríbenos al soporte."
+  },
+  "modulo": {
+    "naoEncontrado": "Módulo no encontrado",
+    "voltarInicio": "Volver al inicio",
+    "badgeFerramenta": "Herramienta",
+    "badgeMaterial": "Material",
+    "badgeModulo": "Módulo",
+    "materialApoio": "Material de apoyo",
+    "contagemAulas": "{{count}} clases",
+    "sobreEsteModulo": "Sobre este módulo",
+    "editarFotoIA": "Editar mi foto con IA",
+    "editarFotoIASub": "Prompts profesionales de edición listos para usar",
+    "verBaixarMaterial": "Ver y descargar material",
+    "abreNoDrive": "Se abre en Google Drive",
+    "materialEmBreve": "Material muy pronto",
+    "materialEmBreveSub": "En cuanto esté listo, el enlace para descargar aparece aquí.",
+    "seuProgresso": "Tu progreso",
+    "concluidasDe": "{{done}} de {{total}} clases completadas",
+    "cadernoDesafio": "Cuaderno del Reto",
+    "cadernoDesafioSub": "Marca tus metas y sigue tus 30 días",
+    "aulas": "Clases",
+    "concluida": "· completada",
+    "assistirAula": "Ver la clase"
   }
 }

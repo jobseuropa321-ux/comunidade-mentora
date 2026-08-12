@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { ArrowLeft, Play, Clock, ChevronDown, ChevronUp, Loader2, CheckCircle2, FolderOpen, ExternalLink, Download, Sparkles, ChevronRight, NotebookPen } from 'lucide-react';
 import { useModuleBySlug, useLessonProgress, type Lesson } from '@/hooks/useCourses';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
 
 /* ── AULA ROW ── */
 const AulaRow: React.FC<{
@@ -13,6 +14,7 @@ const AulaRow: React.FC<{
   completed: boolean;
 }> = ({ aula, acento, index, moduleSlug, completed }) => {
   const navigate = useLocalizedNavigate();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   // Aula que abre uma PÁGINA do app em vez do player: `video_url` guarda um
@@ -44,7 +46,7 @@ const AulaRow: React.FC<{
             <span className="text-[9px] text-[#5B4041]/40">{aula.duracao}</span>
             {completed && (
               <span className="text-[8px] font-black uppercase tracking-widest text-emerald-600">
-                · concluída
+                {t('modulo.concluida')}
               </span>
             )}
           </div>
@@ -65,7 +67,7 @@ const AulaRow: React.FC<{
             className="flex items-center gap-2 py-2.5 px-4 rounded-xl text-[11px] font-black text-white w-full justify-center"
             style={{ background: `linear-gradient(135deg, #BE0D3E, ${acento})`, boxShadow: `0 0 15px ${acento}40` }}
           >
-            <Play size={12} fill="white" /> Assistir aula
+            <Play size={12} fill="white" /> {t('modulo.assistirAula')}
           </button>
         </div>
       )}
@@ -77,6 +79,7 @@ const AulaRow: React.FC<{
 const ModuleDetail: React.FC = () => {
   const { moduleId } = useParams<{ moduleId: string }>();
   const navigate = useLocalizedNavigate();
+  const { t } = useTranslation();
   const { data: modulo, loading } = useModuleBySlug(moduleId);
 
   const lessonIds = useMemo(() => modulo?.lessons.map(l => l.id) ?? [], [modulo]);
@@ -93,8 +96,8 @@ const ModuleDetail: React.FC = () => {
   if (!modulo) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
-        <p className="text-[#5B4041]/50 text-sm mb-4">Módulo não encontrado</p>
-        <button onClick={() => navigate('/home')} className="text-[#BE0D3E] text-sm font-bold">Voltar ao início</button>
+        <p className="text-[#5B4041]/50 text-sm mb-4">{t('modulo.naoEncontrado')}</p>
+        <button onClick={() => navigate('/home')} className="text-[#BE0D3E] text-sm font-bold">{t('modulo.voltarInicio')}</button>
       </div>
     );
   }
@@ -137,13 +140,13 @@ const ModuleDetail: React.FC = () => {
         )}
 
         <div className="relative z-10 pt-14 pb-4 px-5">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 mb-1">{isFerramenta ? 'Ferramenta' : isMateriais ? 'Material' : 'Módulo'}</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 mb-1">{isFerramenta ? t('modulo.badgeFerramenta') : isMateriais ? t('modulo.badgeMaterial') : t('modulo.badgeModulo')}</p>
           <h1 className="text-[42px] font-black leading-[0.85] tracking-tighter text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
             {modulo.title1}<br />{modulo.title2}
           </h1>
           <p className="text-[11px] text-white/60 mt-3">{modulo.instructor}</p>
           <div className="flex items-center gap-2 mt-3 flex-wrap">
-            {[isFerramenta ? 'Ferramenta' : isMateriais ? 'Material de apoio' : `${totalAulas} aulas`, modulo.duracao, modulo.nivel].filter(Boolean).map(p => (
+            {[isFerramenta ? t('modulo.badgeFerramenta') : isMateriais ? t('modulo.materialApoio') : t('modulo.contagemAulas', { count: totalAulas }), modulo.duracao, modulo.nivel].filter(Boolean).map(p => (
               <span key={p} className="text-[9px] font-black uppercase tracking-widest bg-white/10 text-white/70 px-2.5 py-1 rounded-full border border-white/10">
                 {p}
               </span>
@@ -156,14 +159,14 @@ const ModuleDetail: React.FC = () => {
 
         {/* DESCRIÇÃO */}
         <div className="bg-[#FFFFFF] border border-[#BE0D3E]/15 rounded-2xl p-5">
-          <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">Sobre este módulo</h3>
+          <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">{t('modulo.sobreEsteModulo')}</h3>
           <p className="text-[12px] text-[#5B4041]/80 leading-relaxed">{modulo.descricao}</p>
         </div>
 
         {isMateriais ? (
           /* MATERIAIS/FERRAMENTAS — abre o link (Drive) ou a ferramenta interna */
           <div>
-            <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">{isFerramenta ? 'Ferramenta' : 'Material'}</h3>
+            <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">{isFerramenta ? t('modulo.badgeFerramenta') : t('modulo.badgeMaterial')}</h3>
             {modulo.material_url ? (
               <a
                 href={modulo.material_url}
@@ -178,8 +181,8 @@ const ModuleDetail: React.FC = () => {
                     : <FolderOpen size={20} className="text-white" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-black leading-tight">{isFerramenta ? 'Editar minha foto com IA' : 'Ver e baixar material'}</p>
-                  <p className="text-[10px] text-white/75 mt-0.5">{isFerramenta ? 'Prompts profissionais de edição prontos pra usar' : 'Abre no Google Drive'}</p>
+                  <p className="text-[13px] font-black leading-tight">{isFerramenta ? t('modulo.editarFotoIA') : t('modulo.verBaixarMaterial')}</p>
+                  <p className="text-[10px] text-white/75 mt-0.5">{isFerramenta ? t('modulo.editarFotoIASub') : t('modulo.abreNoDrive')}</p>
                 </div>
                 {isFerramenta
                   ? <ChevronRight size={16} className="text-white/80 shrink-0" />
@@ -191,8 +194,8 @@ const ModuleDetail: React.FC = () => {
                   <Download size={18} className="text-[#BE0D3E]/60" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-black text-[#1E1B11] mb-0.5">Material em breve</p>
-                  <p className="text-[10px] text-[#5B4041] leading-relaxed">Assim que estiver pronto, o link pra baixar aparece aqui.</p>
+                  <p className="text-[12px] font-black text-[#1E1B11] mb-0.5">{t('modulo.materialEmBreve')}</p>
+                  <p className="text-[10px] text-[#5B4041] leading-relaxed">{t('modulo.materialEmBreveSub')}</p>
                 </div>
               </div>
             )}
@@ -202,7 +205,7 @@ const ModuleDetail: React.FC = () => {
             {/* PROGRESSO */}
             <div className="bg-[#FFFFFF] border border-[#BE0D3E]/15 rounded-2xl p-5">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50">Seu progresso</h3>
+                <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50">{t('modulo.seuProgresso')}</h3>
                 <span className="text-[10px] font-black text-emerald-600">{progressPct}%</span>
               </div>
               <div className="h-2 bg-[#BE0D3E]/8 rounded-full overflow-hidden">
@@ -215,14 +218,14 @@ const ModuleDetail: React.FC = () => {
                 />
               </div>
               <p className="text-[11px] text-[#5B4041]/70 mt-2">
-                {concluidas} de {totalAulas} aulas concluídas
+                {t('modulo.concluidasDe', { done: concluidas, total: totalAulas })}
               </p>
             </div>
 
             {/* FERRAMENTA DO MÓDULO (ex.: Caderno do Desafio) */}
             {ferramentaDoModulo && (
               <div>
-                <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">Ferramenta</h3>
+                <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">{t('modulo.badgeFerramenta')}</h3>
                 <a
                   href={ferramentaDoModulo}
                   className="flex items-center gap-3 rounded-2xl p-4 text-white"
@@ -232,8 +235,8 @@ const ModuleDetail: React.FC = () => {
                     <NotebookPen size={20} className="text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-black leading-tight">Caderno do Desafio</p>
-                    <p className="text-[10px] text-white/75 mt-0.5">Marque suas metas e acompanhe seus 30 dias</p>
+                    <p className="text-[13px] font-black leading-tight">{t('modulo.cadernoDesafio')}</p>
+                    <p className="text-[10px] text-white/75 mt-0.5">{t('modulo.cadernoDesafioSub')}</p>
                   </div>
                   <ChevronRight size={16} className="text-white/80 shrink-0" />
                 </a>
@@ -243,8 +246,8 @@ const ModuleDetail: React.FC = () => {
             {/* AULAS */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50">Aulas</h3>
-                <span className="text-[9px] text-[#5B4041]/30">{totalAulas} aulas</span>
+                <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50">{t('modulo.aulas')}</h3>
+                <span className="text-[9px] text-[#5B4041]/30">{t('modulo.contagemAulas', { count: totalAulas })}</span>
               </div>
               <div className="space-y-2">
                 {modulo.lessons.map((aula, i) => (

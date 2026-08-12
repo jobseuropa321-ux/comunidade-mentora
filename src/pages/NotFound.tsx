@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 
 import { Compass, Sparkles } from 'lucide-react';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
 
 const NotFound: React.FC = () => {
   const navigate = useLocalizedNavigate();
+  const { t } = useTranslation();
   const [isPressed, setIsPressed] = useState(false);
 
   return (
@@ -41,12 +43,11 @@ const NotFound: React.FC = () => {
         </div>
 
         <h2 className="text-2xl sm:text-3xl font-black tracking-tighter text-[#1E1B11] mb-3">
-          Página não encontrada
+          {t('notFound.titulo')}
         </h2>
 
         <p className="text-sm text-[#5B4041] leading-relaxed mb-8">
-          Esse conteúdo saiu do ar ou o link mudou de lugar. Bora voltar pra
-          comunidade e continuar viralizando?
+          {t('notFound.texto')}
         </p>
 
         <button
@@ -61,11 +62,11 @@ const NotFound: React.FC = () => {
             transform: isPressed ? 'scale(0.98)' : undefined,
           }}
         >
-          Voltar ao início
+          {t('notFound.voltar')}
         </button>
 
         <p className="text-[11px] text-[#5B4041]/60 mt-5">
-          Erro 404 · Se acha que isso é um bug, dá um toque pra gente no suporte.
+          {t('notFound.rodape')}
         </p>
       </div>
     </div>

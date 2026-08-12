@@ -5,33 +5,37 @@ import { useAllModules, type Module } from '@/hooks/useCourses';
 import BannerCarousel from '@/components/BannerCarousel';
 import { trackAscension } from '@/lib/ascension';
 import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
 
 // Pra adicionar/trocar banner: jogue o .webp em `public/covers/` e adicione aqui.
 // Slots sem arquivo somem do carrossel (BannerCarousel filtra 404).
 // Opcional: `href` pra deixar o banner clicável.
+// O array fica NEUTRO: só o arquivo. O texto alternativo é resolvido no render
+// pelo dicionário — duplicar o array por idioma foi a armadilha nº 1 do kit.
 const HOME_BANNERS = [
-  { src: '/covers/banner-1.webp', alt: 'Comunidade Digital — do atendimento ao digital' },
-  { src: '/covers/banner-2.webp', alt: 'Comunidade Digital — nossa comunidade' },
+  { src: '/covers/banner-1.webp', altKey: 'home.bannerAlt1' },
+  { src: '/covers/banner-2.webp', altKey: 'home.bannerAlt2' },
 ];
 
 /* ── PLACEHOLDER DE IMAGEM ──
    Slot vazio que sinaliza "aqui entra uma imagem" (ícone + borda tracejada).
    Temporário: troque pelas imagens reais quando estiverem prontas. */
 const ImagePlaceholder: React.FC<{ label?: string; iconSize?: number; className?: string }> = ({
-  label = 'Imagem',
+  label,
   iconSize = 30,
   className = '',
 }) => (
   <div className={`relative flex flex-col items-center justify-center gap-2 bg-[#FFF9EE] ${className}`}>
     <div className="absolute inset-2 rounded-xl border border-dashed border-[#BE0D3E]/25 pointer-events-none" />
     <ImageIcon size={iconSize} strokeWidth={1.5} className="text-[#BE0D3E]/30" />
-    <span className="text-[10px] font-bold uppercase tracking-widest text-[#5B4041]/35 select-none">{label}</span>
+    <span className="text-[10px] font-bold uppercase tracking-widest text-[#5B4041]/35 select-none">{label ?? ''}</span>
   </div>
 );
 
 /* ── CARD ── */
 const ModuleCard: React.FC<{ modulo: Module; priority?: boolean }> = ({ modulo, priority = false }) => {
   const navigate = useLocalizedNavigate();
+  const { t } = useTranslation();
   return (
     <div
       onClick={() => navigate(`/modulo/${modulo.slug}`)}
@@ -51,7 +55,7 @@ const ModuleCard: React.FC<{ modulo: Module; priority?: boolean }> = ({ modulo, 
         />
       ) : (
         // Capa vazia por enquanto — placeholder sinalizando que aqui entra uma imagem.
-        <ImagePlaceholder className="absolute inset-0 z-0 h-full w-full" iconSize={30} label="Capa" />
+        <ImagePlaceholder className="absolute inset-0 z-0 h-full w-full" iconSize={30} label={t('home.capa')} />
       )}
       {modulo.tag && modulo.tag_color && (
         <span
@@ -77,6 +81,7 @@ const HorizontalCardList: React.FC<{ modules: Module[]; priorityCount?: number }
 
 const Home: React.FC = () => {
   const { modules, loading } = useAllModules();
+  const { t } = useTranslation();
   const lang = useCurrentLang();
 
   const inicio = modules.filter(m => m.home_section === 'inicio');
@@ -88,7 +93,7 @@ const Home: React.FC = () => {
       {/* Banner — placeholder vazio por enquanto (full bleed).
           Pra reativar o carrossel real, troque pela linha comentada abaixo. */}
       <section className="mb-5 -mt-1">
-        <BannerCarousel banners={HOME_BANNERS} autoRotateMs={6000} height={180} heightDesktop={360} />
+        <BannerCarousel banners={HOME_BANNERS.map(b => ({ src: b.src, alt: t(b.altKey) }))} autoRotateMs={6000} height={180} heightDesktop={360} />
       </section>
 
       {loading ? (
@@ -100,7 +105,7 @@ const Home: React.FC = () => {
           {inicio.length > 0 && (
             <section className="mb-6">
               <div className="px-4 mb-3">
-                <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">Comece por aqui</h2>
+                <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">{t('home.comecePorAqui')}</h2>
               </div>
               <HorizontalCardList modules={inicio} priorityCount={3} />
             </section>
@@ -109,7 +114,7 @@ const Home: React.FC = () => {
           {main.length > 0 && (
             <section className="mb-4">
               <div className="px-4 mb-3">
-                <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">Módulos</h2>
+                <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">{t('home.modulos')}</h2>
               </div>
               <HorizontalCardList modules={main} />
             </section>
@@ -120,7 +125,7 @@ const Home: React.FC = () => {
           {materiais.length > 0 && (
             <section className="mb-4">
               <div className="px-4 mb-3">
-                <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">Ferramentas</h2>
+                <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">{t('home.ferramentas')}</h2>
               </div>
               <HorizontalCardList modules={materiais} />
             </section>
@@ -132,7 +137,7 @@ const Home: React.FC = () => {
               a aula levando pra oferta com a VSL — tudo dentro do app. */}
           <section className="mb-4">
             <div className="px-4 mb-3">
-              <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">Ferramentas avançadas</h2>
+              <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">{t('home.ferramentasAvancadas')}</h2>
             </div>
             <div
               className="flex gap-3 overflow-x-auto pb-2 px-4"
@@ -146,7 +151,7 @@ const Home: React.FC = () => {
               >
                 <img
                   src="/covers/upsell-viral1min.webp"
-                  alt="Viral em 1 Minuto — deixe de ser invisível com o app"
+                  alt={t('home.upsellAlt')}
                   className="absolute inset-0 w-full h-full object-cover z-0"
                   loading="lazy"
                   decoding="async"

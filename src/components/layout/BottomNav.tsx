@@ -4,6 +4,7 @@ import { usePlan } from '@/contexts/PlanContext';
 import UpgradeModal from '@/components/UpgradeModal';
 import { useLiveStatus } from '@/hooks/useLiveStatus';
 import { useLocalizedNavigate, useCurrentLang, unlocalizedPath } from '@/i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
 
 /* ── Ícones (SVG do design "A Mentora", herdam a cor via currentColor) ── */
 
@@ -97,6 +98,7 @@ const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/JUUOZVbvbLh1vMvDTC4D7P?mod
 const BottomNav: React.FC = () => {
   const location = useLocation();
   const navigate = useLocalizedNavigate();
+  const { t } = useTranslation();
   const { hasFullAccess, canUseChatTrial } = usePlan();
   const lang = useCurrentLang();
   // Desprefixa antes de comparar: em /es/home o pathname é '/es/home',
@@ -110,10 +112,10 @@ const BottomNav: React.FC = () => {
 
   // Rotas mantidas — só o visual mudou (design "A Mentora")
   const navItems = [
-    { path: '/home',      kind: 'home'  as const, label: 'home',       title: 'Início',     locked: false },
-    { path: '/ao-vivo',   kind: 'video' as const, label: 'ao vivo',    title: 'Ao vivo',    locked: false },
-    { path: '/community', kind: 'users' as const, label: 'comunidade', title: 'Comunidade', locked: !hasFullAccess },
-    { path: '/chat',      kind: 'stars' as const, label: 'cursos',     title: 'Cursos',     locked: chatLocked },
+    { path: '/home',      kind: 'home'  as const, label: t('nav.home'),       title: t('nav.titles.home'),       locked: false },
+    { path: '/ao-vivo',   kind: 'video' as const, label: t('nav.aoVivo'),     title: t('nav.titles.aoVivo'),     locked: false },
+    { path: '/community', kind: 'users' as const, label: t('nav.comunidade'), title: t('nav.titles.comunidade'), locked: !hasFullAccess },
+    { path: '/chat',      kind: 'stars' as const, label: t('nav.cursos'),     title: t('nav.titles.cursos'),     locked: chatLocked },
   ];
 
   const isItemActive = (path: string) =>
@@ -164,7 +166,7 @@ const BottomNav: React.FC = () => {
                       href={WHATSAPP_GROUP_URL}
                       target="_blank"
                       rel="noopener noreferrer"
-                      title="Grupo do WhatsApp"
+                      title={t('nav.titles.grupoWhatsapp')}
                       className="flex flex-col items-center justify-center py-1.5 px-0.5 w-1/5 active:scale-95 transition-transform"
                       style={{ WebkitTapHighlightColor: 'transparent' }}
                     >
@@ -175,7 +177,7 @@ const BottomNav: React.FC = () => {
                         <WhatsAppIcon />
                       </span>
                       <span className="text-[10px] leading-none font-bold tracking-tight whitespace-nowrap mt-1" style={{ color: '#BE0D3E' }}>
-                        grupo
+                        {t('nav.grupo')}
                       </span>
                     </a>
                   </React.Fragment>
