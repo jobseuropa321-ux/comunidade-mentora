@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { TrendingUp, TrendingDown, Users, Eye, Heart, Bookmark, BarChart3 } from 'lucide-react';
+import { formatNumber } from '@/lib/formatLocale';
+import { useCurrentLang, type SupportedLang } from '@/i18n/LanguageProvider';
 
 /* ── TIPOS ── */
 interface StatTile {
@@ -32,7 +34,7 @@ const MAX_VIEWS = Math.max(...WEEKLY_VIEWS);
 const TOTAL_VIEWS = WEEKLY_VIEWS.reduce((sum, v) => sum + v, 0);
 const PEAK_DAY_INDEX = WEEKLY_VIEWS.indexOf(MAX_VIEWS);
 
-const formatViews = (n: number): string => n.toLocaleString('pt-BR');
+const formatViews = (n: number, lang: SupportedLang): string => formatNumber(n, lang);
 
 /* ── MOCK: top posts da semana ── */
 const TOP_POSTS: TopPost[] = [
@@ -118,6 +120,7 @@ const TopPostRow: React.FC<{ post: TopPost }> = ({ post }) => {
 
 /* ── TELA: Dashboard de métricas ── */
 const Dashboard: React.FC = () => {
+  const lang = useCurrentLang();
   const [selectedDay, setSelectedDay] = useState<number>(PEAK_DAY_INDEX);
 
   return (
@@ -161,7 +164,7 @@ const Dashboard: React.FC = () => {
 
         <div className="flex items-end justify-between gap-2 mt-2 mb-1">
           <p className="text-3xl font-black tracking-tighter text-[#1E1B11] leading-none">
-            {formatViews(TOTAL_VIEWS)}
+            {formatViews(TOTAL_VIEWS, lang)}
           </p>
           <div
             className="inline-flex items-center gap-1 mb-0.5 px-2 py-0.5 rounded-full text-[10px] font-black"
@@ -191,7 +194,7 @@ const Dashboard: React.FC = () => {
                       className="absolute -top-7 whitespace-nowrap text-[10px] font-black text-white px-2 py-1 rounded-full z-10"
                       style={{ background: '#1E1B11' }}
                     >
-                      {formatViews(views)}
+                      {formatViews(views, lang)}
                     </span>
                   )}
                   <div

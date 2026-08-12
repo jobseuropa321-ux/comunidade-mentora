@@ -7,53 +7,42 @@ import { toast } from 'sonner';
 import { compressImage } from '@/lib/imageCompression';
 import { instagramUrl } from '@/lib/instagram';
 import { supabase } from '@/integrations/supabase/client';
-import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
+import { useLocalizedNavigate, useCurrentLang } from '@/i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
+import { timeAgoShort } from '@/lib/formatLocale';
 
-/* ─────────────────────────────────────────────
-   TEXTOS DA TELA (toda a "escrita" daqui — edite à vontade)
-───────────────────────────────────────────── */
-const TXT = {
-  title: 'Comunidade',
-  heading: 'O que rolou por aí?',
-  subtitle: 'Compartilhe seus resultados e inspire a galera.',
-  placeholder: 'Compartilhe algo com a comunidade...',
-  image_btn: 'Imagem',
-  image_optimizing: 'Otimizando...',
-  publish: 'Publicar',
-  empty_title: 'Nenhum post ainda',
-  empty_desc: 'Seja a primeira a compartilhar!',
-  comment_placeholder: 'Escreva um comentário...',
-  fullscreen_alt: 'Imagem em tela cheia',
-  delete_post: 'Excluir post',
-  delete_comment: 'Excluir comentário',
-  remove_image: 'Remover imagem',
-  send_comment: 'Enviar comentário',
-  user_fallback: 'Usuário',
-  toast_post_published: 'Post publicado!',
-  toast_post_error: 'Erro ao publicar post',
-  toast_comment_deleted: 'Comentário excluído',
-  toast_post_deleted: 'Post excluído',
-  toast_empty_post: 'Escreva algo ou adicione uma imagem',
-  toast_image_too_large: 'Imagem muito grande. Máximo 25MB.',
-  toast_load_error: 'Erro ao carregar posts',
-  toast_like_error: 'Erro ao curtir',
-  toast_comment_error: 'Erro ao comentar',
-  toast_comment_delete_error: 'Erro ao excluir comentário',
-  toast_post_delete_error: 'Erro ao excluir post',
-};
-
-/* Tempo relativo em pt-BR (sem depender de date-fns). */
-const timeAgo = (isoStr: string): string => {
-  const diff = Math.max(0, Date.now() - new Date(isoStr).getTime());
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return 'agora';
-  if (m < 60) return `há ${m} min`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `há ${h} h`;
-  const d = Math.floor(h / 24);
-  if (d < 7) return `há ${d} d`;
-  return new Date(isoStr).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-};
+/* Os textos da tela vivem no dicionário (src/i18n/locales). Esta função só
+   monta o mesmo objeto TXT que o componente já usava, agora resolvido no
+   idioma da URL. */
+const makeTxt = (t: (k: string) => string) => ({
+  title: t('community.title'),
+  heading: t('community.heading'),
+  subtitle: t('community.subtitle'),
+  placeholder: t('community.placeholder'),
+  image_btn: t('community.image_btn'),
+  image_optimizing: t('community.image_optimizing'),
+  publish: t('community.publish'),
+  empty_title: t('community.empty_title'),
+  empty_desc: t('community.empty_desc'),
+  comment_placeholder: t('community.comment_placeholder'),
+  fullscreen_alt: t('community.fullscreen_alt'),
+  delete_post: t('community.delete_post'),
+  delete_comment: t('community.delete_comment'),
+  remove_image: t('community.remove_image'),
+  send_comment: t('community.send_comment'),
+  user_fallback: t('community.user_fallback'),
+  toast_post_published: t('community.toast_post_published'),
+  toast_post_error: t('community.toast_post_error'),
+  toast_comment_deleted: t('community.toast_comment_deleted'),
+  toast_post_deleted: t('community.toast_post_deleted'),
+  toast_empty_post: t('community.toast_empty_post'),
+  toast_image_too_large: t('community.toast_image_too_large'),
+  toast_load_error: t('community.toast_load_error'),
+  toast_like_error: t('community.toast_like_error'),
+  toast_comment_error: t('community.toast_comment_error'),
+  toast_comment_delete_error: t('community.toast_comment_delete_error'),
+  toast_post_delete_error: t('community.toast_post_delete_error'),
+});
 
 /* Avatar: foto se houver, senão inicial do nome num círculo vermelho. */
 const Avatar: React.FC<{ url?: string | null; name?: string | null; size: number }> = ({ url, name, size }) => {
@@ -161,6 +150,9 @@ interface EnrichedRow {
 }
 
 const Community: React.FC = () => {
+  const { t } = useTranslation();
+  const lang = useCurrentLang();
+  const TXT = makeTxt(t);
   const { user, profile, isExpert } = useAuth();
   const reduce = useReducedMotion() ?? false;
   const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -673,7 +665,7 @@ const Community: React.FC = () => {
                           <InstagramLink handle={postProfile?.instagram} />
                         </p>
                         <p className="text-[10px] text-[#5B4041]/70 mt-0.5">
-                          {timeAgo(post.created_at)}
+                          {timeAgoShort(post.created_at, lang)}
                         </p>
                       </div>
                     </div>
@@ -770,7 +762,7 @@ const Community: React.FC = () => {
                                       <span className="font-bold text-[11px] text-[#1E1B11]">{commentProfile?.full_name || TXT.user_fallback}</span>
                                       <InstagramLink handle={commentProfile?.instagram} />
                                       <span className="text-[9px] text-[#5B4041]/60">
-                                        {timeAgo(comment.created_at)}
+                                        {timeAgoShort(comment.created_at, lang)}
                                       </span>
                                     </div>
                                     {canDelete && (

@@ -10,6 +10,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { AGENTS } from '@/data/agents';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
+import { formatDateNumeric } from '@/lib/formatLocale';
+import { useCurrentLang, type SupportedLang } from '@/i18n/LanguageProvider';
 
 /* ─────────────────────────────────────────────
    TEXTOS DA TELA (toda a "escrita" daqui)
@@ -60,10 +62,7 @@ const renderBold = (text: string) =>
       : <span key={i}>{p}</span>
   );
 
-const formatDate = (ts: string) => {
-  const d = new Date(ts);
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-};
+const formatDate = (ts: string, lang: SupportedLang) => formatDateNumeric(ts, lang);
 
 interface LibraryGroup {
   slug: string;
@@ -100,6 +99,7 @@ const LIBRARY_SECTIONS = [
    ACERVO ORGANIZADO POR ETAPA
 ───────────────────────────────────────────── */
 const ModelsOverview: React.FC = () => {
+  const lang = useCurrentLang();
   const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -259,7 +259,7 @@ const ModelsOverview: React.FC = () => {
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock3 size={9} />
-                            {formatDate(group.latest)}
+                            {formatDate(group.latest, lang)}
                           </span>
                         </div>
                       </div>
@@ -298,6 +298,7 @@ const ModelsOverview: React.FC = () => {
    LISTA DE ITENS DE UM MODELO
 ───────────────────────────────────────────── */
 const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
+  const lang = useCurrentLang();
   const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -446,7 +447,7 @@ const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
             >
               <p className="text-[13px] font-black text-[#1E1B11] leading-tight mb-1.5 line-clamp-2">{item.title}</p>
               <p className="text-[10px] text-[#5B4041]/70 line-clamp-2 mb-2">{item.ai_response.slice(0, 150)}…</p>
-              <p className="text-[9px] text-[#5B4041]/50">{formatDate(item.created_at)}</p>
+              <p className="text-[9px] text-[#5B4041]/50">{formatDate(item.created_at, lang)}</p>
             </button>
           ))}
         </div>
@@ -479,7 +480,7 @@ const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
                     <h3 className="text-[16px] font-black text-[#1E1B11] leading-tight">{openItem.title}</h3>
                   )}
                   <p className="text-[10px] text-[#5B4041]/70 mt-1">
-                    {openItem.model_name} · {formatDate(openItem.created_at)}
+                    {openItem.model_name} · {formatDate(openItem.created_at, lang)}
                   </p>
                 </div>
 

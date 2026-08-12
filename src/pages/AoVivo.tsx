@@ -4,6 +4,8 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { useLiveStatus } from '@/hooks/useLiveStatus';
 import { getUpcomingLives } from '@/data/liveSchedule';
 import { supabase } from '@/integrations/supabase/client';
+import { formatDateShort, localeTag } from '@/lib/formatLocale';
+import { useCurrentLang, type SupportedLang } from '@/i18n/LanguageProvider';
 
 const cardSpring = { type: 'spring', stiffness: 220, damping: 24 } as const;
 
@@ -37,10 +39,11 @@ interface Replay {
   recorded_at: string | null;
 }
 
-const formatBRDate = (iso: string | null): string => {
+// Antes cravado em pt-BR: a data do card da live saía "12 AGO" para a aluna
+// espanhola no meio de uma tela em espanhol.
+const formatShortDate = (iso: string | null, lang: SupportedLang): string => {
   if (!iso) return '';
-  const d = new Date(iso + 'T00:00:00');
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '').toUpperCase();
+  return formatDateShort(iso + 'T00:00:00', lang).replace('.', '').toUpperCase();
 };
 
 /** Detecta YouTube e retorna URL de embed. Se não for YouTube, retorna null (cai no fluxo "abrir nova aba"). */
@@ -124,6 +127,7 @@ const LiveCover: React.FC<{
 );
 
 const AoVivo: React.FC = () => {
+  const lang = useCurrentLang();
   const reduce = useReducedMotion() ?? false;
   const { status, loading } = useLiveStatus();
   const isLive = status.is_active && !!status.stream_url;
@@ -286,9 +290,10 @@ const AoVivo: React.FC = () => {
           >
             {upcoming.map((l) => {
               const d = new Date(l.date + 'T00:00:00');
-              const day = d.toLocaleDateString('pt-BR', { day: '2-digit' });
-              const month = d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '').toUpperCase();
-              const weekday = d.toLocaleDateString('pt-BR', { weekday: 'long' });
+              const tag = localeTag(lang);
+              const day = d.toLocaleDateString(tag, { day: '2-digit' });
+              const month = d.toLocaleDateString(tag, { month: 'short' }).replace('.', '').toUpperCase();
+              const weekday = d.toLocaleDateString(tag, { weekday: 'long' });
               return (
                 <div
                   key={l.date}
@@ -379,7 +384,7 @@ const AoVivo: React.FC = () => {
                 <div className="absolute inset-x-0 bottom-0 p-3 text-left">
                   <p className="text-[11px] font-black text-white leading-tight mb-0.5 line-clamp-2 drop-shadow">{r.title}</p>
                   {r.recorded_at && (
-                    <p className="text-[9px] text-white/75 font-semibold">{formatBRDate(r.recorded_at)}</p>
+                    <p className="text-[9px] text-white/75 font-semibold">{formatShortDate(r.recorded_at, lang)}</p>
                   )}
                 </div>
               </button>

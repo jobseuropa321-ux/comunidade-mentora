@@ -4,6 +4,7 @@ import { ArrowLeft, Play, ChevronLeft, ChevronRight, CheckCircle2, Clock, List, 
 import { useLesson, useLessonProgress } from '@/hooks/useCourses';
 import LessonForum from '@/components/LessonForum';
 import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
 
 const TIPO_ICON: Record<string, React.ReactNode> = {
   pdf:       <FileText size={14} />,
@@ -32,6 +33,7 @@ const AulaDetail: React.FC = () => {
   const { moduleId, aulaId } = useParams<{ moduleId: string; aulaId: string }>();
   const navigate = useLocalizedNavigate();
   const lang = useCurrentLang();
+  const { t } = useTranslation();
   const [playing, setPlaying] = useState(false);
   const [listOpen, setListOpen] = useState(false);
 
@@ -54,8 +56,8 @@ const AulaDetail: React.FC = () => {
   if (!data) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
-        <p className="text-[#5B4041]/50 text-sm mb-4">Aula não encontrada</p>
-        <button onClick={() => navigate('/home')} className="text-[#BE0D3E] text-sm font-bold">Voltar ao início</button>
+        <p className="text-[#5B4041]/50 text-sm mb-4">{t('aula.naoEncontrada')}</p>
+        <button onClick={() => navigate('/home')} className="text-[#BE0D3E] text-sm font-bold">{t('modulo.voltarInicio')}</button>
       </div>
     );
   }
@@ -85,7 +87,7 @@ const AulaDetail: React.FC = () => {
         <button
           onClick={() => navigate(`/modulo/${moduleId}`)}
           className="glass-btn-pink shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-transform"
-          title="Voltar"
+          title={t('common.voltar')}
         >
           <ArrowLeft size={17} strokeWidth={2.5} />
         </button>
@@ -100,7 +102,7 @@ const AulaDetail: React.FC = () => {
         <button
           onClick={() => setListOpen(o => !o)}
           className="glass-btn-lime shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-[#1E1B11] hover:scale-105 active:scale-95 transition-transform"
-          title="Lista de aulas"
+          title={t('aula.listaDeAulas')}
         >
           <List size={17} strokeWidth={2.5} />
         </button>
@@ -197,7 +199,7 @@ const AulaDetail: React.FC = () => {
               fill={isCompleted ? '#1E1B11' : 'transparent'}
               className="text-[#1E1B11]"
             />
-            {isCompleted ? 'Aula concluída · desmarcar' : 'Marcar como concluída'}
+            {isCompleted ? t('aula.desmarcarConcluida') : t('aula.marcarConcluida')}
           </span>
         </button>
       </div>
@@ -214,7 +216,7 @@ const AulaDetail: React.FC = () => {
             color: prevAula ? '#5B4041' : '#5B404125',
           }}
         >
-          <ChevronLeft size={15} /> Anterior
+          <ChevronLeft size={15} /> {t('aula.anterior')}
         </button>
 
         <button
@@ -228,7 +230,7 @@ const AulaDetail: React.FC = () => {
             boxShadow: nextAula ? `0 4px 15px ${modulo.cor_acento}40` : 'none',
           }}
         >
-          Próxima <ChevronRight size={15} />
+          {t('aula.proxima')} <ChevronRight size={15} />
         </button>
       </div>
 
@@ -248,7 +250,7 @@ const AulaDetail: React.FC = () => {
 
         {aula.conteudo && (
           <div className="bg-[#FFFFFF] border border-[#BE0D3E]/12 rounded-2xl p-4">
-            <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/40 mb-3">Resumo</h3>
+            <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/40 mb-3">{t('aula.resumo')}</h3>
             <p className="text-[12px] text-[#5B4041]/75 leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{aula.conteudo}</p>
           </div>
         )}
@@ -256,7 +258,7 @@ const AulaDetail: React.FC = () => {
         {aula.materials.length > 0 && (
           <div>
             <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/40 mb-3">
-              Material complementar
+              {t('aula.materialComplementar')}
             </h3>
             <div className="space-y-2">
               {aula.materials.map(mat => (
@@ -306,7 +308,7 @@ const AulaDetail: React.FC = () => {
             </div>
             <div className="flex items-center justify-between px-5 py-3 border-b border-[#BE0D3E]/15">
               <span className="text-[10px] font-black uppercase tracking-widest text-[#BE0D3E]">
-                {modulo.title1} {modulo.title2} · {lessons.length} aulas
+                {modulo.title1} {modulo.title2} · {t('modulo.contagemAulas', { count: lessons.length })}
               </span>
               <button onClick={() => setListOpen(false)}
                 className="w-7 h-7 rounded-full bg-[#BE0D3E]/10 text-[#5B4041] hover:text-[#BE0D3E] hover:bg-[#BE0D3E]/15 flex items-center justify-center transition-colors">
@@ -337,7 +339,7 @@ const AulaDetail: React.FC = () => {
                   </div>
                   {i === aulaIndex && (
                     <span className="text-[8px] font-black uppercase tracking-widest shrink-0 px-2 py-1 rounded-md bg-[#BE0D3E] text-white">
-                      Atual
+                      {t('aula.atual')}
                     </span>
                   )}
                 </button>
