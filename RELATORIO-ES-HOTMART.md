@@ -15,7 +15,7 @@ leituras para levantar o estado real. As migrations existem como arquivo.
 git checkout feat/espanhol-hotmart
 npm install
 npm run build          # passa
-npm run i18n:check     # paridade pt/es: 265 chaves de cada lado, 0 divergências
+npm run i18n:check     # paridade pt/es: 785 chaves de cada lado, 0 divergências
 node scripts/audit-i18n.mjs   # o que ainda falta traduzir, arquivo a arquivo
 npm run dev -- --port 5199    # a porta 5173 está ocupada por outro projeto seu
 ```
@@ -53,9 +53,9 @@ no AulaDetail. Mais dois que o kit não cita: os links enviados **por e-mail**
 (recuperação de senha e confirmação de cadastro) levavam a aluna espanhola de
 volta para a tela em português.
 
-**FASE 2 — tradução.** 12 arquivos sem nenhuma string pendente, incluindo o
-caminho inteiro de entrada (login, recuperação de senha, navegação, home,
-módulo, aula, fórum, comunidade, instalação do PWA). Ver "o que não ficou".
+**FASE 2 — tradução.** Toda a interface fora do painel Admin, incluindo os
+formulários de briefing dos 8 agentes (43 perguntas) e todos os arrays de
+dados, que ficaram neutros com o texto resolvido no render.
 
 **FASE 3 — PWA.** `manifest-es.webmanifest` (start_url `/es/home`, scope `/es/`,
 lang `es-ES`), registrado no `includeAssets`. O `<link rel="manifest">` estático
@@ -81,32 +81,33 @@ quando a conta já existe) — que é mais maduro que o webhook do kit.
 
 ## O que NÃO ficou pronto
 
-### 1. Tradução: cerca de 206 strings pendentes fora do Admin
+### 1. Tradução: concluída fora do Admin
 
-O guia chama a FASE 2 de "o grosso do trabalho" e no app original ela levou três
-commits ao longo de 12 dias, com 512 strings encontradas em duas varreduras.
-Aqui foi coberto o caminho crítico; o resto está mapeado, não adivinhado.
+Fechada numa segunda passada. 785 chaves em cada dicionário, paridade
+exata, e o `npm run i18n:check` confere três coisas a cada rodada:
 
-Rode `node scripts/audit-i18n.mjs` para a lista viva. No fechamento:
+| Verificação | Resultado |
+|---|---|
+| Chaves faltando/sobrando entre pt e es | 0 |
+| Arrays de tamanho diferente entre os idiomas | 0 |
+| Valores vazios no espanhol | 0 |
+| Chaves usadas no código que não existem no dicionário | 0 de 405 |
 
-| Situação | Arquivos | Strings |
-|---|---|---|
-| Sem candidato restante | 12 | 0 |
-| Parcial (já usa `t()`, sobrou texto) | 6 | ~45 |
-| Não iniciado | 19 | ~161 |
-| Admin — fora de escopo por decisão do kit | 6 | ~70 |
+O painel Admin (6 arquivos, ~70 strings) continua em português **por
+decisão do kit** — se um operador espanhol for usar o painel, isso vira
+trabalho novo.
 
-Maiores pendências: `Chat.tsx` (~35, é a tela mais longa do app),
-`src/data/agents.ts` (~26, é array de dados — resolver por slug, **não**
-duplicar o array), `AnalisarPerfilAgent.tsx` (~20), `Modelos.tsx` (~16),
-`Referencias.tsx` (~15), `Biblioteca.tsx` (~13), `CameraScriptPicker.tsx` (~13).
+Sobram ~21 ocorrências que o `audit-i18n.mjs` ainda aponta. Conferi uma a
+uma: são identificadores (`'Todos'`, `'Humor'` são valores de tipo usados
+em filtro e como chave de estilo, não rótulos — o texto exibido passa
+pelo dicionário), comentários de código, URLs, e `src/data/mockCommunity.ts`,
+que está morto (só citado num comentário da Community).
 
-Telas já cobertas por inteiro: login, recuperação de senha, navegação inferior,
-header, home, detalhe de módulo, aula, fórum da aula, comunidade, instalação do
-PWA (tela e modal), mentoria ao vivo e perfil.
-
-O número é uma estimativa por heurística: conta linhas com texto em português em
-posição de UI. Serve para priorizar e medir progresso, não como contagem exata.
+**Uma decisão que tomei e vale revisar:** as funções `compile*` do
+Chat.tsx, que montam o briefing enviado à IA, NÃO foram traduzidas. O
+guia é explícito em não traduzir string que só serve de entrada pro
+modelo — e a diretiva de idioma da FASE 5 já faz a IA responder em
+espanhol mesmo recebendo briefing em português.
 
 ### 2. Capas em espanhol: mecanismo pronto, imagens não
 
@@ -264,7 +265,8 @@ centralizados em `src/lib/formatLocale.ts`.
    subscription, manda e-mail em espanhol, e **rejeita** produto fora da lista.
 4. Decidir o caminho do conteúdo em espanhol (item 3 de "o que não ficou") — é o
    que trava o resto.
-5. Seguir a tradução pela lista do `audit-i18n.mjs`, começando por `Chat.tsx`.
+5. Decidir se o painel Admin precisa de espanhol (hoje é a única parte da
+   interface que continua em português).
 6. Rodar `npm run i18n:check` antes de cada deploy. Com `fallbackLng: 'pt'`, uma
    chave faltando renderiza o texto em português sem erro e sem aviso no
    console — foi assim que 322 strings escaparam no app original.
