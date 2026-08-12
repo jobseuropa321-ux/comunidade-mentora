@@ -211,7 +211,9 @@ const ModuleEditor: React.FC<{
   const [loadingLessons, setLoadingLessons] = useState(true);
   const [deleteLessonTarget, setDeleteLessonTarget] = useState<Lesson | null>(null);
   const coverFileRef = useRef<HTMLInputElement>(null);
+  const coverEsFileRef = useRef<HTMLInputElement>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadingCoverEs, setUploadingCoverEs] = useState(false);
 
   useEffect(() => { setDraft(mod); }, [mod]);
 
@@ -231,6 +233,7 @@ const ModuleEditor: React.FC<{
       descricao: draft.descricao, instructor: draft.instructor, duracao: draft.duracao, nivel: draft.nivel,
       cor_acento: draft.cor_acento, cor_fundo: draft.cor_fundo, is_published: draft.is_published,
       home_section: draft.home_section, cover_url: draft.cover_url, material_url: draft.material_url,
+      cover_url_es: draft.cover_url_es ?? null,
     }).eq('id', mod.id).select('*').single();
     setSaving(false);
     if (error) { toast.error('Erro', { description: error.message }); return; }
@@ -238,22 +241,29 @@ const ModuleEditor: React.FC<{
     toast.success('Módulo salvo');
   };
 
-  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  /* Sobe a capa e grava no campo do idioma escolhido. `es` alimenta
+     cover_url_es, que é o que o app mostra quando a URL está em /es.
+
+     Existe para os módulos criados por aqui: eles guardam URL do Supabase
+     Storage, e não caminho do repositório, então a convenção de pasta espelho
+     (/covers/modulos/es/...) não alcança eles. */
+  const uploadCover = async (e: React.ChangeEvent<HTMLInputElement>, lang: 'pt' | 'es') => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { toast.error('Imagem muito grande', { description: 'Máximo 5MB' }); e.target.value = ''; return; }
-    setUploadingCover(true);
+    const setBusy = lang === 'es' ? setUploadingCoverEs : setUploadingCover;
+    setBusy(true);
     try {
       const ext = file.name.split('.').pop() || 'jpg';
-      const path = `${mod.id}/cover-${Date.now()}.${ext}`;
+      const path = `${mod.id}/cover${lang === 'es' ? '-es' : ''}-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from('module-covers').upload(path, file, { contentType: file.type, upsert: false });
       if (upErr) throw upErr;
       const { data: { publicUrl } } = supabase.storage.from('module-covers').getPublicUrl(path);
-      setDraft(d => ({ ...d, cover_url: publicUrl }));
-      toast.success('Capa enviada!', { description: 'Lembre de salvar o módulo.' });
+      setDraft(d => (lang === 'es' ? { ...d, cover_url_es: publicUrl } : { ...d, cover_url: publicUrl }));
+      toast.success(lang === 'es' ? 'Capa em espanhol enviada!' : 'Capa enviada!', { description: 'Lembre de salvar o módulo.' });
     } catch (err) {
       toast.error('Erro', { description: err instanceof Error ? err.message : 'Falha no upload' });
-    } finally { setUploadingCover(false); e.target.value = ''; }
+    } finally { setBusy(false); e.target.value = ''; }
   };
 
   const moveLesson = async (l: Lesson, dir: -1 | 1) => {
@@ -325,7 +335,7 @@ const ModuleEditor: React.FC<{
         {/* Capa */}
         <div>
           <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">Capa do módulo</label>
-          <input ref={coverFileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleCoverUpload} />
+          <input ref={coverFileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={e => uploadCover(e, 'pt')} />
           {draft.cover_url ? (
             <div className="mt-1.5 relative rounded-xl overflow-hidden border border-[#BE0D3E]/15 max-w-[180px]" style={{ aspectRatio: '3/4' }}>
               <img src={draft.cover_url} alt="Capa" className="w-full h-full object-cover" />
@@ -345,6 +355,33 @@ const ModuleEditor: React.FC<{
             </button>
           )}
           <input value={draft.cover_url ?? ''} onChange={e => setDraft({ ...draft, cover_url: e.target.value || null })}
+            placeholder="ou cole uma URL externa" className="mt-2 w-full bg-[#FFF7E6] border border-[#BE0D3E]/15 text-[#1E1B11] text-[11px] rounded-xl px-3 py-2 focus:border-[#BE0D3E]/50 focus:outline-none" />
+        </div>
+
+        {/* Capa em espanhol — usada quando a aluna está em /es.
+            Em branco, o app cai na capa normal (nunca fica buraco). */}
+        <div>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">Capa em espanhol <span className="text-[#5B4041]/50">· opcional</span></label>
+          <input ref={coverEsFileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={e => uploadCover(e, 'es')} />
+          {draft.cover_url_es ? (
+            <div className="mt-1.5 relative rounded-xl overflow-hidden border border-[#BE0D3E]/15 max-w-[180px]" style={{ aspectRatio: '3/4' }}>
+              <img src={draft.cover_url_es} alt="Capa em espanhol" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-2">
+                <button onClick={() => coverEsFileRef.current?.click()} disabled={uploadingCoverEs} className="bg-white text-[#BE0D3E] text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg flex items-center gap-1.5">
+                  {uploadingCoverEs ? <Loader2 className="w-3 h-3 animate-spin" /> : <><Upload className="w-3 h-3" /> Trocar</>}
+                </button>
+                <button onClick={() => setDraft({ ...draft, cover_url_es: null })} className="bg-white/90 text-[#1E1B11] text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg">Remover</button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" onClick={() => coverEsFileRef.current?.click()} disabled={uploadingCoverEs}
+              className="w-full mt-1.5 bg-[#FFF7E6] hover:bg-[#F6D6DC]/50 border border-dashed border-[#BE0D3E]/30 rounded-xl py-6 flex flex-col items-center justify-center gap-1.5 text-[#BE0D3E] disabled:opacity-60">
+              {uploadingCoverEs ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
+              <span className="text-[10px] font-black uppercase tracking-widest">{uploadingCoverEs ? 'Enviando' : 'Subir capa ES'}</span>
+              <span className="text-[9px] text-[#5B4041]">Em branco = usa a capa normal</span>
+            </button>
+          )}
+          <input value={draft.cover_url_es ?? ''} onChange={e => setDraft({ ...draft, cover_url_es: e.target.value || null })}
             placeholder="ou cole uma URL externa" className="mt-2 w-full bg-[#FFF7E6] border border-[#BE0D3E]/15 text-[#1E1B11] text-[11px] rounded-xl px-3 py-2 focus:border-[#BE0D3E]/50 focus:outline-none" />
         </div>
 
