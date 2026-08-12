@@ -2,6 +2,7 @@ import React from 'react';
 
 import { X, Camera, Play, Clock, Sparkles } from 'lucide-react';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   open: boolean;
@@ -17,51 +18,18 @@ interface RoteiroRapido {
   cor: string;
 }
 
-const ROTEIROS: RoteiroRapido[] = [
-  {
-    id: 'gancho-3s-polemico',
-    titulo: 'Gancho de 3s polêmico',
-    duracao: '15-30s',
-    categoria: 'Retenção',
-    descricao: 'Abertura que gera discordância imediata pra prender o scroll.',
-    cor: '#BE0D3E',
-  },
-  {
-    id: 'antes-e-depois',
-    titulo: 'Antes e depois relâmpago',
-    duracao: '20-40s',
-    categoria: 'Transformação',
-    descricao: 'Mostra o resultado logo no início e depois volta pro processo.',
-    cor: '#F6B43A',
-  },
-  {
-    id: 'lista-rapida-3-dicas',
-    titulo: '3 dicas em 30 segundos',
-    duracao: '30s',
-    categoria: 'Educativo',
-    descricao: 'Formato lista com corte seco entre cada dica — ótimo pra salvar.',
-    cor: '#E06B85',
-  },
-  {
-    id: 'pov-tendencia',
-    titulo: 'POV com trend do momento',
-    duracao: '10-20s',
-    categoria: 'Tendência',
-    descricao: 'Roteiro pronto pra encaixar num áudio viral em alta agora.',
-    cor: '#BE0D3E',
-  },
-  {
-    id: 'storytime-virada',
-    titulo: 'Storytime com virada no final',
-    duracao: '45-60s',
-    categoria: 'Storytelling',
-    descricao: 'Narrativa pessoal com plot twist pra segurar até o último segundo.',
-    cor: '#F6B43A',
-  },
+/* Array neutro: título e descrição vêm do dicionário (camera.itens.<id>). */
+const ROTEIROS = [
+  { id: 'gancho-3s-polemico',   duracao: '15-30s', categoria: 'Retenção',       cor: '#BE0D3E' },
+  { id: 'antes-e-depois',       duracao: '20-40s', categoria: 'Transformação',  cor: '#F6B43A' },
+  { id: 'lista-rapida-3-dicas', duracao: '30s',    categoria: 'Educativo',      cor: '#E06B85' },
+  { id: 'pov-tendencia',        duracao: '10-20s', categoria: 'Tendência',      cor: '#BE0D3E' },
+  { id: 'storytime-virada',     duracao: '45-60s', categoria: 'Storytelling',   cor: '#F6B43A' },
 ];
 
 const CameraScriptPicker: React.FC<Props> = ({ open, onClose }) => {
   const navigate = useLocalizedNavigate();
+  const { t } = useTranslation();
 
   if (!open) return null;
 
@@ -97,10 +65,10 @@ const CameraScriptPicker: React.FC<Props> = ({ open, onClose }) => {
         <div className="flex items-center justify-between px-5 pt-2 pb-4">
           <div>
             <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50">
-              Câmera rápida
+              {t('camera.titulo')}
             </span>
             <h2 className="text-lg font-black tracking-tighter text-[#1E1B11] flex items-center gap-1.5">
-              Escolha um roteiro pra gravar
+              {t('camera.subtitulo')}
               <Sparkles size={16} className="text-[#BE0D3E]" />
             </h2>
           </div>
@@ -140,7 +108,7 @@ const CameraScriptPicker: React.FC<Props> = ({ open, onClose }) => {
                     className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full text-white"
                     style={{ backgroundColor: roteiro.cor }}
                   >
-                    {roteiro.categoria}
+                    {t(`camera.categorias.${roteiro.categoria}`)}
                   </span>
                   <span className="flex items-center gap-0.5 text-[10px] font-bold text-[#5B4041]">
                     <Clock size={10} />
@@ -148,10 +116,10 @@ const CameraScriptPicker: React.FC<Props> = ({ open, onClose }) => {
                   </span>
                 </div>
                 <p className="font-black tracking-tight text-[#1E1B11] text-[15px] leading-tight truncate">
-                  {roteiro.titulo}
+                  {t(`camera.itens.${roteiro.id}.titulo`)}
                 </p>
                 <p className="text-xs text-[#5B4041] leading-snug mt-0.5 line-clamp-2">
-                  {roteiro.descricao}
+                  {t(`camera.itens.${roteiro.id}.descricao`)}
                 </p>
               </div>
 
@@ -168,7 +136,7 @@ const CameraScriptPicker: React.FC<Props> = ({ open, onClose }) => {
           ))}
 
           <p className="text-center text-[11px] text-[#5B4041]/70 pt-1 pb-1">
-            Toque em um roteiro pra abrir a câmera no Estúdio
+            {t('camera.rodape')}
           </p>
         </div>
       </div>

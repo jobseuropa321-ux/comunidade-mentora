@@ -585,5 +585,82 @@
         "desc": "Coge una tendencia del momento y la adapta a tu nicho. Fácil de viralizar."
       }
     }
+  },
+  "referencias": {
+    "bancoInspiracao": "Banco de inspiración",
+    "titulo": "Referencias virales",
+    "subtitulo": "Vídeos que petaron de verdad, separados por categoría. Estudia el gancho, el corte y el pie de foto",
+    "vazio": "Todavía no hay ninguna referencia aquí",
+    "vazioSub": "Cambia de categoría para ver más ejemplos.",
+    "dicaComunidade": "Consejo de la comunidad: guarda 3 referencias por semana y recrea el gancho con tu estilo — no copies el vídeo, copia la estructura.",
+    "salvar": "Guardar referencia",
+    "removerSalvo": "Quitar de guardados",
+    "categorias": {
+      "Todos": "Todas",
+      "Humor": "Humor",
+      "Educativo": "Educativo",
+      "Trend": "Tendencia",
+      "Bastidores": "Detrás de cámaras"
+    },
+    "itens": {
+      "ref-1": {
+        "titulo": "3 errores que hacen que tu vídeo muera en los primeros 2s",
+        "metrica": "2,4M visualizaciones"
+      },
+      "ref-2": {
+        "titulo": "Recreé el mismo audio 5 veces hasta viralizarlo (funcionó)",
+        "metrica": "318% de retención media"
+      },
+      "ref-3": {
+        "titulo": "POV: contratas a un freelance y desaparece",
+        "metrica": "5,1M visualizaciones"
+      },
+      "ref-4": {
+        "titulo": "La tendencia del «espejo triple» sigue petando (úsala así)",
+        "metrica": "892K me gusta"
+      },
+      "ref-5": {
+        "titulo": "Cómo guionizo 10 Reels en 40 minutos",
+        "metrica": "1,8M visualizaciones"
+      },
+      "ref-6": {
+        "titulo": "Detrás del vídeo que rompió el algoritmo (sin cortes)",
+        "metrica": "412% por encima de la media del canal"
+      }
+    }
+  },
+  "camera": {
+    "titulo": "Cámara rápida",
+    "subtitulo": "Elige un guion para grabar",
+    "rodape": "Toca un guion para abrir la cámara en el Estudio",
+    "categorias": {
+      "Retenção": "Retención",
+      "Transformação": "Transformación",
+      "Educativo": "Educativo",
+      "Tendência": "Tendencia",
+      "Storytelling": "Storytelling"
+    },
+    "itens": {
+      "gancho-3s-polemico": {
+        "titulo": "Gancho de 3s polémico",
+        "descricao": "Apertura que genera desacuerdo inmediato para frenar el scroll."
+      },
+      "antes-e-depois": {
+        "titulo": "Antes y después relámpago",
+        "descricao": "Muestra el resultado al principio y luego vuelve al proceso."
+      },
+      "lista-rapida-3-dicas": {
+        "titulo": "3 consejos en 30 segundos",
+        "descricao": "Formato lista con corte seco entre cada consejo — buenísimo para guardar."
+      },
+      "pov-tendencia": {
+        "titulo": "POV con la tendencia del momento",
+        "descricao": "Guion listo para encajar en un audio viral que está en alza ahora."
+      },
+      "storytime-virada": {
+        "titulo": "Storytime con giro al final",
+        "descricao": "Narrativa personal con plot twist para aguantar hasta el último segundo."
+      }
+    }
   }
 }
