@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { ArrowLeft, Camera, Circle, RotateCcw, Square } from 'lucide-react';
+import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
 interface Roteiro {
   titulo: string;
@@ -46,7 +47,7 @@ const formatTempo = (segundos: number): string => {
 type EstadoGravacao = 'idle' | 'contagem' | 'gravando';
 
 const Estudio: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { cardId } = useParams<{ cardId?: string }>();
 
   const roteiro = (cardId && ROTEIROS[cardId]) || ROTEIROS.default;

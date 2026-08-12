@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { Compass, Sparkles } from 'lucide-react';
+import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
 const NotFound: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [isPressed, setIsPressed] = useState(false);
 
   return (

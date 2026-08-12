@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlan } from '@/contexts/PlanContext';
 import {
@@ -16,6 +16,7 @@ import {
 import { compressImage } from '@/lib/imageCompression';
 import { normalizeInstagramHandle, instagramUrl } from '@/lib/instagram';
 import { supabase } from '@/integrations/supabase/client';
+import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
 /* ─────────────────────────────────────────────────────────────
  *  CONFIG — troque pelos dados do app
@@ -57,7 +58,7 @@ const Profile: React.FC = () => {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { toast } = useToast();
 
   const handleLogout = async () => {

@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { CircleAlert, Mail, Lock, Loader2, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { isAccessDenied, SUB_DENIED_MSG, SUB_DENIED_TITLE } from '@/lib/subscription';
+import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
 /* Só login. Conta não se cria aqui: quem compra na Hubla recebe a conta
    pronta (com senha) por email — ver supabase/functions/hubla-webhook. */
 const Auth: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { signIn, accessDeniedStatus, clearAccessDeniedNotice } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { Lock, Mail, ArrowLeft, CheckCircle2, Loader2, Inbox } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
 
 /* ── Recuperação de senha REAL (antes era mock do blueprint: fingia sucesso
    sem chamar o Supabase — quem não recebia o email de boas-vindas caía aqui
@@ -23,7 +24,8 @@ const btnCls = 'w-full py-3.5 rounded-2xl text-[13px] font-black uppercase track
 const btnStyle: React.CSSProperties = { background: 'linear-gradient(135deg, #BE0D3E 0%, #E06B85 100%)', boxShadow: '0 8px 25px rgba(255,45,122,0.4)' };
 
 const ResetPassword: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
+  const lang = useCurrentLang();
   const [stage, setStage] = useState<Stage>('request');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -51,7 +53,10 @@ const ResetPassword: React.FC = () => {
     if (!/^\S+@\S+\.\S+$/.test(clean)) { setError('Digite um email válido.'); return; }
     setLoading(true);
     const { error: err } = await supabase.auth.resetPasswordForEmail(clean, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      // Sem localizedPath aqui, a aluna espanhola clica no link do e-mail e
+      // cai na tela em português — o link vive fora do app, o prefixo tem que
+      // ir cravado nele.
+      redirectTo: `${window.location.origin}${localizedPath('/reset-password', lang)}`,
     });
     setLoading(false);
     if (err) {

@@ -16,7 +16,7 @@
    - a UI nunca confia no shape cru da IA — quem normaliza é a function.
 ═════════════════════════════════════════════ */
 import React, { useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import {
   ArrowLeft, Camera, Loader2, Check, Copy, Upload, UserRound, AtSign,
   X, Library as LibraryIcon, Sparkles,
@@ -27,6 +27,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Robot, ACCENT, type RobotKind } from '@/components/estudio/AgentRobot';
 import type { Agent } from '@/data/agents';
+import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
 /* ── Textos da tela ────────────────────────────────────────────── */
 const TXT = {
@@ -133,7 +134,7 @@ const analysisToText = (a: ProfileAnalysis): string => [
 ].filter(l => l !== undefined && l !== null && l !== '').join('\n');
 
 const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const reduce = !!useReducedMotion();

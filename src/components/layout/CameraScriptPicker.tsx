@@ -1,6 +1,7 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { X, Camera, Play, Clock, Sparkles } from 'lucide-react';
+import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
 interface Props {
   open: boolean;
@@ -60,7 +61,7 @@ const ROTEIROS: RoteiroRapido[] = [
 ];
 
 const CameraScriptPicker: React.FC<Props> = ({ open, onClose }) => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   if (!open) return null;
 

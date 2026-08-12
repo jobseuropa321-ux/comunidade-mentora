@@ -19,6 +19,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { checkSubscription, AccessDeniedError, SUB_DENIED_MSG, type SubStatus } from '@/lib/subscription';
+import { getLangFromPath, localizedPath } from '@/i18n/LanguageProvider';
 
 export interface Profile {
   id: string;
@@ -140,7 +141,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       password,
       options: {
         data: { full_name: fullName?.trim() || null },
-        emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
+        emailRedirectTo:
+          typeof window !== 'undefined'
+            ? window.location.origin +
+              localizedPath('/', getLangFromPath(window.location.pathname)).replace(/\/$/, '')
+            : undefined,
       },
     });
     return { error };

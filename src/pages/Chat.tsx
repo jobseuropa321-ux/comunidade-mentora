@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, Send, RotateCcw, Mic,
   Library as LibraryIcon, Save, Check, Loader2, X,
@@ -15,6 +15,7 @@ import { AGENTS, CATEGORIES, defaultOpening, type Agent } from '@/data/agents';
 import VoiceField from '@/components/VoiceField';
 import { Robot, SceneFX, ACCENT, type RobotKind } from '@/components/estudio/AgentRobot';
 import AnalisarPerfilAgent from '@/components/estudio/AnalisarPerfilAgent';
+import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
 /* ─────────────────────────────────────────────
    TEXTOS DA TELA (toda a "escrita" daqui)
@@ -210,7 +211,7 @@ const BonusDivider: React.FC = () => (
 );
 
 const FormatsGrid: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const reduce = useReducedMotion() ?? false;
 
   return (
@@ -826,7 +827,7 @@ const SkeletonPicker: React.FC<{
 };
 
 const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const agent = AGENTS.find(f => f.slug === formatSlug);

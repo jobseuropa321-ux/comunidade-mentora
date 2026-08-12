@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
+import { useParams, Navigate } from 'react-router-dom';
 import { ArrowLeft, Play, ChevronLeft, ChevronRight, CheckCircle2, Clock, List, Download, FileText, BookOpen, X, Loader2 } from 'lucide-react';
 import { useLesson, useLessonProgress } from '@/hooks/useCourses';
 import LessonForum from '@/components/LessonForum';
+import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
 
 const TIPO_ICON: Record<string, React.ReactNode> = {
   pdf:       <FileText size={14} />,
@@ -29,7 +30,8 @@ const embedSrc = (raw: string | null): string | null => {
 
 const AulaDetail: React.FC = () => {
   const { moduleId, aulaId } = useParams<{ moduleId: string; aulaId: string }>();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
+  const lang = useCurrentLang();
   const [playing, setPlaying] = useState(false);
   const [listOpen, setListOpen] = useState(false);
 
@@ -62,7 +64,7 @@ const AulaDetail: React.FC = () => {
   // Viral 1 Min): quem chega por link direto vai pra página em vez de ver o
   // caminho virar src de iframe. O ModuleDetail já navega direto pra lá.
   if (data.lesson.video_url?.startsWith('/')) {
-    return <Navigate to={data.lesson.video_url} replace />;
+    return <Navigate to={localizedPath(data.lesson.video_url, lang)} replace />;
   }
 
   const { module: modulo, lessons, lesson: aula } = data;

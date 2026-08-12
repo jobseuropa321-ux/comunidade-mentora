@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
+
 import {
   Target,
   ListOrdered,
@@ -109,7 +110,7 @@ const MODELOS: Modelo[] = [
 ];
 
 const Modelos: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [filtro, setFiltro] = useState<'Todos' | Objetivo>('Todos');
 
   const modelosFiltrados = useMemo(() => {

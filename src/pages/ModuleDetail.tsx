@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { ArrowLeft, Play, Clock, ChevronDown, ChevronUp, Loader2, CheckCircle2, FolderOpen, ExternalLink, Download, Sparkles, ChevronRight, NotebookPen } from 'lucide-react';
 import { useModuleBySlug, useLessonProgress, type Lesson } from '@/hooks/useCourses';
+import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
 /* ── AULA ROW ── */
 const AulaRow: React.FC<{
@@ -11,7 +12,7 @@ const AulaRow: React.FC<{
   moduleSlug: string;
   completed: boolean;
 }> = ({ aula, acento, index, moduleSlug, completed }) => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const [open, setOpen] = useState(false);
 
   // Aula que abre uma PÁGINA do app em vez do player: `video_url` guarda um
@@ -75,7 +76,7 @@ const AulaRow: React.FC<{
 /* ── MODULE DETAIL ── */
 const ModuleDetail: React.FC = () => {
   const { moduleId } = useParams<{ moduleId: string }>();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { data: modulo, loading } = useModuleBySlug(moduleId);
 
   const lessonIds = useMemo(() => modulo?.lessons.map(l => l.id) ?? [], [modulo]);

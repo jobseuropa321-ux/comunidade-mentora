@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "home": "home",
+    "aoVivo": "ao vivo",
+    "comunidade": "comunidade",
+    "cursos": "cursos",
+    "grupo": "grupo",
+    "titles": {
+      "home": "Início",
+      "aoVivo": "Ao vivo",
+      "comunidade": "Comunidade",
+      "cursos": "Cursos",
+      "grupoWhatsapp": "Grupo do WhatsApp"
+    }
+  },
+  "common": {
+    "voltar": "Voltar",
+    "cancelar": "Cancelar",
+    "salvar": "Salvar",
+    "salvando": "Salvando...",
+    "excluir": "Excluir",
+    "editar": "Editar",
+    "fechar": "Fechar",
+    "confirmar": "Confirmar",
+    "continuar": "Continuar",
+    "carregando": "Carregando...",
+    "erro": "Algo deu errado",
+    "tentarNovamente": "Tentar novamente",
+    "copiar": "Copiar",
+    "copiado": "Copiado!",
+    "enviar": "Enviar",
+    "buscar": "Buscar",
+    "verMais": "Ver mais",
+    "verTodos": "Ver todos"
+  }
+}

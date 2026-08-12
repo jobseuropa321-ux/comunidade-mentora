@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { Bell, User, Kanban, TrendingUp, X, BellOff, MessageCircle, MessageSquareText, Heart, Library } from 'lucide-react';
 import { usePlan } from '@/contexts/PlanContext';
 import UpgradeModal from '@/components/UpgradeModal';
 import { useNotifications, type NotificationItem } from '@/hooks/useNotifications';
+import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
 function timeAgo(iso: string): string {
   try {
@@ -29,7 +30,7 @@ const actionText = (type: string) =>
     : 'comentou no seu post';
 
 const Header: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { hasFullAccess } = usePlan();
   const [notifsOpen, setNotifsOpen] = useState(false);
   const [upgradeModal, setUpgradeModal] = useState<string | null>(null);

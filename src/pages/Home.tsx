@@ -1,9 +1,10 @@
 import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Loader2, Image as ImageIcon } from 'lucide-react';
 import { useAllModules, type Module } from '@/hooks/useCourses';
 import BannerCarousel from '@/components/BannerCarousel';
 import { trackAscension } from '@/lib/ascension';
+import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
 
 // Pra adicionar/trocar banner: jogue o .webp em `public/covers/` e adicione aqui.
 // Slots sem arquivo somem do carrossel (BannerCarousel filtra 404).
@@ -30,7 +31,7 @@ const ImagePlaceholder: React.FC<{ label?: string; iconSize?: number; className?
 
 /* ── CARD ── */
 const ModuleCard: React.FC<{ modulo: Module; priority?: boolean }> = ({ modulo, priority = false }) => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   return (
     <div
       onClick={() => navigate(`/modulo/${modulo.slug}`)}
@@ -76,6 +77,7 @@ const HorizontalCardList: React.FC<{ modules: Module[]; priorityCount?: number }
 
 const Home: React.FC = () => {
   const { modules, loading } = useAllModules();
+  const lang = useCurrentLang();
 
   const inicio = modules.filter(m => m.home_section === 'inicio');
   const main = modules.filter(m => m.home_section === 'modulos');
@@ -137,7 +139,7 @@ const Home: React.FC = () => {
               style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
             >
               <Link
-                to="/modulo/viral-em-1-minuto"
+                to={localizedPath("/modulo/viral-em-1-minuto", lang)}
                 onClick={() => trackAscension('modulo')}
                 className="min-w-[148px] h-[200px] rounded-[1rem] border border-[#BE0D3E]/20 relative overflow-hidden shrink-0 shadow-[0_8px_20px_rgba(255,45,122,0.12)] bg-[#FFF9EE] cursor-pointer active:scale-[0.97] transition-transform block"
                 style={{ WebkitTapHighlightColor: 'transparent' }}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, Library as LibraryIcon, Copy, Check,
   Pencil, Trash2, X, Save, BookOpen, Search, Clock3,
@@ -9,6 +9,7 @@ import { supabase, SUPABASE_READY } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { AGENTS } from '@/data/agents';
+import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
 /* ─────────────────────────────────────────────
    TEXTOS DA TELA (toda a "escrita" daqui)
@@ -99,7 +100,7 @@ const LIBRARY_SECTIONS = [
    ACERVO ORGANIZADO POR ETAPA
 ───────────────────────────────────────────── */
 const ModelsOverview: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const [groups, setGroups] = useState<LibraryGroup[]>([]);
@@ -297,7 +298,7 @@ const ModelsOverview: React.FC = () => {
    LISTA DE ITENS DE UM MODELO
 ───────────────────────────────────────────── */
 const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
 

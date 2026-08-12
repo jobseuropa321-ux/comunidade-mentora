@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { usePlan } from '@/contexts/PlanContext';
 import UpgradeModal from '@/components/UpgradeModal';
 import { useLiveStatus } from '@/hooks/useLiveStatus';
+import { useLocalizedNavigate, useCurrentLang, unlocalizedPath } from '@/i18n/LanguageProvider';
 
 /* ── Ícones (SVG do design "A Mentora", herdam a cor via currentColor) ── */
 
@@ -95,9 +96,12 @@ const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/JUUOZVbvbLh1vMvDTC4D7P?mod
 
 const BottomNav: React.FC = () => {
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
   const { hasFullAccess, canUseChatTrial } = usePlan();
-  const pathname = location.pathname;
+  const lang = useCurrentLang();
+  // Desprefixa antes de comparar: em /es/home o pathname é '/es/home',
+  // e sem isso nenhum item do menu jamais fica ativo no espanhol.
+  const pathname = unlocalizedPath(location.pathname, lang);
   const [upgradeModal, setUpgradeModal] = useState<string | null>(null);
   const { status: liveStatus } = useLiveStatus();
   const isLiveActive = liveStatus.is_active && !!liveStatus.stream_url;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Heart, MessageCircle, Send, Image as ImageIcon, X, Trash2, Loader2, Users, Instagram } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { compressImage } from '@/lib/imageCompression';
 import { instagramUrl } from '@/lib/instagram';
 import { supabase } from '@/integrations/supabase/client';
+import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
 /* ─────────────────────────────────────────────
    TEXTOS DA TELA (toda a "escrita" daqui — edite à vontade)
@@ -173,7 +174,7 @@ const Community: React.FC = () => {
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [bursts, setBursts] = useState<Record<string, number>>({});
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigate = useLocalizedNavigate();
 
   // Depois da 1ª pintura, novos posts entram sem re-escalonar a lista toda
   const mountedRef = useRef(false);
