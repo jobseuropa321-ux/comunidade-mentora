@@ -1,0 +1,274 @@
+# Versão em espanhol + Hotmart — relatório da implementação
+
+Executado automaticamente em 2026-08-12, madrugada, a partir do kit em
+`~/Downloads/kit-espanhol-hotmart`. Branch **`feat/espanhol-hotmart`**, 9 commits.
+
+**Nada foi para produção.** Sem `git push`, sem deploy de edge function, sem
+deploy na Vercel, e o banco de produção não recebeu nenhuma escrita — só
+leituras para levantar o estado real. As migrations existem como arquivo.
+
+---
+
+## Como conferir rápido
+
+```bash
+git checkout feat/espanhol-hotmart
+npm install
+npm run build          # passa
+npm run i18n:check     # paridade pt/es: 231 chaves de cada lado, 0 divergências
+node scripts/audit-i18n.mjs   # o que ainda falta traduzir, arquivo a arquivo
+npm run dev -- --port 5199    # a porta 5173 está ocupada por outro projeto seu
+```
+
+Depois abra `http://127.0.0.1:5199/es/auth` e `http://127.0.0.1:5199/auth`.
+
+Verificado no navegador durante a execução:
+
+| Checagem | Resultado |
+|---|---|
+| `/es/auth` renderiza em espanhol | ok |
+| `/auth` continua idêntico em português | ok |
+| `html lang` | `es` no /es, `pt-BR` no / |
+| manifest injetado | `/manifest-es.webmanifest` no /es, `/manifest.webmanifest` no / |
+| `og:locale` | `es_ES` no /es, `pt_BR` no / |
+| `/es/home` deslogado | cai em **`/es/auth`**, não em `/auth` |
+| rota profunda `/es/modulo/x` deslogado | cai em `/es/auth` |
+| console | só os avisos pré-existentes de future flag do React Router |
+
+---
+
+## O que ficou pronto
+
+**FASE 1 — motor de i18n.** `src/i18n/` com `getLangFromPath`, `localizedPath`,
+`unlocalizedPath`, `useLocalizedNavigate`, `LanguageSync` e `aiLang.ts`. O bloco
+de rotas do layout é montado duas vezes (`/` e `/es`) e as rotas de tela cheia
+foram declaradas nas duas árvores. Os 17 arquivos com `useNavigate` migraram.
+Aplicada a melhoria que o guia recomenda: o i18next inicia no idioma da URL em
+vez de `'pt'` fixo, para não renderizar um frame em português ao abrir `/es`.
+
+**Cinco vazamentos de prefixo** que o `useNavigate` não pega foram corrigidos:
+comparação de rota ativa da BottomNav, regex de tela cheia do AppLayout, `<Link>`
+do BannerCarousel, `<Link>` do upsell na Home e o `<Navigate>` de aula-que-é-página
+no AulaDetail. Mais dois que o kit não cita: os links enviados **por e-mail**
+(recuperação de senha e confirmação de cadastro) levavam a aluna espanhola de
+volta para a tela em português.
+
+**FASE 2 — tradução.** 12 arquivos sem nenhuma string pendente, incluindo o
+caminho inteiro de entrada (login, recuperação de senha, navegação, home,
+módulo, aula, fórum, comunidade, instalação do PWA). Ver "o que não ficou".
+
+**FASE 3 — PWA.** `manifest-es.webmanifest` (start_url `/es/home`, scope `/es/`,
+lang `es-ES`), registrado no `includeAssets`. O `<link rel="manifest">` estático
+saiu do `index.html`: o manifest é injetado por script inline, que é o fix da
+race do iOS descrita no kit. O mesmo script troca `title`, `description` e as
+`og:`/`twitter:`. A guarda de boot (a tela de socorro que roda fora do React)
+também fala espanhol.
+
+**FASE 4 — comunidade por idioma.** Leitura, realtime e escrita filtrando por
+`locale`. Migrations escritas (ver abaixo).
+
+**FASE 5 — IA em espanhol.** Técnica A (sufixo invisível) no `chat-viral`,
+técnica B (troca de diretivas no template) no `analisar-perfil`, técnica C
+(idioma no Whisper) no `transcribe-audio`. Mais as mensagens de erro das três
+funções, que o app original esqueceu e o frontend imprime cruas.
+
+**FASE 6 — webhook da Hotmart.** `supabase/functions/hotmart-webhook/` com as 6
+correções obrigatórias do guia, escrito no padrão do `hubla-webhook` deste
+projeto (retry no 403 intermitente do Auth, 500 para forçar replay, e-mail
+quando a conta já existe) — que é mais maduro que o webhook do kit.
+
+---
+
+## O que NÃO ficou pronto
+
+### 1. Tradução: cerca de 217 strings pendentes fora do Admin
+
+O guia chama a FASE 2 de "o grosso do trabalho" e no app original ela levou três
+commits ao longo de 12 dias, com 512 strings encontradas em duas varreduras.
+Aqui foi coberto o caminho crítico; o resto está mapeado, não adivinhado.
+
+Rode `node scripts/audit-i18n.mjs` para a lista viva. No fechamento:
+
+| Situação | Arquivos | Strings |
+|---|---|---|
+| Sem candidato restante | 12 | 0 |
+| Parcial (já usa `t()`, sobrou texto) | 4 | ~39 |
+| Não iniciado | 21 | ~178 |
+| Admin — fora de escopo por decisão do kit | 6 | ~70 |
+
+Maiores pendências: `Chat.tsx` (~35, é a tela mais longa do app),
+`src/data/agents.ts` (~26, é array de dados — resolver por slug, **não**
+duplicar o array), `AnalisarPerfilAgent.tsx` (~20), `Modelos.tsx` (~16),
+`Referencias.tsx` (~15), `Biblioteca.tsx` (~13), `CameraScriptPicker.tsx` (~13).
+
+O número é uma estimativa por heurística: conta linhas com texto em português em
+posição de UI. Serve para priorizar e medir progresso, não como contagem exata.
+
+### 2. Capas em espanhol: mecanismo pronto, imagens não
+
+As 33 capas de `06-assets/covers-es` do kit **não foram copiadas**. Elas são do
+conteúdo do Viral1MIN (cílios, carrossel viral, palestrinha) e não correspondem
+a nenhum módulo do DAM — copiar teria posto imagem errada em módulo certo.
+
+O mecanismo está pronto (`src/lib/moduleCover.ts` + coluna `cover_url_es`) e cai
+na capa em português enquanto não houver versão espanhola. Falta produzir as
+imagens.
+
+### 3. Conteúdo do banco continua só em português
+
+Título, subtítulo e descrição dos módulos e das aulas vêm do banco e existem
+numa língua só. Um aluno em `/es` vê a interface em espanhol e o **conteúdo** em
+português. Resolver isso é uma decisão de produto que ninguém tomou ainda, e há
+dois caminhos:
+
+- colunas `_es` nas tabelas (`title1_es`, `descricao_es`…), ou
+- gate de frontend com um catálogo próprio para o espanhol, que é o que o app
+  original fez (FASE 7 do guia, `esCourse.ts`).
+
+Não implementei nenhum dos dois: qualquer escolha muda o painel Admin e a forma
+de cadastrar conteúdo.
+
+### 4. Itens que o kit lista e continuam pendentes
+
+- Logo (`/logo-app.webp`) não tem texto de marca embutido, então passou — mas
+  confira em tela cheia.
+- Prints do tutorial de instalação (`public/install/*.webp`) mostram um iPhone
+  **em português**. A legenda está em espanhol e a imagem não. Exige recapturar.
+- E-mail de recuperação de senha usa o template único do Supabase Auth, que não
+  tem versão em espanhol. O link já leva para `/es/reset-password`; o corpo do
+  e-mail, não.
+- Push notifications não recebem idioma (nenhum emissor, nem o `sw.js`).
+
+---
+
+## Migrations escritas e NÃO aplicadas
+
+Estão em `supabase/migrations/`. Aplicar com:
+
+```bash
+supabase db push          # aplica todas as pendentes
+```
+
+| Arquivo | O que faz | Urgência |
+|---|---|---|
+| `20260812020000_subscriptions_allow_hotmart_provider.sql` | adiciona `hotmart` ao CHECK de `provider` | **bloqueador do webhook.** Sem ela todo insert da Hotmart falha por violação de constraint |
+| `20260812020100_community_posts_locale.sql` | coluna `locale` com CHECK e índice, e recria a view `community_posts_enriched` | necessária antes do primeiro aluno ES postar |
+| `20260812020200_modules_cover_url_es.sql` | coluna da capa em espanhol | quando houver capas |
+| `20260812020300_check_email_subscription_revoke_anon.sql` | fecha a enumeração da base | ver a seção abaixo |
+| `20260812020400_expire_subscriptions_cron.sql.INERTE` | cron de expiração | **desativada de propósito** (extensão `.INERTE`) |
+
+Sobre a última: hoje o único cron do banco é `heal-hubla-webhook`, ou seja,
+**nenhuma assinatura do DAM expira por tempo**. Ligar o cron sem ninguém olhando
+corta o acesso de qualquer aluno cujo `expires_at` esteja errado — e esse projeto
+já teve exatamente esse incidente, quando o `expiresAt` da Hubla (uma janela de
+~1h do checkout) foi gravado como validade do plano. A migration traz as duas
+queries para você olhar antes de renomear para `.sql`.
+
+**Atenção à view.** A `community_posts_enriched` lista as colunas uma a uma. Se
+alguém aplicar só o `ALTER TABLE ... ADD COLUMN locale` sem recriar a view, a
+coluna não chega no frontend e o filtro por idioma vira no-op silencioso: os dois
+idiomas passam a ver a mesma comunidade e ninguém recebe erro. A migration já faz
+as duas coisas.
+
+---
+
+## Variáveis de ambiente a configurar
+
+No painel do Supabase, em Edge Functions → Secrets:
+
+| Variável | Onde consigo |
+|---|---|
+| `HOTMART_WEBHOOK_SECRET` | o *hottok*, no painel da Hotmart |
+| `HOTMART_PRODUCT_IDS` | id(s) do produto do DAM na Hotmart, separados por vírgula |
+| `HOTMART_ANNUAL_PRODUCT_IDS` | quais desses ids são plano anual (opcional; o resto vira mensal) |
+| `RESEND_API_KEY` | já existe para o `hubla-webhook`; a mesma serve |
+
+`HOTMART_PRODUCT_IDS` **vazia rejeita tudo**, de propósito e com log. Foi escolha
+minha: liberar geral por engano de configuração é pior do que não liberar
+ninguém e o erro aparecer. No app original a ausência de filtro fez 181 de 190
+eventos virem de um produto que nem era o app.
+
+Deploy do webhook (quando for a hora):
+
+```bash
+supabase functions deploy hotmart-webhook --no-verify-jwt
+```
+
+A flag agora está versionada em `supabase/config.toml` (arquivo que não existia).
+Sem ela, a function devolve 401 permanente e as vendas param de liberar acesso em
+silêncio — o erro só aparece no painel da Hotmart.
+
+---
+
+## A pergunta do `anon` na RPC: pode revogar
+
+**Pode, e a migration está escrita.** Não apliquei porque a regra desta rodada é
+não tocar no banco, mas a investigação fechou.
+
+O risco era: `check_email_subscription` tem `GRANT EXECUTE` para `anon`, e como a
+chave anônima está no bundle do frontend, qualquer pessoa pode descobrir se um
+e-mail é cliente. Revogar resolve — **desde que** o app não chame a RPC antes do
+login. Se chamasse, revogar derrubaria o login de todo mundo.
+
+O que verifiquei no código:
+
+- `checkSubscription()` (`src/lib/subscription.ts:44`) tem **um único** chamador:
+  `validateAndPublishSession(nextSession)` em `src/contexts/AuthContext.tsx:90`.
+- Essa função **recebe uma Session pronta**. É chamada em dois lugares: logo
+  depois de `signInWithPassword` ter retornado sessão (`signIn`), e a partir do
+  `onAuthStateChange` com `nextSession`. Nos dois casos o supabase-js já manda o
+  JWT de `authenticated`.
+- O comentário em `subscription.ts` ("RPC com grant pra anon — dá pra checar até
+  antes de logar") descreve uma **capacidade que o app não usa**. Foi o que quase
+  me fez concluir o contrário; por isso está escrito aqui.
+
+Antes de aplicar, reconfirme com `grep -rn "check_email_subscription" src/`. Se
+aparecer chamada fora do fluxo autenticado, não aplique — o sintoma seria a tela
+de login dizendo "acesso não liberado" para clientes em dia.
+
+---
+
+## Bugs P0 que continuam lá (fora de escopo por sua decisão)
+
+Você optou por não corrigi-los nesta rodada. Ficam registrados, e o DAM tem os
+mesmos arquivos do app do kit, então herda os três:
+
+1. **WhatsApp com `55` na frente.** Em `send-scheduled-reminders`, a regra
+   `whatsapp.length > 11 ? whatsapp : '55'+whatsapp` prefixa o Brasil em número
+   espanhol: `34` + 9 dígitos dá exatamente 11 caracteres. Medido no app
+   original: **9 de 10 lembretes espanhóis falharam**. (Esta função não existe no
+   DAM hoje — se for criada, não replique a regra.)
+2. **Fuso cravado em Brasília.** `src/pages/Alerta.tsx` e
+   `src/pages/Referencias.tsx` montam a data com `-03:00` literal. Quem escolhe
+   "noite" na Espanha recebe agendamento para 00:01 de Madrid — e a tela mostra
+   o horário de Brasília, então parece certo.
+3. **Crons em horário do Brasil.** O banco roda em UTC; um push calibrado para a
+   noite brasileira toca de madrugada na Espanha.
+
+O que **foi** corrigido, porque era pré-requisito da tela em espanhol: datas
+relativas e números com locale fixo (`toLocaleDateString('pt-BR')` espalhado por
+Dashboard, Biblioteca, AoVivo, Community, LessonForum e Header), agora
+centralizados em `src/lib/formatLocale.ts`.
+
+---
+
+## Ordem sugerida para retomar
+
+1. Aplicar a migration do `provider` — sem ela o webhook não grava nada.
+2. Configurar as env vars e deployar o `hotmart-webhook` com `--no-verify-jwt`.
+3. Disparar um evento de teste pela Hotmart e conferir: cria conta, grava
+   subscription, manda e-mail em espanhol, e **rejeita** produto fora da lista.
+4. Decidir o caminho do conteúdo em espanhol (item 3 de "o que não ficou") — é o
+   que trava o resto.
+5. Seguir a tradução pela lista do `audit-i18n.mjs`, começando por `Chat.tsx`.
+6. Rodar `npm run i18n:check` antes de cada deploy. Com `fallbackLng: 'pt'`, uma
+   chave faltando renderiza o texto em português sem erro e sem aviso no
+   console — foi assim que 322 strings escaparam no app original.
+
+## Observação sobre o ambiente
+
+`deno check` passa em `hotmart-webhook`, `analisar-perfil` e `chat-viral`. Em
+`transcribe-audio` ele falha ao resolver `npm:openai` do `edge-runtime.d.ts` —
+confirmei que **já falhava antes das minhas mudanças** (rodei o mesmo comando na
+versão da `main`). É limitação do ambiente local, não do código; a sintaxe do
+arquivo foi validada com `deno lint`.
