@@ -1,0 +1,18 @@
+# Configuração das edge functions.
+#
+# Este arquivo existe por um motivo específico: versionar o verify_jwt dos
+# webhooks. Provedor de pagamento não manda JWT do Supabase — manda o segredo
+# dele num header próprio. Se a function subir com verify_jwt ligado (o
+# padrão), ela devolve 401 permanente e as vendas param de liberar acesso EM
+# SILÊNCIO: o app não registra nada, e só o painel do provedor mostra o erro.
+#
+# Antes disso, o `--no-verify-jwt` era conhecimento oral: quem redeployasse
+# sem lembrar da flag derrubava a liberação de acesso sem perceber.
+
+project_id = "joqajomzignamixxqeet"
+
+[functions.hotmart-webhook]
+verify_jwt = false
+
+[functions.hubla-webhook]
+verify_jwt = false
