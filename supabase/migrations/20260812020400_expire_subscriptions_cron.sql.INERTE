@@ -1,0 +1,43 @@
+-- ⚠️ ESTA MIGRATION ESTÁ DESATIVADA DE PROPÓSITO (extensão .INERTE).
+--
+-- Renomeie para .sql SÓ depois de ler o parágrafo abaixo e conferir os dados.
+--
+-- O QUE FAZ: cria um cron diário que marca como 'expired' toda assinatura
+-- 'active' cujo expires_at já passou, cobrindo TODOS os providers.
+--
+-- POR QUE NÃO FOI LIGADA AGORA: hoje o único cron do banco é
+-- `heal-hubla-webhook` — nenhuma assinatura do DAM expira por tempo. Ligar
+-- isso de uma vez, sem ninguém olhando, corta o acesso de qualquer aluno cujo
+-- expires_at esteja errado no banco. E existe precedente documentado nesse
+-- projeto: o expiresAt da Hubla (~1h de validade do link) já foi gravado como
+-- validade do plano, e clientes em dia voltaram para a tela de login.
+--
+-- ANTES DE LIGAR, rode e olhe o resultado com calma:
+--
+--   -- quem seria cortado agora
+--   SELECT provider, plan_type, count(*)
+--     FROM public.subscriptions
+--    WHERE status = 'active' AND expires_at IS NOT NULL AND expires_at < now()
+--    GROUP BY 1, 2 ORDER BY 3 DESC;
+--
+--   -- e quem nunca expira (expires_at nulo)
+--   SELECT provider, count(*) FROM public.subscriptions
+--    WHERE status = 'active' AND expires_at IS NULL GROUP BY 1;
+--
+-- Se a primeira query devolver gente que deveria continuar com acesso, o
+-- problema está no expires_at gravado pelo webhook — conserte o dado ANTES.
+
+SELECT cron.schedule(
+  'expire-subscriptions',
+  '7 4 * * *',   -- 04:07 UTC = 06:07 de Madrid, 01:07 de Brasília
+  $$
+    UPDATE public.subscriptions
+       SET status = 'expired', updated_at = now()
+     WHERE status = 'active'
+       AND expires_at IS NOT NULL
+       AND expires_at < now()
+  $$
+);
+
+-- ATENÇÃO AO FUSO: o banco roda em UTC. Confira o horário civil antes de
+-- agendar qualquer coisa que dispare notificação.

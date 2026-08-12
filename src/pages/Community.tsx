@@ -193,6 +193,9 @@ const Community: React.FC = () => {
         supabase
           .from('community_posts_enriched')
           .select('*')
+          // A comunidade é separada por idioma: quem está em /es só vê posts
+          // em espanhol, e vice-versa.
+          .eq('locale', lang)
           .order('created_at', { ascending: false }),
         supabase
           .from('community_likes')
@@ -260,12 +263,15 @@ const Community: React.FC = () => {
     fetchFeed();
     const channel = supabase
       .channel(`community-posts-${user.id}-${Math.random().toString(36).slice(2)}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'community_posts' }, () => { fetchFeed(); })
+      // O INSERT dá pra filtrar no servidor. O DELETE não: o payload de
+      // delete só traz a chave primária, então ele refaz o fetch — que já
+      // vem filtrado por idioma de qualquer jeito.
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'community_posts', filter: `locale=eq.${lang}` }, () => { fetchFeed(); })
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'community_posts' }, () => { fetchFeed(); })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, lang]);
 
   const myProfile = () => ({
     user_id: user?.id || 'me',
@@ -312,7 +318,10 @@ const Community: React.FC = () => {
       }
       const { data: inserted, error } = await supabase
         .from('community_posts')
-        .insert({ user_id: user.id, content: newPostContent.trim(), image_url: imageUrl })
+        // Gravar o locale no insert é o que impede um post nascer sem idioma.
+        // O guia avisa: fazer isso DEPOIS de liberar o primeiro aluno ES já é
+        // tarde, os posts órfãos ficam.
+        .insert({ user_id: user.id, content: newPostContent.trim(), image_url: imageUrl, locale: lang })
         .select('id, user_id, content, image_url, created_at')
         .single();
       if (error) throw error;
