@@ -316,5 +316,43 @@
         "desc": "Por último, solo toca Añadir (esquina superior) ¡y la app estará en tu pantalla de inicio! 🎉"
       }
     }
+  },
+  "aoVivo": {
+    "title": "Mentoría En Vivo",
+    "subtitle": "¡Clases y encuentros semanales en vivo con los mentores, enseñando y resolviendo dudas en tiempo real!",
+    "badge": "En vivo",
+    "fallback_title": "Clase en vivo",
+    "presenter_prefix": "con",
+    "watch_btn": "Ver en vivo",
+    "no_live": "No hay directo ahora mismo",
+    "no_live_desc": "Cuando empiece una clase en vivo, aparece aquí.",
+    "upcoming": "Próximas clases",
+    "no_upcoming": "No hay ninguna clase agendada",
+    "no_upcoming_desc": "Cuando se programe una nueva clase en vivo, aparece aquí con fecha y hora.",
+    "replays": "Repeticiones",
+    "no_replays": "Muy pronto, repeticiones aquí",
+    "no_replays_desc": "Las grabaciones de las clases en vivo quedan disponibles en esta zona para que las veas cuando quieras."
+  },
+  "profile": {
+    "erro": "Error",
+    "falhaPerfil": "No se pudo actualizar el perfil",
+    "perfilAtualizado": "¡Perfil actualizado!",
+    "infoSalvas": "Tus datos se han guardado",
+    "arquivoGrande": "Archivo demasiado grande",
+    "maximo25": "Máximo 25MB",
+    "avatarAtualizado": "¡Foto actualizada!",
+    "falhaAvatar": "No se pudo actualizar la foto",
+    "avatarRemovido": "Foto eliminada",
+    "falhaRemoverAvatar": "No se pudo eliminar la foto",
+    "alterarFoto": "Cambiar foto",
+    "removerFoto": "Quitar foto",
+    "usuario": "Usuaria",
+    "seuNome": "Tu nombre",
+    "seuUsuario": "tu_usuario",
+    "planoExpert": "Expert",
+    "planoCompleto": "App Completa",
+    "planoCurso": "Solo Curso",
+    "acessoCompleto": "Acceso completo a todas las herramientas y contenidos de la app.",
+    "acessoParcial": "Tienes acceso solo al área de cursos. Mejora tu plan para desbloquear todo."
   }
 }

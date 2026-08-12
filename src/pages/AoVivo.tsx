@@ -6,28 +6,29 @@ import { getUpcomingLives } from '@/data/liveSchedule';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDateShort, localeTag } from '@/lib/formatLocale';
 import { useCurrentLang, type SupportedLang } from '@/i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
 
 const cardSpring = { type: 'spring', stiffness: 220, damping: 24 } as const;
 
 /* ─────────────────────────────────────────────────────────────
  *  TEXTOS DA TELA (troque à vontade — é toda a "escrita" daqui)
  * ───────────────────────────────────────────────────────────── */
-const TXT = {
-  title: 'Mentoria Ao Vivo',
-  subtitle: 'Aulas e encontros semanais ao vivo com os mentores, ensinando e tirando dúvidas em tempo real!',
-  badge: 'Ao vivo',
-  fallback_title: 'Aula ao vivo',
-  presenter_prefix: 'com',
-  watch_btn: 'Assistir ao vivo',
-  no_live: 'Sem live no momento',
-  no_live_desc: 'Quando começar uma aula ao vivo, ela aparece aqui.',
-  upcoming: 'Próximas aulas',
-  no_upcoming: 'Nenhuma aula agendada',
-  no_upcoming_desc: 'Quando uma nova aula ao vivo for marcada, ela aparece aqui com data e horário.',
-  replays: 'Replays',
-  no_replays: 'Em breve, replays aqui',
-  no_replays_desc: 'As gravações das aulas ao vivo ficam disponíveis nesta área pra você assistir quando quiser.',
-};
+const makeTxt = (t: (k: string) => string) => ({
+  title: t('aoVivo.title'),
+  subtitle: t('aoVivo.subtitle'),
+  badge: t('aoVivo.badge'),
+  fallback_title: t('aoVivo.fallback_title'),
+  presenter_prefix: t('aoVivo.presenter_prefix'),
+  watch_btn: t('aoVivo.watch_btn'),
+  no_live: t('aoVivo.no_live'),
+  no_live_desc: t('aoVivo.no_live_desc'),
+  upcoming: t('aoVivo.upcoming'),
+  no_upcoming: t('aoVivo.no_upcoming'),
+  no_upcoming_desc: t('aoVivo.no_upcoming_desc'),
+  replays: t('aoVivo.replays'),
+  no_replays: t('aoVivo.no_replays'),
+  no_replays_desc: t('aoVivo.no_replays_desc'),
+});
 
 interface Replay {
   id: string;
@@ -128,6 +129,8 @@ const LiveCover: React.FC<{
 
 const AoVivo: React.FC = () => {
   const lang = useCurrentLang();
+  const { t } = useTranslation();
+  const TXT = makeTxt(t);
   const reduce = useReducedMotion() ?? false;
   const { status, loading } = useLiveStatus();
   const isLive = status.is_active && !!status.stream_url;
