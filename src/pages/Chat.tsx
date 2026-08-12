@@ -22,66 +22,69 @@ import { useTranslation } from 'react-i18next';
 /* ─────────────────────────────────────────────
    TEXTOS DA TELA (toda a "escrita" daqui)
 ───────────────────────────────────────────── */
-const TXT = {
-  grid_title: 'Estúdio de Criação',
-  grid_subtitle: 'Crie seu curso em minutos usando IA. Um agente pra cada etapa — e bônus de viralização.',
-  your_models: 'Seus Cursos',
-  library: 'Biblioteca',
-  create_btn: 'Começar',
-  agent_word: 'Agente',
-  saved: 'Salvo',
-  save: 'Salvar',
-  saving_lesson: 'Salvando aula...',
-  retry_save: 'Tentar salvar',
-  answer_required: 'Sua resposta é necessária',
-  answer_below: 'Responda no campo abaixo',
-  next_lesson: 'Criar próxima aula',
-  next_lesson_hint: 'Ou digite “próxima” no campo de mensagem.',
-  next_lesson_extra: 'Criar mais uma aula',
-  resume_badge: (n: number) => `Parou na aula ${n}`,
-  resume_restart: 'Recomeçar do zero',
-  resume_loading: 'Buscando as aulas que você já escreveu...',
-  resume_display: (curso: string, n: number) =>
-    `📋 Voltando pro curso "${curso}".\n\nVocê parou na Aula ${n} — é só seguir daqui.`,
-  next_lesson_extra_hint: 'As aulas do esqueleto acabaram. Siga enquanto quiser — quando achar que está bom, é só sair (tudo já está na Biblioteca).',
-  lesson_saved: 'Aula salva automaticamente ✨',
-  placeholder: 'Descreva seu nicho e tema...',
-  transcribing: 'Transcrevendo áudio...',
-  recording: 'Gravando...',
-  keyboard_hint: 'Enter para enviar · Shift+Enter para nova linha',
-  cancel_recording: 'Cancelar gravação',
-  stop_recording: 'Parar e transcrever',
-  record_audio: 'Gravar áudio',
-  save_to_library: 'Salvar na Biblioteca',
-  save_modal_label: 'Dê um nome pra encontrar depois',
-  save_modal_placeholder: 'Ex: Esqueleto do curso de confeitaria',
-  save_course_label: 'Nome do curso',
-  exit_title: 'Salvar antes de sair?',
-  exit_desc: 'Você gerou um conteúdo que ainda não foi salvo. Quer guardar na Biblioteca antes de sair?',
-  exit_discard: 'Sair sem salvar',
-  exit_save: 'Salvar e sair',
-  cancel: 'Cancelar',
-  saving: 'Salvando...',
-  toast_name_required: 'Dá um nome antes de salvar',
-  toast_save_error: 'Erro ao salvar',
-  toast_saved: 'Salvo na Biblioteca ✨',
-  toast_audio_error: 'Não consegui entender o áudio. Tenta de novo.',
-  toast_transcription_failed: 'Falha na transcrição',
-  toast_transcription_error: 'Erro ao transcrever',
-  error_prefix: 'Deu ruim ao gerar 😔',
-  error_retry: 'Tenta de novo em instantes.',
-  unknown_error: 'Erro desconhecido',
-  // Sem backend ainda (ver docs/backend/PLANO-IMPLEMENTACAO.md):
-  backend_pending:
-    '**Backend em preparação** 🛠️\n\nOs agentes de IA vão responder de verdade assim que o Supabase do projeto for conectado. A tela já está pronta pra isso.',
-  toast_backend_pending: 'Disponível quando o backend for conectado 🛠️',
-  // Mensagens de limite (o backend manda { error, limit } e a UI monta o aviso)
+/* Os textos vivem no dicionário (src/i18n/locales). makeTxt monta o mesmo
+   objeto TXT que os componentes já usavam — inclusive as funções que
+   interpolam — só que resolvido no idioma da URL.
+
+   É um hook porque TXT é consumido por 6 componentes desta tela; assim cada
+   um pega `const TXT = useTxt()` e nada mais muda no corpo deles. */
+const makeTxt = (t: (k: string, o?: Record<string, unknown>) => string) => ({
+  grid_title: t('chat.grid_title'),
+  grid_subtitle: t('chat.grid_subtitle'),
+  your_models: t('chat.your_models'),
+  library: t('chat.library'),
+  create_btn: t('chat.create_btn'),
+  agent_word: t('chat.agent_word'),
+  saved: t('chat.saved'),
+  save: t('chat.save'),
+  saving_lesson: t('chat.saving_lesson'),
+  retry_save: t('chat.retry_save'),
+  answer_required: t('chat.answer_required'),
+  answer_below: t('chat.answer_below'),
+  next_lesson: t('chat.next_lesson'),
+  next_lesson_hint: t('chat.next_lesson_hint'),
+  next_lesson_extra: t('chat.next_lesson_extra'),
+  resume_badge: (n: number) => t('chat.resume_badge', { n }),
+  resume_restart: t('chat.resume_restart'),
+  resume_loading: t('chat.resume_loading'),
+  resume_display: (curso: string, n: number) => t('chat.resume_display', { curso, n }),
+  next_lesson_extra_hint: t('chat.next_lesson_extra_hint'),
+  lesson_saved: t('chat.lesson_saved'),
+  placeholder: t('chat.placeholder'),
+  transcribing: t('chat.transcribing'),
+  recording: t('chat.recording'),
+  keyboard_hint: t('chat.keyboard_hint'),
+  cancel_recording: t('chat.cancel_recording'),
+  stop_recording: t('chat.stop_recording'),
+  record_audio: t('chat.record_audio'),
+  save_to_library: t('chat.save_to_library'),
+  save_modal_label: t('chat.save_modal_label'),
+  save_modal_placeholder: t('chat.save_modal_placeholder'),
+  save_course_label: t('chat.save_course_label'),
+  exit_title: t('chat.exit_title'),
+  exit_desc: t('chat.exit_desc'),
+  exit_discard: t('chat.exit_discard'),
+  exit_save: t('chat.exit_save'),
+  cancel: t('chat.cancel'),
+  saving: t('chat.saving'),
+  toast_name_required: t('chat.toast_name_required'),
+  toast_save_error: t('chat.toast_save_error'),
+  toast_saved: t('chat.toast_saved'),
+  toast_audio_error: t('chat.toast_audio_error'),
+  toast_transcription_failed: t('chat.toast_transcription_failed'),
+  toast_transcription_error: t('chat.toast_transcription_error'),
+  error_prefix: t('chat.error_prefix'),
+  error_retry: t('chat.error_retry'),
+  unknown_error: t('chat.unknown_error'),
+  backend_pending: t('chat.backend_pending'),
+  toast_backend_pending: t('chat.toast_backend_pending'),
   limit_chats_segment: (limit: number | undefined, segment: string) =>
-    `Você já usou seus **${limit ?? ''} chats de "${segment}"** hoje. Tenta outro agente ou volta amanhã!`,
-  limit_reached_msg: (detail: string) => `**Limite atingido**\n\n${detail}`,
-  limit_messages_msg: (limit: number) =>
-    `**Limite de mensagens**\n\nVocê já enviou o máximo de ${limit} mensagens nessa conversa. Volte ao Estúdio e inicie uma nova conversa.`,
-};
+    t('chat.limit_chats_segment', { limit: limit ?? '', segment }),
+  limit_reached_msg: (detail: string) => t('chat.limit_reached_msg', { detail }),
+  limit_messages_msg: (limit: number) => t('chat.limit_messages_msg', { limit }),
+});
+
+const useTxt = () => makeTxt(useTranslation().t);
 
 /* ID de sessão com fallback — crypto.randomUUID não existe em contexto
    não-HTTPS (ex.: testar o PWA via IP na rede local) nem em Safari antigo. */
@@ -143,6 +146,7 @@ const cardVariants = {
 const AgentCard: React.FC<{ agent: Agent; index: number; reduce: boolean; onOpen: () => void }> = ({
   agent, index, reduce, onOpen,
 }) => {
+  const TXT = useTxt();
   const kind = agent.category as RobotKind;
   const cat = CATEGORIES.find(c => c.id === agent.category);
   const a = ACCENT[kind] ?? ACCENT.estrutura;
@@ -213,6 +217,7 @@ const BonusDivider: React.FC = () => (
 );
 
 const FormatsGrid: React.FC = () => {
+  const TXT = useTxt();
   const navigate = useLocalizedNavigate();
   const reduce = useReducedMotion() ?? false;
 
@@ -302,6 +307,7 @@ const Bubble: React.FC<{
   saved?: boolean;
   saveStatus?: SaveStatus;
 }> = ({ msg, onSave, saved, saveStatus = 'idle' }) => {
+  const TXT = useTxt();
   const isIA = msg.role === 'ia';
   const lastMeaningfulLine = msg.content.split('\n').map(line => line.trim()).filter(Boolean).pop() ?? '';
   const asksForReply = isIA && /[?？]$/.test(lastMeaningfulLine);
@@ -618,6 +624,7 @@ const AgentIntakeForm: React.FC<{
   agent: Agent; config: IntakeConfig; reduce: boolean; onBack: () => void;
   onSubmit: (briefing: string, courseName: string) => void;
 }> = ({ agent, config, reduce, onBack, onSubmit }) => {
+  const TXT = useTxt();
   const kind = agent.category as RobotKind;
   const acc = ACCENT[kind];
   const [step, setStep] = useState(0);
@@ -712,6 +719,7 @@ const SkeletonPicker: React.FC<{
   agent: Agent; userId?: string; reduce: boolean;
   onBack: () => void; onPick: (it: SkeletonItem, retomar: boolean) => void; onCreate: () => void;
 }> = ({ agent, userId, reduce, onBack, onPick, onCreate }) => {
+  const TXT = useTxt();
   const kind = agent.category as RobotKind;
   const [items, setItems] = useState<SkeletonItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -832,6 +840,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   const navigate = useLocalizedNavigate();
   const lang = useCurrentLang();
   const { t } = useTranslation();
+  const TXT = useTxt();
   const { user } = useAuth();
   const { toast } = useToast();
   const agent = AGENTS.find(f => f.slug === formatSlug);
