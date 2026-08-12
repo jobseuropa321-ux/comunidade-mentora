@@ -42,6 +42,36 @@ fs.mkdirSync(destDir, { recursive: true });
 fs.writeFileSync(`${destDir}/index.html`, html);
 fs.writeFileSync(`${destDir}/.origem-hash`, hashOrigem + '\n');
 
+
+/* Ferramenta com bundle (o Caderno é um app React): o texto não está só no
+   HTML, mora também nos .js de assets/. E a cópia ES NÃO pode apontar para os
+   mesmos assets do português — se apontar, o React hidrata a partir do bundle
+   em português e a tela inteira volta ao original, com erro #418. Por isso os
+   assets são duplicados e traduzidos junto, e o caminho no HTML é reescrito. */
+const assetsDir = base + '/assets';
+if (fs.existsSync(assetsDir)) {
+  const destAssets = destDir + '/assets';
+  fs.rmSync(destAssets, { recursive: true, force: true });
+  fs.cpSync(assetsDir, destAssets, { recursive: true });
+
+  let trocasAssets = 0;
+  for (const nome of fs.readdirSync(destAssets)) {
+    if (!/\.(js|css)$/.test(nome)) continue;
+    const p = destAssets + '/' + nome;
+    let code = fs.readFileSync(p, 'utf8');
+    const antes = code;
+    for (const [pt, es] of pares) if (code.includes(pt)) { code = code.split(pt).join(es); trocasAssets++; }
+    if (code !== antes) fs.writeFileSync(p, code);
+  }
+
+  // O HTML da cópia passa a carregar os assets da própria pasta es/.
+  const antesHtml = html;
+  html = html.split(`/ferramentas/${pasta}/assets/`).join(`/ferramentas/${pasta}/es/assets/`);
+  fs.writeFileSync(destDir + '/index.html', html);
+  console.log(`  assets duplicados e traduzidos (${trocasAssets} substituições)` +
+    (html === antesHtml ? ' — ATENÇÃO: nenhum caminho reescrito no HTML' : ''));
+}
+
 console.log(`${pasta}: ${trocas}/${pares.length} termos aplicados`);
 if (semUso.length) {
   console.log(`  ${semUso.length} não encontrados no HTML (revise o dicionário):`);

@@ -35,6 +35,7 @@ export const isInEsCatalog = (m: { slug: string; cover_url_es?: string | null })
  * cópia traduzida do artefato, gerada por scripts/traduz-ferramenta.mjs.
  * Rode `npm run ferramentas:check` para saber se a cópia ficou velha. */
 export const ES_TOOL_DIRS: readonly string[] = [
+  'desafio-10k',
   'edicao-ia',
 ];
 
