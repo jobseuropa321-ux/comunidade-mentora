@@ -1160,5 +1160,25 @@
     "n1": "Ótima pergunta! O gancho ideal depende do seu nicho — te respondi com um exemplo prático.",
     "n3": "Testei o roteiro de lista e bateu 40k de views! Obrigado pela dica 🔥",
     "equipe": "Equipe Amentora"
+  },
+  "conteudoDb": {
+    "instructor": {
+      "Equipe Amentora": "Equipe Amentora"
+    },
+    "nivel": {
+      "Iniciante": "Iniciante",
+      "Intermediário": "Intermediário",
+      "Avançado": "Avançado",
+      "Todos os níveis": "Todos os níveis"
+    },
+    "tag": {
+      "NOVO": "NOVO",
+      "PRO": "PRO"
+    },
+    "duracao": {
+      "A definir": "A definir",
+      "Em breve": "Em breve",
+      "Aula gratuita": "Aula gratuita"
+    }
   }
 }

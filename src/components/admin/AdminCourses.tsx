@@ -234,6 +234,8 @@ const ModuleEditor: React.FC<{
       cor_acento: draft.cor_acento, cor_fundo: draft.cor_fundo, is_published: draft.is_published,
       home_section: draft.home_section, cover_url: draft.cover_url, material_url: draft.material_url,
       cover_url_es: draft.cover_url_es ?? null,
+      title1_es: draft.title1_es ?? null, title2_es: draft.title2_es ?? null,
+      descricao_es: draft.descricao_es ?? null,
     }).eq('id', mod.id).select('*').single();
     setSaving(false);
     if (error) { toast.error('Erro', { description: error.message }); return; }
@@ -305,6 +307,19 @@ const ModuleEditor: React.FC<{
         </div>
         <Field label="Slug (URL)" value={draft.slug} onChange={v => setDraft({ ...draft, slug: v })} hint="usado em /modulo/{slug}" />
         <FieldArea label="Descrição" value={draft.descricao} onChange={v => setDraft({ ...draft, descricao: v })} rows={3} />
+
+        {/* Versão em espanhol. Em branco, o app mostra o texto em português —
+            módulo sem tradução não some da tela, só aparece no idioma original. */}
+        <div className="rounded-2xl border border-[#BE0D3E]/15 bg-[#FFF7E6]/40 p-3 space-y-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">
+            Versão em espanhol <span className="text-[#5B4041]/50">· opcional, em branco usa o português</span>
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Título linha 1 (ES)" value={draft.title1_es ?? ''} onChange={v => setDraft({ ...draft, title1_es: v || null })} />
+            <Field label="Título linha 2 (ES)" value={draft.title2_es ?? ''} onChange={v => setDraft({ ...draft, title2_es: v || null })} />
+          </div>
+          <FieldArea label="Descrição (ES)" value={draft.descricao_es ?? ''} onChange={v => setDraft({ ...draft, descricao_es: v || null })} rows={3} />
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <Field label="Instrutor(a)" value={draft.instructor} onChange={v => setDraft({ ...draft, instructor: v })} />
           <Field label="Duração" value={draft.duracao} onChange={v => setDraft({ ...draft, duracao: v })} />
@@ -484,6 +499,7 @@ const LessonEditor: React.FC<{
     setSaving(true);
     const { data, error } = await supabase.from('lessons').update({
       titulo: draft.titulo, duracao: draft.duracao, descricao: draft.descricao, conteudo: draft.conteudo, video_url: draft.video_url,
+      titulo_es: draft.titulo_es ?? null, descricao_es: draft.descricao_es ?? null, conteudo_es: draft.conteudo_es ?? null,
     }).eq('id', lesson.id).select('*').single();
     setSaving(false);
     if (error) { toast.error('Erro', { description: error.message }); return; }
@@ -528,6 +544,16 @@ const LessonEditor: React.FC<{
         <Field label="Duração" value={draft.duracao} onChange={v => setDraft({ ...draft, duracao: v })} hint="ex: 6 min" />
         <FieldArea label="Descrição (curta)" value={draft.descricao ?? ''} onChange={v => setDraft({ ...draft, descricao: v || null })} rows={2} />
         <FieldArea label="Conteúdo / Resumo / Transcrição" value={draft.conteudo ?? ''} onChange={v => setDraft({ ...draft, conteudo: v || null })} rows={6} />
+
+        {/* Versão em espanhol da aula. Em branco, cai no texto em português. */}
+        <div className="rounded-2xl border border-[#BE0D3E]/15 bg-[#FFF7E6]/40 p-3 space-y-3">
+          <p className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">
+            Versão em espanhol <span className="text-[#5B4041]/50">· opcional, em branco usa o português</span>
+          </p>
+          <Field label="Título (ES)" value={draft.titulo_es ?? ''} onChange={v => setDraft({ ...draft, titulo_es: v || null })} />
+          <FieldArea label="Descrição curta (ES)" value={draft.descricao_es ?? ''} onChange={v => setDraft({ ...draft, descricao_es: v || null })} rows={2} />
+          <FieldArea label="Conteúdo / Resumo (ES)" value={draft.conteudo_es ?? ''} onChange={v => setDraft({ ...draft, conteudo_es: v || null })} rows={6} />
+        </div>
 
         <div>
           <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">URL do vídeo (embed)</label>

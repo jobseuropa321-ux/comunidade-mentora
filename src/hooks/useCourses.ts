@@ -15,6 +15,10 @@ export interface Module {
   slug: string;
   title1: string;
   title2: string;
+  /** Versões em espanhol. NULL cai no texto em português. */
+  title1_es?: string | null;
+  title2_es?: string | null;
+  descricao_es?: string | null;
   tag: string | null;
   tag_color: string | null;
   descricao: string;
@@ -41,6 +45,9 @@ export interface Lesson {
   id: string;
   module_id: string;
   titulo: string;
+  titulo_es?: string | null;
+  descricao_es?: string | null;
+  conteudo_es?: string | null;
   duracao: string;
   descricao: string | null;
   conteudo: string | null;

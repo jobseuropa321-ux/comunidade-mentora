@@ -5,6 +5,7 @@ import { useLesson, useLessonProgress } from '@/hooks/useCourses';
 import LessonForum from '@/components/LessonForum';
 import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
+import { dbText } from '@/lib/dbText';
 
 const TIPO_ICON: Record<string, React.ReactNode> = {
   pdf:       <FileText size={14} />,
@@ -94,9 +95,9 @@ const AulaDetail: React.FC = () => {
 
         <div className="flex-1 mx-3 text-center">
           <p className="text-[9px] font-black uppercase tracking-widest text-[#BE0D3E]">
-            {modulo.title1} {modulo.title2}
+            {dbText(modulo.title1, modulo.title1_es, lang)} {dbText(modulo.title2, modulo.title2_es, lang)}
           </p>
-          <p className="text-[11px] font-bold text-[#1E1B11] truncate mt-0.5">{aula.titulo}</p>
+          <p className="text-[11px] font-bold text-[#1E1B11] truncate mt-0.5">{dbText(aula.titulo, aula.titulo_es, lang)}</p>
         </div>
 
         <button
@@ -237,10 +238,10 @@ const AulaDetail: React.FC = () => {
       {/* CONTEÚDO */}
       <div className="px-4 mt-5 space-y-4 pb-12">
         <div>
-          <h2 className="text-[18px] font-black text-[#1E1B11] leading-tight">{aula.titulo}</h2>
+          <h2 className="text-[18px] font-black text-[#1E1B11] leading-tight">{dbText(aula.titulo, aula.titulo_es, lang)}</h2>
           {aula.descricao && (
             <p className="text-[12px] text-[#5B4041]/60 mt-1 leading-relaxed" dangerouslySetInnerHTML={{
-              __html: aula.descricao.replace(
+              __html: dbText(aula.descricao, aula.descricao_es, lang).replace(
                 /(https?:\/\/[^\s<]+)/g,
                 '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-pink-500 underline break-all">$1</a>'
               )
@@ -251,7 +252,7 @@ const AulaDetail: React.FC = () => {
         {aula.conteudo && (
           <div className="bg-[#FFFFFF] border border-[#BE0D3E]/12 rounded-2xl p-4">
             <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/40 mb-3">{t('aula.resumo')}</h3>
-            <p className="text-[12px] text-[#5B4041]/75 leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{aula.conteudo}</p>
+            <p className="text-[12px] text-[#5B4041]/75 leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{dbText(aula.conteudo, aula.conteudo_es, lang)}</p>
           </div>
         )}
 
@@ -308,7 +309,7 @@ const AulaDetail: React.FC = () => {
             </div>
             <div className="flex items-center justify-between px-5 py-3 border-b border-[#BE0D3E]/15">
               <span className="text-[10px] font-black uppercase tracking-widest text-[#BE0D3E]">
-                {modulo.title1} {modulo.title2} · {t('modulo.contagemAulas', { count: lessons.length })}
+                {dbText(modulo.title1, modulo.title1_es, lang)} {dbText(modulo.title2, modulo.title2_es, lang)} · {t('modulo.contagemAulas', { count: lessons.length })}
               </span>
               <button onClick={() => setListOpen(false)}
                 className="w-7 h-7 rounded-full bg-[#BE0D3E]/10 text-[#5B4041] hover:text-[#BE0D3E] hover:bg-[#BE0D3E]/15 flex items-center justify-center transition-colors">
@@ -333,7 +334,7 @@ const AulaDetail: React.FC = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className={`text-[11px] font-bold truncate ${i === aulaIndex ? 'text-[#1E1B11]' : 'text-[#1E1B11]/80'}`}>
-                      {String(i + 1).padStart(2, '0')}. {a.titulo}
+                      {String(i + 1).padStart(2, '0')}. {dbText(a.titulo, a.titulo_es, lang)}
                     </p>
                     <p className="text-[9px] text-[#5B4041] mt-0.5">{a.duracao}</p>
                   </div>

@@ -4,6 +4,7 @@ import { ArrowLeft, Play, Clock, ChevronDown, ChevronUp, Loader2, CheckCircle2, 
 import { useModuleBySlug, useLessonProgress, type Lesson } from '@/hooks/useCourses';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
+import { dbNivel, dbTag, dbInstructor, dbDuracao, dbText } from '@/lib/dbText';
 import { useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
 import { isInEsCatalog } from '@/i18n/esCatalog';
 import { Navigate } from 'react-router-dom';
@@ -18,6 +19,7 @@ const AulaRow: React.FC<{
 }> = ({ aula, acento, index, moduleSlug, completed }) => {
   const navigate = useLocalizedNavigate();
   const { t } = useTranslation();
+  const lang = useCurrentLang();
   const [open, setOpen] = useState(false);
 
   // Aula que abre uma PÁGINA do app em vez do player: `video_url` guarda um
@@ -42,7 +44,7 @@ const AulaRow: React.FC<{
 
         <div className="flex-1 min-w-0">
           <p className="text-[12px] font-bold truncate text-[#1E1B11]">
-            {String(index + 1).padStart(2, '0')}. {aula.titulo}
+            {String(index + 1).padStart(2, '0')}. {dbText(aula.titulo, aula.titulo_es, lang)}
           </p>
           <div className="flex items-center gap-2 mt-0.5">
             <Clock size={9} className="text-[#5B4041]/40" />
@@ -63,7 +65,7 @@ const AulaRow: React.FC<{
       {open && (
         <div className="border-t border-[#BE0D3E]/10 px-4 pb-4 pt-3">
           {aula.descricao && (
-            <p className="text-[11px] text-[#5B4041]/70 leading-relaxed mb-3">{aula.descricao}</p>
+            <p className="text-[11px] text-[#5B4041]/70 leading-relaxed mb-3">{dbText(aula.descricao, aula.descricao_es, lang)}</p>
           )}
           <button
             onClick={abrirAula}
@@ -145,18 +147,18 @@ const ModuleDetail: React.FC = () => {
         {modulo.tag && modulo.tag_color && (
           <span className="absolute top-4 right-4 z-20 text-[8px] font-black uppercase tracking-widest text-white px-2 py-1 rounded-lg"
             style={{ background: modulo.tag_color }}>
-            {modulo.tag}
+            {dbTag(modulo.tag, t)}
           </span>
         )}
 
         <div className="relative z-10 pt-14 pb-4 px-5">
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 mb-1">{isFerramenta ? t('modulo.badgeFerramenta') : isMateriais ? t('modulo.badgeMaterial') : t('modulo.badgeModulo')}</p>
           <h1 className="text-[42px] font-black leading-[0.85] tracking-tighter text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
-            {modulo.title1}<br />{modulo.title2}
+            {dbText(modulo.title1, modulo.title1_es, lang)}<br />{dbText(modulo.title2, modulo.title2_es, lang)}
           </h1>
-          <p className="text-[11px] text-white/60 mt-3">{modulo.instructor}</p>
+          <p className="text-[11px] text-white/60 mt-3">{dbInstructor(modulo.instructor, t)}</p>
           <div className="flex items-center gap-2 mt-3 flex-wrap">
-            {[isFerramenta ? t('modulo.badgeFerramenta') : isMateriais ? t('modulo.materialApoio') : t('modulo.contagemAulas', { count: totalAulas }), modulo.duracao, modulo.nivel].filter(Boolean).map(p => (
+            {[isFerramenta ? t('modulo.badgeFerramenta') : isMateriais ? t('modulo.materialApoio') : t('modulo.contagemAulas', { count: totalAulas }), dbDuracao(modulo.duracao, t), dbNivel(modulo.nivel, t)].filter(Boolean).map(p => (
               <span key={p} className="text-[9px] font-black uppercase tracking-widest bg-white/10 text-white/70 px-2.5 py-1 rounded-full border border-white/10">
                 {p}
               </span>
@@ -170,7 +172,7 @@ const ModuleDetail: React.FC = () => {
         {/* DESCRIÇÃO */}
         <div className="bg-[#FFFFFF] border border-[#BE0D3E]/15 rounded-2xl p-5">
           <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">{t('modulo.sobreEsteModulo')}</h3>
-          <p className="text-[12px] text-[#5B4041]/80 leading-relaxed">{modulo.descricao}</p>
+          <p className="text-[12px] text-[#5B4041]/80 leading-relaxed">{dbText(modulo.descricao, modulo.descricao_es, lang)}</p>
         </div>
 
         {isMateriais ? (

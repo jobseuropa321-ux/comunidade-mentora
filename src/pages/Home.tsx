@@ -7,6 +7,7 @@ import { trackAscension } from '@/lib/ascension';
 import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 import { moduleCover, coverFallback } from '@/lib/moduleCover';
+import { dbTag, dbText } from '@/lib/dbText';
 import { isInEsCatalog } from '@/i18n/esCatalog';
 
 // Pra adicionar/trocar banner: jogue o .webp em `public/covers/` e adicione aqui.
@@ -58,7 +59,7 @@ const ModuleCard: React.FC<{ modulo: Module; priority?: boolean }> = ({ modulo, 
       {capa ? (
         <img
           src={capa}
-          alt={`${modulo.title1} ${modulo.title2}`}
+          alt={`${dbText(modulo.title1, modulo.title1_es, lang)} ${dbText(modulo.title2, modulo.title2_es, lang)}`}
           className="absolute inset-0 w-full h-full object-cover z-0 bg-[#FFF9EE]"
           loading={priority ? 'eager' : 'lazy'}
           decoding={priority ? 'sync' : 'async'}
@@ -76,7 +77,7 @@ const ModuleCard: React.FC<{ modulo: Module; priority?: boolean }> = ({ modulo, 
           className="absolute top-2 right-2 z-30 text-[8px] font-black uppercase tracking-widest text-white px-1.5 py-0.5 rounded-md"
           style={{ background: modulo.tag_color }}
         >
-          {modulo.tag}
+          {dbTag(modulo.tag, t)}
         </span>
       )}
     </div>
