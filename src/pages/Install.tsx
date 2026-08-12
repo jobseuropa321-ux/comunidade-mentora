@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Share,
   PlusSquare,
@@ -15,59 +16,31 @@ import {
 
 type Plataforma = 'iphone' | 'android';
 
+/* Os passos ficam NEUTROS: só o ícone e o slug. Título e descrição são
+   resolvidos no render pelo dicionário. Duplicar o array por idioma é a
+   armadilha nº 1 do kit — o array cresce, alguém edita um lado só, e o
+   espanhol renderiza undefined sem nenhum aviso. */
 interface Passo {
   icon: React.ElementType;
-  titulo: string;
-  descricao: string;
+  slug: string;
 }
 
 const PASSOS_IPHONE: Passo[] = [
-  {
-    icon: Share,
-    titulo: 'Toque em Compartilhar',
-    descricao: 'Abra a Amentora no Safari e toque no ícone de compartilhamento (o quadrado com a seta pra cima), na barra inferior do navegador.',
-  },
-  {
-    icon: PlusSquare,
-    titulo: 'Adicionar à Tela de Início',
-    descricao: 'Deslize o menu que abriu até encontrar a opção "Adicionar à Tela de Início" e toque nela.',
-  },
-  {
-    icon: CheckCircle2,
-    titulo: 'Confirme o nome do app',
-    descricao: 'Deixe como "Amentora" (ou renomeie do seu jeito) e toque em "Adicionar" no canto superior direito.',
-  },
-  {
-    icon: HomeIcon,
-    titulo: 'Pronto! Ícone na tela',
-    descricao: 'O app aparece na sua tela de início igual um app nativo, sem barra do navegador e com acesso instantâneo.',
-  },
+  { icon: Share,         slug: 'compartilhar' },
+  { icon: PlusSquare,    slug: 'adicionar' },
+  { icon: CheckCircle2,  slug: 'confirmar' },
+  { icon: HomeIcon,      slug: 'pronto' },
 ];
 
 const PASSOS_ANDROID: Passo[] = [
-  {
-    icon: MoreVertical,
-    titulo: 'Abra o menu do Chrome',
-    descricao: 'Com a Amentora aberta no Chrome, toque nos três pontinhos no canto superior direito da tela.',
-  },
-  {
-    icon: Download,
-    titulo: 'Instalar aplicativo',
-    descricao: 'Toque em "Instalar aplicativo" ou "Adicionar à tela inicial" (o texto pode variar um pouco conforme a versão do Chrome).',
-  },
-  {
-    icon: CheckCircle2,
-    titulo: 'Confirme a instalação',
-    descricao: 'Uma caixinha vai aparecer perguntando se você quer instalar. Toque em "Instalar" para confirmar.',
-  },
-  {
-    icon: HomeIcon,
-    titulo: 'Pronto! Ícone na tela',
-    descricao: 'O app cai direto na sua tela inicial ou na gaveta de aplicativos, pronto pra abrir com um toque.',
-  },
+  { icon: MoreVertical,  slug: 'menu' },
+  { icon: Download,      slug: 'instalar' },
+  { icon: CheckCircle2,  slug: 'confirmar' },
+  { icon: HomeIcon,      slug: 'pronto' },
 ];
 
 const Install: React.FC = () => {
+  const { t } = useTranslation();
   const [aba, setAba] = useState<Plataforma>('iphone');
   const passos = aba === 'iphone' ? PASSOS_IPHONE : PASSOS_ANDROID;
 
@@ -76,11 +49,11 @@ const Install: React.FC = () => {
       {/* Header da tela */}
       <div className="mb-6">
         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50">
-          Leva 30 segundos
+          {t('install.leva30s')}
         </span>
-        <h1 className="page-title mt-1">Instale a Amentora</h1>
+        <h1 className="page-title mt-1">{t('install.titulo')}</h1>
         <p className="text-[13px] text-[#5B4041] font-medium mt-2 leading-relaxed">
-          Transforme a comunidade num app de verdade no seu celular. Sem loja, sem espaço ocupado, sem complicação — só três toques.
+          {t('install.subtitulo')}
         </p>
       </div>
 
@@ -139,9 +112,9 @@ const Install: React.FC = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <Icon size={16} className="text-[#BE0D3E] shrink-0" />
-                  <h3 className="text-[14px] font-black text-[#1E1B11] leading-tight">{passo.titulo}</h3>
+                  <h3 className="text-[14px] font-black text-[#1E1B11] leading-tight">{t(`install.${aba}.${passo.slug}.titulo`)}</h3>
                 </div>
-                <p className="text-[12.5px] text-[#5B4041] font-medium leading-relaxed">{passo.descricao}</p>
+                <p className="text-[12.5px] text-[#5B4041] font-medium leading-relaxed">{t(`install.${aba}.${passo.slug}.descricao`)}</p>
               </div>
               {index < passos.length - 1 && (
                 <ChevronRight size={16} className="text-[#1E1B11]/10 shrink-0 mt-2" />
@@ -161,7 +134,7 @@ const Install: React.FC = () => {
             <Zap size={18} className="text-[#1E1B11]" fill="#1E1B11" />
           </div>
           <h2 className="text-[16px] font-black text-[#1E1B11] tracking-tight">
-            Por que instalar vale a pena
+            {t('install.porQueVale')}
           </h2>
         </div>
 
@@ -171,7 +144,7 @@ const Install: React.FC = () => {
               <Zap size={14} className="text-[#1E1B11]" />
             </div>
             <p className="text-[13px] text-[#1E1B11] font-bold leading-snug">
-              Acesso rápido — abre direto na sua tela inicial, sem procurar link ou digitar URL.
+              {t('install.beneficio1')}
             </p>
           </div>
           <div className="flex items-start gap-3">
@@ -179,7 +152,7 @@ const Install: React.FC = () => {
               <BellRing size={14} className="text-[#1E1B11]" />
             </div>
             <p className="text-[13px] text-[#1E1B11] font-bold leading-snug">
-              Notificações de aulas novas, desafios e conteúdos quentes direto no seu celular.
+              {t('install.beneficio2')}
             </p>
           </div>
           <div className="flex items-start gap-3">
@@ -187,7 +160,7 @@ const Install: React.FC = () => {
               <WifiOff size={14} className="text-[#1E1B11]" />
             </div>
             <p className="text-[13px] text-[#1E1B11] font-bold leading-snug">
-              Funciona até com internet ruim — a comunidade abre rápido mesmo em 3G fraquinho.
+              {t('install.beneficio3')}
             </p>
           </div>
         </div>
@@ -195,7 +168,7 @@ const Install: React.FC = () => {
 
       {/* Rodapé motivacional */}
       <p className="text-center text-[11px] text-[#5B4041] font-semibold mt-6 px-4 leading-relaxed">
-        Criador de conteúdo de verdade não perde tempo abrindo navegador. Instala uma vez e usa todo dia.
+        {t('install.rodape')}
       </p>
     </div>
   );

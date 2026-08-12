@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Download, X, ChevronRight, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 /* ═══════════════════════════════════════════════════════════════════════
  *  InstallPrompt — tutorial de instalação do PWA na 1ª visita (mobile).
@@ -20,21 +21,22 @@ import { Download, X, ChevronRight, Check } from 'lucide-react';
  *  mantendo os mesmos nomes (não precisa mexer no código).
  * ═══════════════════════════════════════════════════════════════════════ */
 
-/* ─── TEXTOS DA TELA (toda a "escrita" daqui) ─── */
-const TXT = {
-  close: 'Fechar',
-  before_continue: 'Antes de continuar',
-  ios_headline: 'Instale o app no seu iPhone',
-  ios_sub: 'Leva 10 segundos. Arraste pro lado pra ver os passos 👉',
-  variant: (n: number) => `Versão ${n}`,
-  next: 'Próximo',
-  done: 'Entendi, já instalei',
-  skip: 'Continuar sem instalar',
-  android_headline: 'Instale o app no Android',
-  android_sub: 'É um toque só. Instala igual um aplicativo e abre direto da tela inicial.',
-  android_install: 'Instalar agora',
-  android_wait: 'Preparando instalação...',
-};
+/* Os textos vivem no dicionário; esta função monta o mesmo objeto TXT que o
+   componente já usava, resolvido no idioma da URL. */
+const makeTxt = (t: (k: string, o?: Record<string, unknown>) => string) => ({
+  close: t('installPrompt.close'),
+  before_continue: t('installPrompt.before_continue'),
+  ios_headline: t('installPrompt.ios_headline'),
+  ios_sub: t('installPrompt.ios_sub'),
+  variant: (n: number) => t('installPrompt.variant', { n }),
+  next: t('installPrompt.next'),
+  done: t('installPrompt.done'),
+  skip: t('installPrompt.skip'),
+  android_headline: t('installPrompt.android_headline'),
+  android_sub: t('installPrompt.android_sub'),
+  android_install: t('installPrompt.android_install'),
+  android_wait: t('installPrompt.android_wait'),
+});
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -61,36 +63,23 @@ const wasDismissedRecently = () => {
   return Date.now() - ts < DISMISS_TTL_MS;
 };
 
-// Passos do tutorial iOS — cada um com 1+ prints, título e legenda
-const IOS_STEPS: { imgs: string[]; title: string; desc: string }[] = [
-  {
-    imgs: ['/install/ios-step1a.webp', '/install/ios-step1b.webp'],
-    title: 'Abra o menu do Safari',
-    desc: 'Depende do seu iPhone: toque no "•••" na barra OU no ícone de compartilhar. Use a versão que aparecer no seu aparelho.',
-  },
-  {
-    imgs: ['/install/ios-step2.webp'],
-    title: 'Toque em "Compartilhar"',
-    desc: 'No menu que abrir, toque na opção Compartilhar.',
-  },
-  {
-    imgs: ['/install/ios-step-vermais.webp'],
-    title: 'Toque em "Ver Mais"',
-    desc: 'Se não achar a opção de adicionar, role pra baixo e toque em Ver Mais.',
-  },
-  {
-    imgs: ['/install/ios-step3.webp'],
-    title: 'Adicionar à Tela de Início',
-    desc: 'Toque em "Adicionar à Tela de Início".',
-  },
-  {
-    imgs: [],
-    title: 'Toque em "Adicionar"',
-    desc: 'Por último, é só tocar em Adicionar (canto superior) e o app vai estar na sua tela inicial! 🎉',
-  },
+// Passos do tutorial iOS. O array guarda só os prints e o slug — título e
+// legenda saem do dicionário no render.
+//
+// ⚠️ Os prints em public/install/*.webp mostram um iPhone EM PORTUGUÊS. A
+// aluna espanhola lê a legenda em espanhol e vê a tela em português. Trocar
+// isso exige refazer as capturas com o aparelho em espanhol.
+const IOS_STEPS: { imgs: string[]; slug: string }[] = [
+  { imgs: ['/install/ios-step1a.webp', '/install/ios-step1b.webp'], slug: 'menu' },
+  { imgs: ['/install/ios-step2.webp'],                              slug: 'compartilhar' },
+  { imgs: ['/install/ios-step-vermais.webp'],                       slug: 'verMais' },
+  { imgs: ['/install/ios-step3.webp'],                              slug: 'adicionar' },
+  { imgs: [],                                                       slug: 'confirmar' },
 ];
 
 const InstallPrompt: React.FC = () => {
+  const { t } = useTranslation();
+  const TXT = makeTxt(t);
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
@@ -208,7 +197,7 @@ const InstallPrompt: React.FC = () => {
                   <span className="w-7 h-7 rounded-lg bg-[#F6B43A] text-[#1E1B11] text-[12px] font-black flex items-center justify-center">
                     {i + 1}
                   </span>
-                  <p className="text-[15px] font-black text-[#1E1B11]">{step.title}</p>
+                  <p className="text-[15px] font-black text-[#1E1B11]">{t(`installPrompt.steps.${step.slug}.title`)}</p>
                 </div>
 
                 {/* Prints */}
@@ -223,7 +212,7 @@ const InstallPrompt: React.FC = () => {
                         )}
                         <img
                           src={src}
-                          alt={step.title}
+                          alt={t(`installPrompt.steps.${step.slug}.title`)}
                           loading="lazy"
                           className="w-full rounded-xl border border-[#BE0D3E]/15 shadow-[0_8px_22px_rgba(0,0,0,0.12)]"
                         />
@@ -239,7 +228,7 @@ const InstallPrompt: React.FC = () => {
 
                 {/* Legenda */}
                 <p className="text-[12px] text-[#5B4041] leading-relaxed text-center mt-4 max-w-[300px]">
-                  {step.desc}
+                  {t(`installPrompt.steps.${step.slug}.desc`)}
                 </p>
               </div>
             ))}

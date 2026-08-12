@@ -234,5 +234,87 @@
     "falhaTranscricao": "Falha na transcrição",
     "erroTranscrever": "Erro ao transcrever",
     "backendPendente": "Disponível quando o backend for conectado 🛠️"
+  },
+  "install": {
+    "leva30s": "Leva 30 segundos",
+    "titulo": "Instale a Amentora",
+    "subtitulo": "Transforme a comunidade num app de verdade no seu celular. Sem loja, sem espaço ocupado, sem complicação — só três toques.",
+    "porQueVale": "Por que instalar vale a pena",
+    "beneficio1": "Acesso rápido — abre direto na sua tela inicial, sem procurar link ou digitar URL.",
+    "beneficio2": "Notificações de aulas novas, desafios e conteúdos quentes direto no seu celular.",
+    "beneficio3": "Funciona até com internet ruim — a comunidade abre rápido mesmo em 3G fraquinho.",
+    "rodape": "Criador de conteúdo de verdade não perde tempo abrindo navegador. Instala uma vez e usa todo dia.",
+    "iphone": {
+      "compartilhar": {
+        "titulo": "Toque em Compartilhar",
+        "descricao": "Abra a Amentora no Safari e toque no ícone de compartilhamento (o quadrado com a seta pra cima), na barra inferior do navegador."
+      },
+      "adicionar": {
+        "titulo": "Adicionar à Tela de Início",
+        "descricao": "Deslize o menu que abriu até encontrar a opção \"Adicionar à Tela de Início\" e toque nela."
+      },
+      "confirmar": {
+        "titulo": "Confirme o nome do app",
+        "descricao": "Deixe como \"Amentora\" (ou renomeie do seu jeito) e toque em \"Adicionar\" no canto superior direito."
+      },
+      "pronto": {
+        "titulo": "Pronto! Ícone na tela",
+        "descricao": "O app aparece na sua tela de início igual um app nativo, sem barra do navegador e com acesso instantâneo."
+      }
+    },
+    "android": {
+      "menu": {
+        "titulo": "Abra o menu do Chrome",
+        "descricao": "Com a Amentora aberta no Chrome, toque nos três pontinhos no canto superior direito da tela."
+      },
+      "instalar": {
+        "titulo": "Instalar aplicativo",
+        "descricao": "Toque em \"Instalar aplicativo\" ou \"Adicionar à tela inicial\" (o texto pode variar um pouco conforme a versão do Chrome)."
+      },
+      "confirmar": {
+        "titulo": "Confirme a instalação",
+        "descricao": "Uma caixinha vai aparecer perguntando se você quer instalar. Toque em \"Instalar\" para confirmar."
+      },
+      "pronto": {
+        "titulo": "Pronto! Ícone na tela",
+        "descricao": "O app cai direto na sua tela inicial ou na gaveta de aplicativos, pronto pra abrir com um toque."
+      }
+    }
+  },
+  "installPrompt": {
+    "close": "Fechar",
+    "before_continue": "Antes de continuar",
+    "ios_headline": "Instale o app no seu iPhone",
+    "ios_sub": "Leva 10 segundos. Arraste pro lado pra ver os passos 👉",
+    "variant": "Versão {{n}}",
+    "next": "Próximo",
+    "done": "Entendi, já instalei",
+    "skip": "Continuar sem instalar",
+    "android_headline": "Instale o app no Android",
+    "android_sub": "É um toque só. Instala igual um aplicativo e abre direto da tela inicial.",
+    "android_install": "Instalar agora",
+    "android_wait": "Preparando instalação...",
+    "steps": {
+      "menu": {
+        "title": "Abra o menu do Safari",
+        "desc": "Depende do seu iPhone: toque no \"•••\" na barra OU no ícone de compartilhar. Use a versão que aparecer no seu aparelho."
+      },
+      "compartilhar": {
+        "title": "Toque em \"Compartilhar\"",
+        "desc": "No menu que abrir, toque na opção Compartilhar."
+      },
+      "verMais": {
+        "title": "Toque em \"Ver Mais\"",
+        "desc": "Se não achar a opção de adicionar, role pra baixo e toque em Ver Mais."
+      },
+      "adicionar": {
+        "title": "Adicionar à Tela de Início",
+        "desc": "Toque em \"Adicionar à Tela de Início\"."
+      },
+      "confirmar": {
+        "title": "Toque em \"Adicionar\"",
+        "desc": "Por último, é só tocar em Adicionar (canto superior) e o app vai estar na sua tela inicial! 🎉"
+      }
+    }
   }
 }

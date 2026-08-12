@@ -234,5 +234,87 @@
     "falhaTranscricao": "Falló la transcripción",
     "erroTranscrever": "Error al transcribir",
     "backendPendente": "Disponible cuando se conecte el backend 🛠️"
+  },
+  "install": {
+    "leva30s": "Tarda 30 segundos",
+    "titulo": "Instala Amentora",
+    "subtitulo": "Convierte la comunidad en una app de verdad en tu móvil. Sin tienda, sin ocupar espacio, sin complicaciones — solo tres toques.",
+    "porQueVale": "Por qué vale la pena instalarla",
+    "beneficio1": "Acceso rápido — abre directo desde tu pantalla de inicio, sin buscar el enlace ni escribir la URL.",
+    "beneficio2": "Notificaciones de clases nuevas, retos y contenidos calientes directo en tu móvil.",
+    "beneficio3": "Funciona incluso con mala conexión — la comunidad abre rápido hasta con 3G flojito.",
+    "rodape": "Quien crea contenido de verdad no pierde tiempo abriendo el navegador. Se instala una vez y se usa todos los días.",
+    "iphone": {
+      "compartilhar": {
+        "titulo": "Toca en Compartir",
+        "descricao": "Abre Amentora en Safari y toca el icono de compartir (el cuadrado con la flecha hacia arriba), en la barra inferior del navegador."
+      },
+      "adicionar": {
+        "titulo": "Añadir a pantalla de inicio",
+        "descricao": "Desliza el menú que se abrió hasta encontrar la opción «Añadir a pantalla de inicio» y tócala."
+      },
+      "confirmar": {
+        "titulo": "Confirma el nombre de la app",
+        "descricao": "Déjalo como «Amentora» (o renómbralo a tu gusto) y toca «Añadir» en la esquina superior derecha."
+      },
+      "pronto": {
+        "titulo": "¡Listo! Icono en la pantalla",
+        "descricao": "La app aparece en tu pantalla de inicio igual que una app nativa, sin barra del navegador y con acceso instantáneo."
+      }
+    },
+    "android": {
+      "menu": {
+        "titulo": "Abre el menú de Chrome",
+        "descricao": "Con Amentora abierta en Chrome, toca los tres puntitos en la esquina superior derecha de la pantalla."
+      },
+      "instalar": {
+        "titulo": "Instalar aplicación",
+        "descricao": "Toca en «Instalar aplicación» o «Añadir a pantalla de inicio» (el texto puede cambiar un poco según la versión de Chrome)."
+      },
+      "confirmar": {
+        "titulo": "Confirma la instalación",
+        "descricao": "Aparecerá un cuadro preguntando si quieres instalarla. Toca «Instalar» para confirmar."
+      },
+      "pronto": {
+        "titulo": "¡Listo! Icono en la pantalla",
+        "descricao": "La app va directo a tu pantalla de inicio o al cajón de aplicaciones, lista para abrir con un toque."
+      }
+    }
+  },
+  "installPrompt": {
+    "close": "Cerrar",
+    "before_continue": "Antes de continuar",
+    "ios_headline": "Instala la app en tu iPhone",
+    "ios_sub": "Tarda 10 segundos. Desliza al lado para ver los pasos 👉",
+    "variant": "Versión {{n}}",
+    "next": "Siguiente",
+    "done": "Entendido, ya la instalé",
+    "skip": "Continuar sin instalar",
+    "android_headline": "Instala la app en Android",
+    "android_sub": "Es un solo toque. Se instala como una aplicación y abre directo desde la pantalla de inicio.",
+    "android_install": "Instalar ahora",
+    "android_wait": "Preparando la instalación...",
+    "steps": {
+      "menu": {
+        "title": "Abre el menú de Safari",
+        "desc": "Depende de tu iPhone: toca en «•••» en la barra O en el icono de compartir. Usa la versión que aparezca en tu dispositivo."
+      },
+      "compartilhar": {
+        "title": "Toca en «Compartir»",
+        "desc": "En el menú que se abra, toca la opción Compartir."
+      },
+      "verMais": {
+        "title": "Toca en «Ver más»",
+        "desc": "Si no encuentras la opción de añadir, baja y toca en Ver más."
+      },
+      "adicionar": {
+        "title": "Añadir a pantalla de inicio",
+        "desc": "Toca en «Añadir a pantalla de inicio»."
+      },
+      "confirmar": {
+        "title": "Toca en «Añadir»",
+        "desc": "Por último, solo toca Añadir (esquina superior) ¡y la app estará en tu pantalla de inicio! 🎉"
+      }
+    }
   }
 }
