@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "i18n:check": "node scripts/check-i18n-parity.mjs",
-    "es:catalog": "node scripts/gen-es-catalog.mjs"
+    "es:catalog": "node scripts/gen-es-catalog.mjs",
+    "ferramentas:check": "node scripts/check-ferramentas-es.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.1.20",

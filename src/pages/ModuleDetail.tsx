@@ -6,7 +6,7 @@ import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 import { dbNivel, dbTag, dbInstructor, dbDuracao, dbText } from '@/lib/dbText';
 import { useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
-import { isInEsCatalog } from '@/i18n/esCatalog';
+import { isInEsCatalog, esToolUrl } from '@/i18n/esCatalog';
 import { Navigate } from 'react-router-dom';
 
 /* ── AULA ROW ── */
@@ -181,7 +181,7 @@ const ModuleDetail: React.FC = () => {
             <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">{isFerramenta ? t('modulo.badgeFerramenta') : t('modulo.badgeMaterial')}</h3>
             {modulo.material_url ? (
               <a
-                href={modulo.material_url}
+                href={esToolUrl(modulo.material_url, lang) ?? undefined}
                 target={isFerramenta ? undefined : '_blank'}
                 rel={isFerramenta ? undefined : 'noopener noreferrer'}
                 className="flex items-center gap-3 rounded-2xl p-4 text-white"
@@ -239,7 +239,7 @@ const ModuleDetail: React.FC = () => {
               <div>
                 <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">{t('modulo.badgeFerramenta')}</h3>
                 <a
-                  href={ferramentaDoModulo}
+                  href={esToolUrl(ferramentaDoModulo, lang) ?? undefined}
                   className="flex items-center gap-3 rounded-2xl p-4 text-white"
                   style={{ background: `linear-gradient(135deg, #BE0D3E, ${modulo.cor_acento})`, boxShadow: `0 8px 24px ${modulo.cor_acento}33` }}
                 >

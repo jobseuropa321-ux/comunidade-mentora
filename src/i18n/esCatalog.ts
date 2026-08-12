@@ -29,3 +29,21 @@ const ES_SET = new Set(ES_MODULE_SLUGS);
  *  o arquivo no repositório (lista acima) e o upload do painel (cover_url_es). */
 export const isInEsCatalog = (m: { slug: string; cover_url_es?: string | null }): boolean =>
   ES_SET.has(m.slug) || !!m.cover_url_es;
+
+/* Ferramentas estáticas (public/ferramentas/) que já têm versão em espanhol.
+ * Elas vivem FORA do React, então não passam pelo i18n: a versão ES é uma
+ * cópia traduzida do artefato, gerada por scripts/traduz-ferramenta.mjs.
+ * Rode `npm run ferramentas:check` para saber se a cópia ficou velha. */
+export const ES_TOOL_DIRS: readonly string[] = [
+  'edicao-ia',
+];
+
+/** Aponta para a versão espanhola da ferramenta quando ela existe.
+ *  URL externa (Drive) e ferramenta ainda sem versão ES passam direto,
+ *  em vez de virar link quebrado. */
+export const esToolUrl = (url: string | null | undefined, lang: string): string | null => {
+  if (!url) return null;
+  if (lang !== 'es' || !url.startsWith('/ferramentas/')) return url;
+  const dir = url.split('/')[2];
+  return ES_TOOL_DIRS.includes(dir) ? url.replace('/ferramentas/' + dir, '/ferramentas/' + dir + '/es') : url;
+};

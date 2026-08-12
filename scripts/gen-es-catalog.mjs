@@ -18,6 +18,11 @@ import { fileURLToPath } from 'url';
 const dir = fileURLToPath(new URL('../public/covers/modulos/es', import.meta.url));
 const out = fileURLToPath(new URL('../src/i18n/esCatalog.ts', import.meta.url));
 
+const ferrDir = fileURLToPath(new URL('../public/ferramentas', import.meta.url));
+const tools = fs.readdirSync(ferrDir, { withFileTypes: true })
+  .filter(d => d.isDirectory() && fs.existsSync(ferrDir + '/' + d.name + '/es/index.html'))
+  .map(d => d.name).sort();
+
 const slugs = fs.readdirSync(dir)
   .filter(f => f.endsWith('.webp') && !f.startsWith('_'))
   .map(f => f.replace(/\.webp$/, ''))
@@ -45,5 +50,7 @@ export const isInEsCatalog = (m: { slug: string; cover_url_es?: string | null })
   ES_SET.has(m.slug) || !!m.cover_url_es;
 `);
 
-console.log(`esCatalog.ts gerado com ${slugs.length} módulos:`);
+fs.appendFileSync(out, "\n/* Ferramentas estáticas (public/ferramentas/) que já têm versão em espanhol.\n * Elas vivem FORA do React, então não passam pelo i18n: a versão ES é uma\n * cópia traduzida do artefato, gerada por scripts/traduz-ferramenta.mjs.\n * Rode `npm run ferramentas:check` para saber se a cópia ficou velha. */\nexport const ES_TOOL_DIRS: readonly string[] = [\n__TOOLS__\n];\n\n/** Aponta para a versão espanhola da ferramenta quando ela existe.\n *  URL externa (Drive) e ferramenta ainda sem versão ES passam direto,\n *  em vez de virar link quebrado. */\nexport const esToolUrl = (url: string | null | undefined, lang: string): string | null => {\n  if (!url) return null;\n  if (lang !== 'es' || !url.startsWith('/ferramentas/')) return url;\n  const dir = url.split('/')[2];\n  return ES_TOOL_DIRS.includes(dir) ? url.replace('/ferramentas/' + dir, '/ferramentas/' + dir + '/es') : url;\n};\n".replace('__TOOLS__', tools.map(t => "  '" + t + "',").join('\n')));
+
+console.log(`esCatalog.ts gerado com ${slugs.length} módulos e ${tools.length} ferramentas ES:`);
 slugs.forEach(s => console.log('  ' + s));
