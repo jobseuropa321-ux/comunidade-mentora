@@ -353,7 +353,16 @@
     "planoCompleto": "App Completa",
     "planoCurso": "Solo Curso",
     "acessoCompleto": "Acceso completo a todas las herramientas y contenidos de la app.",
-    "acessoParcial": "Tienes acceso solo al área de cursos. Mejora tu plan para desbloquear todo."
+    "acessoParcial": "Tienes acceso solo al área de cursos. Mejora tu plan para desbloquear todo.",
+    "adicioneArroba": "Añade tu @",
+    "seuPlano": "Tu plan",
+    "menu": {
+      "adminLabel": "Admin",
+      "adminHint": "Gestionar cursos, directos, push, usuarios",
+      "privacidadeLabel": "Privacidad",
+      "privacidadeHint": "Términos y política",
+      "suporteHint": "Resuelve tus dudas"
+    }
   },
   "chat": {
     "grid_title": "Estudio de Creación",
@@ -689,7 +698,23 @@
     "toast_updated": "Guion actualizado",
     "load_error": "No se pudo cargar la Biblioteca",
     "search_placeholder": "Buscar por agente o etapa...",
-    "no_results": "No se encontró ningún contenido en esa búsqueda."
+    "no_results": "No se encontró ningún contenido en esa búsqueda.",
+    "seuAcervo": "Tu archivo creativo",
+    "outrosConteudos": "Otros contenidos",
+    "secoes": {
+      "curso": {
+        "title": "Construcción del curso",
+        "description": "Estructura, clases y material de apoyo"
+      },
+      "estrategia": {
+        "title": "Estrategia y oferta",
+        "description": "Investigación, nombre y promesa del producto"
+      },
+      "conteudo": {
+        "title": "Contenido y difusión",
+        "description": "Guiones, anuncios y formatos virales"
+      }
+    }
   },
   "kanban": {
     "organizacao": "Organización de contenido",
@@ -861,5 +886,262 @@
         "hint": "Una comunidad fuerte crece junta"
       }
     }
+  },
+  "intake": {
+    "perguntas": {
+      "architect": {
+        "sobre": {
+          "label": "Sobre ti y tu técnica",
+          "hint": "Quién eres, tu experiencia y lo que diferencia a tu método.",
+          "placeholder": "Ej.: Soy peluquero desde hace 14 años, especialista en mechas..."
+        },
+        "produto": {
+          "label": "¿Qué tipo de producto quieres crear?",
+          "hint": "Formato, cuántos módulos y cuántas clases por módulo, profundidad.",
+          "placeholder": "Ej.: Un curso completo pero directo, máximo 4 módulos..."
+        },
+        "nome": {
+          "label": "Nombre provisional del producto",
+          "hint": "Si ya tienes un nombre en mente. Será el nombre por defecto al guardar (puedes dejarlo en blanco).",
+          "placeholder": "Ej.: Morena Iluminada de las Gringas"
+        },
+        "dor": {
+          "label": "¿Cuál es el dolor principal que resuelve?",
+          "hint": "El problema que tu alumna vive hoy.",
+          "placeholder": "Ej.: El miedo a manchar el pelo de la clienta..."
+        },
+        "ideia": {
+          "label": "¿Cuál es la idea central del producto?",
+          "hint": "La esencia del curso. Puedes incluir precio y tiempo de consumo.",
+          "placeholder": "Ej.: Un curso low ticket, directo al grano, que se ve en 1 o 2 días..."
+        },
+        "aprender": {
+          "label": "¿Qué necesita aprender a hacer la alumna?",
+          "hint": "Las habilidades y resultados que se lleva.",
+          "placeholder": "Ej.: Hacer las mechas estratégicas, matización, corrección de color..."
+        },
+        "transformacao": {
+          "label": "¿Cuál es la transformación final?",
+          "hint": "Dónde llega la alumna al terminar el curso.",
+          "placeholder": "Ej.: Estar preparada para hacer una morena iluminada de excelencia en cualquier pelo..."
+        },
+        "estrutura": {
+          "label": "¿Ya tienes idea de estructura?",
+          "hint": "Si sí, describe lo que imaginas. Si no, déjalo en blanco que la monto desde cero.",
+          "placeholder": "Ej.: Todavía no tengo ni idea..."
+        }
+      },
+      "apostila": {
+        "expert": {
+          "label": "Nombre de la experta o autora del método",
+          "hint": "Quién firma los apuntes (el método lleva ese nombre).",
+          "placeholder": "Ej.: Método Ana Souza"
+        },
+        "tecnica": {
+          "label": "Nombre de la técnica, curso o profesión",
+          "hint": "Lo que van a enseñar los apuntes. Será el nombre por defecto al guardar.",
+          "placeholder": "Ej.: Morena Iluminada de las Gringas"
+        },
+        "conteudo": {
+          "label": "Explica en detalle qué quieres enseñar",
+          "hint": "Cuanto más detalle, más completos los apuntes. Puedes escribir bastante.",
+          "placeholder": "Ej.: Enseñar morena iluminada a mano alzada y con papel, corrección de color y matización..."
+        },
+        "nivel": {
+          "label": "¿Para qué nivel?",
+          "hint": "Principiantes, intermedias, avanzadas o todos los niveles.",
+          "placeholder": "Ej.: Todos los niveles"
+        },
+        "estilo": {
+          "label": "¿Qué estilo de apuntes?",
+          "hint": "Más técnica, más simple, más premium o equilibrada.",
+          "placeholder": "Ej.: Premium y equilibrada"
+        }
+      },
+      "pesquisa": {
+        "nicho": {
+          "label": "¿En qué nicho quieres trabajar?",
+          "hint": "El mercado o tema de tu producto.",
+          "placeholder": "Ej.: Uñas de gel"
+        },
+        "publico": {
+          "label": "¿Quién es tu público objetivo?",
+          "hint": "Edad, género, profesión, nivel de conocimiento y lo que más sepas (ubicación: España).",
+          "placeholder": "Ej.: Mujeres de 20-40, manicuristas principiantes que quieren especializarse..."
+        },
+        "ensina": {
+          "label": "¿Qué sabes enseñar mejor?",
+          "hint": "Tu principal habilidad o entrega.",
+          "placeholder": "Ej.: Molde F1 con acabado perfecto..."
+        },
+        "ajudou": {
+          "label": "¿Ya has ayudado a alguien con esto?",
+          "hint": "Resultados o historias, si tienes (puedes dejarlo en blanco).",
+          "placeholder": "Ej.: Ya he formado a 30 alumnas presencialmente..."
+        },
+        "diferencial": {
+          "label": "¿Tienes algún diferencial?",
+          "hint": "Lo que te separa de la competencia.",
+          "placeholder": "Ej.: Método propio de aplicación sin burbujas..."
+        }
+      },
+      "nome": {
+        "tipo": {
+          "label": "¿Qué tipo de producto es?",
+          "hint": "Curso, mentoría, ebook, reto...",
+          "placeholder": "Ej.: Curso"
+        },
+        "nome_prov": {
+          "label": "Nombre provisional (si tienes)",
+          "hint": "Si ya tienes un nombre en mente. Puedes dejarlo en blanco.",
+          "placeholder": "Ej.: Molde F1 desde cero"
+        },
+        "tema": {
+          "label": "Tema principal del producto",
+          "hint": "Lo que enseña de verdad.",
+          "placeholder": "Ej.: Enseñar a hacer el primer molde F1"
+        },
+        "publico": {
+          "label": "Público objetivo específico",
+          "hint": "Para quién es.",
+          "placeholder": "Ej.: Nail designers principiantes"
+        },
+        "transformacao": {
+          "label": "Transformación que entrega",
+          "hint": "El resultado que tendrá la alumna.",
+          "placeholder": "Ej.: Hacer la primera extensión en molde F1"
+        },
+        "diferencial": {
+          "label": "Diferencial (si tienes)",
+          "hint": "Lo que te destaca. Puedes dejarlo en blanco.",
+          "placeholder": "Ej.: La persona aprende en poco tiempo"
+        },
+        "linguagem": {
+          "label": "Lenguaje deseado para el nombre",
+          "hint": "El tono del nombre.",
+          "placeholder": "Ej.: Informal"
+        }
+      },
+      "promessa": {
+        "nome": {
+          "label": "Nombre del producto",
+          "hint": "El nombre elegido o provisional.",
+          "placeholder": "Ej.: Molde F1 de las Gringas"
+        },
+        "tipo": {
+          "label": "Tipo de producto",
+          "hint": "Curso, mentoría, ebook, reto, plantilla...",
+          "placeholder": "Ej.: Curso online"
+        },
+        "tema": {
+          "label": "Tema central del producto",
+          "hint": "De qué va.",
+          "placeholder": "Ej.: Uñas en molde F1"
+        },
+        "publico": {
+          "label": "Público objetivo específico",
+          "hint": "Para quién es.",
+          "placeholder": "Ej.: Manicuristas principiantes sin tiempo"
+        },
+        "transformacao": {
+          "label": "Transformación después del producto",
+          "hint": "Lo que consigue la alumna después.",
+          "placeholder": "Ej.: Hacer la primera uña en molde F1"
+        },
+        "tempo": {
+          "label": "¿Resultado en cuánto tiempo?",
+          "hint": "El plazo de la transformación.",
+          "placeholder": "Ej.: 7 días"
+        },
+        "diferencial": {
+          "label": "Diferencial que acelera (si tienes)",
+          "hint": "Método validado, con IA, práctico... Puedes dejarlo en blanco.",
+          "placeholder": "Ej.: Método validado por 200 alumnas"
+        }
+      },
+      "ganchos": {
+        "nicho": {
+          "label": "¿Cuál es tu nicho?",
+          "hint": "El mercado en el que trabajas.",
+          "placeholder": "Ej.: Nail designer"
+        },
+        "ensina": {
+          "label": "¿Qué enseñas, vendes o entregas?",
+          "hint": "Explícalo con detalle.",
+          "placeholder": "Ej.: Enseño a manicuristas a hacer molde F1 con acabado profesional..."
+        },
+        "nivel": {
+          "label": "¿Con qué nivel de persona quieres hablar?",
+          "hint": "Principiante, intermedia, avanzada o todas.",
+          "placeholder": "Ej.: Principiante"
+        },
+        "objetivo": {
+          "label": "¿Cuál es el objetivo de los ganchos?",
+          "hint": "Atraer clientas, vender curso, crecer en Instagram, autoridad, interacción...",
+          "placeholder": "Ej.: Atraer alumnas al curso"
+        },
+        "dor": {
+          "label": "¿Algún dolor o deseo específico?",
+          "hint": "Si no lo sabes, déjalo en blanco que yo lo defino.",
+          "placeholder": "Ej.: Miedo a no conseguir clientas"
+        }
+      },
+      "narrado": {
+        "entrada": {
+          "label": "¿Tu nicho O un gancho ya hecho?",
+          "hint": "Manda solo el nicho (que yo elijo el tema) O pega un gancho que ya tengas.",
+          "placeholder": "Ej.: Nail designer  —o—  «el error que hace que el molde F1 se despegue»"
+        }
+      },
+      "carrossel": {
+        "nicho": {
+          "label": "¿Cuál es tu nicho?",
+          "hint": "El mercado en el que trabajas.",
+          "placeholder": "Ej.: Nail designer"
+        },
+        "faz": {
+          "label": "¿Qué haces en ese nicho?",
+          "hint": "Explícalo con detalle.",
+          "placeholder": "Ej.: Enseño y hago extensiones en molde F1..."
+        },
+        "tema": {
+          "label": "Tema, gancho o idea (si tienes)",
+          "hint": "Si ya tienes un tema para el carrusel. Déjalo en blanco que yo lo creo.",
+          "placeholder": "Ej.: 5 errores en el molde F1"
+        },
+        "foco": {
+          "label": "Foco del carrusel",
+          "hint": "Viralización, autoridad, enseñanza técnica, conversión, conexión o mixto.",
+          "placeholder": "Ej.: Autoridad"
+        },
+        "cta": {
+          "label": "CTA final",
+          "hint": "Seguir, comentar, compartir, guardar, mensaje directo, curso, mentoría, cita...",
+          "placeholder": "Ej.: Seguir"
+        }
+      }
+    },
+    "proxima": "Siguiente",
+    "subtitles": {
+      "agente-1": "Vamos a montar el esqueleto de tu curso",
+      "agente-3": "Vamos a montar tus apuntes",
+      "agente-4": "Vamos a investigar tu mercado",
+      "agente-5": "Vamos a crear un nombre potente",
+      "agente-6": "Vamos a crear tu promesa",
+      "agente-7": "Vamos a crear tus ganchos",
+      "agente-8": "Vamos a crear tu guion",
+      "agente-9": "Vamos a crear tu carrusel"
+    },
+    "submits": {
+      "agente-1": "Generar esqueleto",
+      "agente-3": "Generar apuntes",
+      "agente-4": "Investigar mercado",
+      "agente-5": "Generar nombres",
+      "agente-6": "Generar promesas",
+      "agente-7": "Generar ganchos",
+      "agente-8": "Generar guion",
+      "agente-9": "Generar carrusel"
+    },
+    "semConteudo": "La IA no devolvió contenido"
   }
 }

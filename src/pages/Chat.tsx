@@ -387,16 +387,16 @@ const Typing: React.FC = () => (
    As respostas são compiladas na 1ª mensagem enviada à IA.
 ═════════════════════════════════════════════ */
 const ARCHITECT_QUESTIONS: {
-  key: string; label: string; hint: string; placeholder: string; required: boolean; multiline: boolean;
+  key: string; grupo: string; required: boolean; multiline: boolean;
 }[] = [
-  { key: 'sobre', label: 'Sobre você e sua técnica', hint: 'Quem é você, sua experiência e o diferencial do seu método.', placeholder: 'Ex.: Sou cabeleireiro há 14 anos, especialista em mechas...', required: true, multiline: true },
-  { key: 'produto', label: 'Que tipo de produto você quer criar?', hint: 'Formato, quantos módulos e quantas aulas por módulo, profundidade.', placeholder: 'Ex.: Um curso completo mas direto, no máximo 4 módulos...', required: true, multiline: true },
-  { key: 'nome', label: 'Nome provisório do produto', hint: 'Se já tiver um nome em mente. Vira o nome padrão ao salvar (pode deixar em branco).', placeholder: 'Ex.: Morena Iluminada das Gringas', required: false, multiline: false },
-  { key: 'dor', label: 'Qual a dor principal que ele resolve?', hint: 'O problema que o seu aluno vive hoje.', placeholder: 'Ex.: O medo de manchar o cabelo da cliente...', required: true, multiline: true },
-  { key: 'ideia', label: 'Qual a ideia central do produto?', hint: 'A essência do curso. Pode incluir preço e tempo de consumo.', placeholder: 'Ex.: Um curso low ticket, direto ao ponto, assistível em 1 ou 2 dias...', required: true, multiline: true },
-  { key: 'aprender', label: 'O que o aluno precisa aprender a fazer?', hint: 'As habilidades e resultados que ele leva.', placeholder: 'Ex.: Fazer as mechas estratégicas, matização, correção de cor...', required: true, multiline: true },
-  { key: 'transformacao', label: 'Qual a transformação final?', hint: 'Onde o aluno chega ao terminar o curso.', placeholder: 'Ex.: Estar preparado para fazer uma morena iluminada de excelência em qualquer cabelo...', required: true, multiline: true },
-  { key: 'estrutura', label: 'Já tem ideia de estrutura?', hint: 'Se sim, descreva o que imagina. Se não, deixe em branco que eu monto do zero.', placeholder: 'Ex.: Não tenho ideia ainda...', required: false, multiline: true },
+  { key: 'sobre', grupo: 'architect', required: true, multiline: true },
+  { key: 'produto', grupo: 'architect', required: true, multiline: true },
+  { key: 'nome', grupo: 'architect', required: false, multiline: false },
+  { key: 'dor', grupo: 'architect', required: true, multiline: true },
+  { key: 'ideia', grupo: 'architect', required: true, multiline: true },
+  { key: 'aprender', grupo: 'architect', required: true, multiline: true },
+  { key: 'transformacao', grupo: 'architect', required: true, multiline: true },
+  { key: 'estrutura', grupo: 'architect', required: false, multiline: true },
 ];
 
 const compileBriefing = (a: Record<string, string>) => {
@@ -420,11 +420,11 @@ Monte o esqueleto completo do meu curso com base nisso.`;
    Independente do esqueleto: o Apostila monta a própria estrutura.
 ═════════════════════════════════════════════ */
 const APOSTILA_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
-  { key: 'expert', label: 'Nome da expert ou autora do método', hint: 'Quem assina a apostila (o método leva esse nome).', placeholder: 'Ex.: Método Ana Souza', required: true, multiline: false },
-  { key: 'tecnica', label: 'Nome da técnica, curso ou profissão', hint: 'O que a apostila vai ensinar. Vira o nome padrão ao salvar.', placeholder: 'Ex.: Morena Iluminada das Gringas', required: true, multiline: true },
-  { key: 'conteudo', label: 'Explique em detalhes o que quer ensinar', hint: 'Quanto mais detalhe, mais completa a apostila. Pode escrever bastante.', placeholder: 'Ex.: Ensinar morena iluminada à mão livre e com papel, correção de cor e matização...', required: true, multiline: true },
-  { key: 'nivel', label: 'Para qual nível?', hint: 'Iniciantes, intermediários, avançados ou todos os níveis.', placeholder: 'Ex.: Todos os níveis', required: true, multiline: false },
-  { key: 'estilo', label: 'Que estilo de apostila?', hint: 'Mais técnica, mais simples, mais premium ou equilibrada.', placeholder: 'Ex.: Premium e equilibrada', required: true, multiline: false },
+  { key: 'expert', grupo: 'apostila', required: true, multiline: false },
+  { key: 'tecnica', grupo: 'apostila', required: true, multiline: true },
+  { key: 'conteudo', grupo: 'apostila', required: true, multiline: true },
+  { key: 'nivel', grupo: 'apostila', required: true, multiline: false },
+  { key: 'estilo', grupo: 'apostila', required: true, multiline: false },
 ];
 
 const compileApostila = (a: Record<string, string>) => {
@@ -442,11 +442,11 @@ Use essas respostas e comece a apostila direto pela PARTE 1 DE 4. Não faça per
 
 /* ── Formulário do PESQUISA DE MERCADO (agente-4) — também independente ── */
 const PESQUISA_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
-  { key: 'nicho', label: 'Qual nicho você quer atuar?', hint: 'O mercado ou tema do seu produto.', placeholder: 'Ex.: Alongamento de unhas em gel', required: true, multiline: false },
-  { key: 'publico', label: 'Quem é o seu público-alvo?', hint: 'Idade, gênero, profissão, nível de conhecimento e o que mais souber (localização: Brasil).', placeholder: 'Ex.: Mulheres 20-40, manicures iniciantes querendo se especializar...', required: true, multiline: true },
-  { key: 'ensina', label: 'O que você sabe ensinar de melhor?', hint: 'Sua principal habilidade ou entrega.', placeholder: 'Ex.: Molde F1 com acabamento perfeito...', required: true, multiline: true },
-  { key: 'ajudou', label: 'Já ajudou alguém com isso?', hint: 'Resultados ou histórias, se tiver (pode deixar em branco).', placeholder: 'Ex.: Já formei 30 alunas presencialmente...', required: false, multiline: true },
-  { key: 'diferencial', label: 'Tem algum diferencial?', hint: 'O que te separa dos concorrentes.', placeholder: 'Ex.: Método próprio de aplicação sem bolhas...', required: false, multiline: true },
+  { key: 'nicho', grupo: 'pesquisa', required: true, multiline: false },
+  { key: 'publico', grupo: 'pesquisa', required: true, multiline: true },
+  { key: 'ensina', grupo: 'pesquisa', required: true, multiline: true },
+  { key: 'ajudou', grupo: 'pesquisa', required: false, multiline: true },
+  { key: 'diferencial', grupo: 'pesquisa', required: false, multiline: true },
 ];
 
 const compilePesquisa = (a: Record<string, string>) => {
@@ -464,13 +464,13 @@ Faça a pesquisa aprofundada e me entregue os 5 pontos (dores do público, princ
 
 /* ── Nome Potente (agente-5) ── */
 const NOME_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
-  { key: 'tipo', label: 'Que tipo de produto é?', hint: 'Curso, mentoria, ebook, desafio...', placeholder: 'Ex.: Curso', required: true, multiline: false },
-  { key: 'nome_prov', label: 'Nome provisório (se tiver)', hint: 'Se já tem um nome em mente. Pode deixar em branco.', placeholder: 'Ex.: Molde F1 do zero', required: false, multiline: false },
-  { key: 'tema', label: 'Tema principal do produto', hint: 'O que ele ensina de fato.', placeholder: 'Ex.: Ensinar a fazer o primeiro molde F1', required: true, multiline: true },
-  { key: 'publico', label: 'Público-alvo específico', hint: 'Pra quem é.', placeholder: 'Ex.: Nail designers iniciantes', required: true, multiline: false },
-  { key: 'transformacao', label: 'Transformação que entrega', hint: 'O resultado que o aluno terá.', placeholder: 'Ex.: Fazer o primeiro alongamento em molde F1', required: true, multiline: true },
-  { key: 'diferencial', label: 'Diferencial (se tiver)', hint: 'O que te destaca. Pode deixar em branco.', placeholder: 'Ex.: A pessoa aprende em pouco tempo', required: false, multiline: true },
-  { key: 'linguagem', label: 'Linguagem desejada pro nome', hint: 'O tom do nome.', placeholder: 'Ex.: Informal', required: true, multiline: false },
+  { key: 'tipo', grupo: 'nome', required: true, multiline: false },
+  { key: 'nome_prov', grupo: 'nome', required: false, multiline: false },
+  { key: 'tema', grupo: 'nome', required: true, multiline: true },
+  { key: 'publico', grupo: 'nome', required: true, multiline: false },
+  { key: 'transformacao', grupo: 'nome', required: true, multiline: true },
+  { key: 'diferencial', grupo: 'nome', required: false, multiline: true },
+  { key: 'linguagem', grupo: 'nome', required: true, multiline: false },
 ];
 const compileNome = (a: Record<string, string>) => {
   const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
@@ -489,13 +489,13 @@ Crie as sugestões de nome com base nisso.`;
 
 /* ── Promessa Irresistível (agente-6) ── */
 const PROMESSA_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
-  { key: 'nome', label: 'Nome do produto', hint: 'O nome escolhido ou provisório.', placeholder: 'Ex.: Molde F1 das Gringas', required: true, multiline: false },
-  { key: 'tipo', label: 'Tipo de produto', hint: 'Curso, mentoria, ebook, desafio, planilha...', placeholder: 'Ex.: Curso online', required: true, multiline: false },
-  { key: 'tema', label: 'Tema central do produto', hint: 'Sobre o que é.', placeholder: 'Ex.: Unhas em molde F1', required: true, multiline: false },
-  { key: 'publico', label: 'Público-alvo específico', hint: 'Pra quem é.', placeholder: 'Ex.: Manicures iniciantes sem tempo', required: true, multiline: true },
-  { key: 'transformacao', label: 'Transformação após o produto', hint: 'O que o aluno consegue depois.', placeholder: 'Ex.: Fazer a primeira unha em molde F1', required: true, multiline: true },
-  { key: 'tempo', label: 'Resultado em quanto tempo?', hint: 'O prazo da transformação.', placeholder: 'Ex.: 7 dias', required: true, multiline: false },
-  { key: 'diferencial', label: 'Diferencial que acelera (se tiver)', hint: 'Método validado, com IA, prático... Pode deixar em branco.', placeholder: 'Ex.: Método validado por 200 alunas', required: false, multiline: true },
+  { key: 'nome', grupo: 'promessa', required: true, multiline: false },
+  { key: 'tipo', grupo: 'promessa', required: true, multiline: false },
+  { key: 'tema', grupo: 'promessa', required: true, multiline: false },
+  { key: 'publico', grupo: 'promessa', required: true, multiline: true },
+  { key: 'transformacao', grupo: 'promessa', required: true, multiline: true },
+  { key: 'tempo', grupo: 'promessa', required: true, multiline: false },
+  { key: 'diferencial', grupo: 'promessa', required: false, multiline: true },
 ];
 const compilePromessa = (a: Record<string, string>) => {
   const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
@@ -514,11 +514,11 @@ Crie as promessas SMART com base nisso.`;
 
 /* ── Ganchos Virais (agente-7 · bônus) ── */
 const GANCHOS_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
-  { key: 'nicho', label: 'Qual é o seu nicho?', hint: 'O mercado onde você atua.', placeholder: 'Ex.: Nail designer', required: true, multiline: false },
-  { key: 'ensina', label: 'O que você ensina, vende ou entrega?', hint: 'Explique com detalhes.', placeholder: 'Ex.: Ensino manicures a fazer molde F1 com acabamento profissional...', required: true, multiline: true },
-  { key: 'nivel', label: 'Com qual nível de pessoa quer falar?', hint: 'Iniciante, intermediário, avançado ou todos.', placeholder: 'Ex.: Iniciante', required: true, multiline: false },
-  { key: 'objetivo', label: 'Qual o objetivo dos ganchos?', hint: 'Atrair clientes, vender curso, crescer no Instagram, autoridade, engajamento...', placeholder: 'Ex.: Atrair alunas pro curso', required: true, multiline: false },
-  { key: 'dor', label: 'Alguma dor ou desejo específico?', hint: 'Se não souber, deixe em branco que eu defino.', placeholder: 'Ex.: Medo de não conseguir clientes', required: false, multiline: true },
+  { key: 'nicho', grupo: 'ganchos', required: true, multiline: false },
+  { key: 'ensina', grupo: 'ganchos', required: true, multiline: true },
+  { key: 'nivel', grupo: 'ganchos', required: true, multiline: false },
+  { key: 'objetivo', grupo: 'ganchos', required: true, multiline: false },
+  { key: 'dor', grupo: 'ganchos', required: false, multiline: true },
 ];
 const compileGanchos = (a: Record<string, string>) => {
   const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
@@ -535,7 +535,7 @@ Agora gere os 20 ganchos, seguindo exatamente o formato definido.`;
 
 /* ── Narrado Técnico (agente-8 · bônus) ── */
 const NARRADO_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
-  { key: 'entrada', label: 'Qual seu nicho OU um gancho pronto?', hint: 'Mande só o nicho (que eu escolho o tema) OU cole um gancho que você já tem.', placeholder: 'Ex.: Nail designer  —ou—  "o erro que faz o molde F1 descolar"', required: true, multiline: true },
+  { key: 'entrada', grupo: 'narrado', required: true, multiline: true },
 ];
 const compileNarrado = (a: Record<string, string>) => {
   const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
@@ -546,11 +546,11 @@ Identifique se é um NICHO ou um GANCHO pronto e crie o roteiro narrado técnico
 
 /* ── Carrossel Viral (agente-9 · bônus) ── */
 const CARROSSEL_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
-  { key: 'nicho', label: 'Qual é o seu nicho?', hint: 'O mercado onde você atua.', placeholder: 'Ex.: Nail designer', required: true, multiline: false },
-  { key: 'faz', label: 'O que você faz nesse nicho?', hint: 'Explique com detalhes.', placeholder: 'Ex.: Ensino e faço alongamento em molde F1...', required: true, multiline: true },
-  { key: 'tema', label: 'Tema, gancho ou ideia (se tiver)', hint: 'Se já tem um tema pro carrossel. Deixe em branco que eu crio.', placeholder: 'Ex.: 5 erros no molde F1', required: false, multiline: true },
-  { key: 'foco', label: 'Foco do carrossel', hint: 'Viralização, autoridade, ensino técnico, conversão, conexão ou misto.', placeholder: 'Ex.: Autoridade', required: true, multiline: false },
-  { key: 'cta', label: 'CTA final', hint: 'Seguir, comentar, compartilhar, salvar, direct, curso, mentoria, atendimento...', placeholder: 'Ex.: Seguir', required: true, multiline: false },
+  { key: 'nicho', grupo: 'carrossel', required: true, multiline: false },
+  { key: 'faz', grupo: 'carrossel', required: true, multiline: true },
+  { key: 'tema', grupo: 'carrossel', required: false, multiline: true },
+  { key: 'foco', grupo: 'carrossel', required: true, multiline: false },
+  { key: 'cta', grupo: 'carrossel', required: true, multiline: false },
 ];
 const compileCarrossel = (a: Record<string, string>) => {
   const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
@@ -568,57 +568,39 @@ Agora monte o carrossel completo no formato exato definido, com análise estrat�
 /* Configuração de cada "entrevista" (formulário) por agente. */
 interface IntakeConfig {
   questions: typeof ARCHITECT_QUESTIONS;
-  subtitle: string;
-  submitLabel: string;
   compile: (a: Record<string, string>) => { briefing: string; courseName: string };
 }
 const INTAKE: Record<string, IntakeConfig> = {
   'agente-1': {
     questions: ARCHITECT_QUESTIONS,
-    subtitle: 'Vamos montar o esqueleto do seu curso',
-    submitLabel: 'Gerar esqueleto',
     compile: a => ({ briefing: compileBriefing(a), courseName: (a['nome'] ?? '').trim() }),
   },
   'agente-3': {
     questions: APOSTILA_QUESTIONS,
-    subtitle: 'Vamos montar a sua apostila',
-    submitLabel: 'Gerar apostila',
     compile: a => ({ briefing: compileApostila(a), courseName: (a['tecnica'] ?? '').trim() }),
   },
   'agente-4': {
     questions: PESQUISA_QUESTIONS,
-    subtitle: 'Vamos pesquisar o seu mercado',
-    submitLabel: 'Pesquisar mercado',
     compile: a => ({ briefing: compilePesquisa(a), courseName: `Pesquisa — ${(a['nicho'] ?? '').trim()}`.trim() }),
   },
   'agente-5': {
     questions: NOME_QUESTIONS,
-    subtitle: 'Vamos criar um nome potente',
-    submitLabel: 'Gerar nomes',
     compile: a => ({ briefing: compileNome(a), courseName: ((a['nome_prov'] || a['tema']) ?? '').trim() }),
   },
   'agente-6': {
     questions: PROMESSA_QUESTIONS,
-    subtitle: 'Vamos criar sua promessa',
-    submitLabel: 'Gerar promessas',
     compile: a => ({ briefing: compilePromessa(a), courseName: ((a['nome'] || a['tema']) ?? '').trim() }),
   },
   'agente-7': {
     questions: GANCHOS_QUESTIONS,
-    subtitle: 'Vamos criar seus ganchos',
-    submitLabel: 'Gerar 20 ganchos',
     compile: a => ({ briefing: compileGanchos(a), courseName: `Ganchos — ${(a['nicho'] ?? '').trim()}`.trim() }),
   },
   'agente-8': {
     questions: NARRADO_QUESTIONS,
-    subtitle: 'Vamos criar seu roteiro',
-    submitLabel: 'Gerar roteiro',
     compile: a => ({ briefing: compileNarrado(a), courseName: `Roteiro — ${(a['entrada'] ?? '').trim().slice(0, 40)}`.trim() }),
   },
   'agente-9': {
     questions: CARROSSEL_QUESTIONS,
-    subtitle: 'Vamos criar seu carrossel',
-    submitLabel: 'Gerar carrossel',
     compile: a => ({ briefing: compileCarrossel(a), courseName: `Carrossel — ${(a['nicho'] ?? '').trim()}`.trim() }),
   },
 };
@@ -628,6 +610,7 @@ const AgentIntakeForm: React.FC<{
   onSubmit: (briefing: string, courseName: string) => void;
 }> = ({ agent, config, reduce, onBack, onSubmit }) => {
   const TXT = useTxt();
+  const { t } = useTranslation();
   const kind = agent.category as RobotKind;
   const acc = ACCENT[kind];
   const [step, setStep] = useState(0);
@@ -655,7 +638,7 @@ const AgentIntakeForm: React.FC<{
         <div className="relative px-4 pt-3 pb-4 flex flex-col items-center">
           <Robot kind={kind} reduce={reduce} />
           <p className="text-white text-[15px] font-black mt-1">{agent.name}</p>
-          <p className="text-white/80 text-[11px]">{config.subtitle}</p>
+          <p className="text-white/80 text-[11px]">{t(`intake.subtitles.${agent.slug}`)}</p>
         </div>
       </div>
 
@@ -676,16 +659,16 @@ const AgentIntakeForm: React.FC<{
           {TXT.answer_required}
         </div>
         <h2 className="text-[20px] font-black text-[#1E1B11] leading-tight">
-          {q.label}
+          {t(`intake.perguntas.${q.grupo}.${q.key}.label`)}
           {!q.required && <span className="text-[#5B4041]/40 text-[12px] font-medium"> · opcional</span>}
         </h2>
-        <p className="text-[12px] text-[#5B4041]/70 mt-1.5 mb-4">{q.hint}</p>
+        <p className="text-[12px] text-[#5B4041]/70 mt-1.5 mb-4">{t(`intake.perguntas.${q.grupo}.${q.key}.hint`)}</p>
         <VoiceField
           key={q.key}
           multiline={q.multiline}
           value={val}
           onChange={v => setAnswers(p => ({ ...p, [q.key]: v }))}
-          placeholder={q.placeholder}
+          placeholder={t(`intake.perguntas.${q.grupo}.${q.key}.placeholder`)}
           autoFocus
           rows={5}
         />
@@ -705,7 +688,9 @@ const AgentIntakeForm: React.FC<{
           className="flex-1 py-3 rounded-2xl text-[12px] font-black uppercase tracking-widest text-white flex items-center justify-center gap-1.5 disabled:opacity-30 transition-opacity"
           style={{ background: 'linear-gradient(135deg, #BE0D3E, #E06B85)', WebkitTapHighlightColor: 'transparent' }}
         >
-          {isLast ? <><Sparkles size={14} /> {config.submitLabel}</> : <>Próxima <ArrowRight size={14} /></>}
+          {isLast
+            ? <><Sparkles size={14} /> {t(`intake.submits.${agent.slug}`)}</>
+            : <>{t('intake.proxima')} <ArrowRight size={14} /></>}
         </button>
       </div>
     </div>
@@ -987,7 +972,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       }
       if (data?.error) throw new Error(data.error);
       const reply = String(data?.reply ?? '').trim();
-      if (!reply) throw new Error('A IA não retornou conteúdo');
+      if (!reply) throw new Error(t('intake.semConteudo'));
       const replyIdx = next.length;
       setMessages([...next, { role: 'ia', content: reply }]);
       if (lessonToSave) {

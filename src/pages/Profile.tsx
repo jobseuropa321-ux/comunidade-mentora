@@ -347,7 +347,7 @@ const Profile: React.FC = () => {
                     @{normalizeInstagramHandle(profile.instagram)}
                   </a>
                 ) : (
-                  <p className="text-sm font-bold text-[#1E1B11]/40 truncate">Adicione seu @</p>
+                  <p className="text-sm font-bold text-[#1E1B11]/40 truncate">{t('profile.adicioneArroba')}</p>
                 )}
               </div>
             </div>
@@ -360,7 +360,7 @@ const Profile: React.FC = () => {
             <div className="flex-1">
               <div className="flex items-center gap-1.5 mb-1">
                 <Crown size={14} className="text-[#1E1B11]" fill={hasFullAccess ? '#BE0D3E' : 'none'} />
-                <span className="text-[9px] font-black uppercase tracking-widest text-[#1E1B11]">Seu plano</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-[#1E1B11]">{t('profile.seuPlano')}</span>
               </div>
               <h3 className="text-[20px] font-black text-[#1E1B11] leading-tight">{planLabel}</h3>
               <p className="text-[11px] text-[#1E1B11]/70 font-medium mt-1 leading-snug">
@@ -383,8 +383,8 @@ const Profile: React.FC = () => {
             <>
               <ActionRow
                 icon={<ShieldCheck className="w-4 h-4 text-[#BE0D3E]" strokeWidth={2.5} />}
-                label="Admin"
-                hint="Gerenciar cursos, lives, push, usuários"
+                label={t('profile.menu.adminLabel')}
+                hint={t('profile.menu.adminHint')}
                 onClick={() => navigate('/admin')}
               />
               <div className="h-px bg-[#BE0D3E]/8 mx-4" />
@@ -392,15 +392,15 @@ const Profile: React.FC = () => {
           )}
           <ActionRow
             icon={<Shield className="w-4 h-4 text-[#BE0D3E]" strokeWidth={2.5} />}
-            label="Privacidade"
-            hint="Termos e política"
+            label={t('profile.menu.privacidadeLabel')}
+            hint={t('profile.menu.privacidadeHint')}
             onClick={() => toast({ title: 'Em breve', description: 'Estamos preparando essa seção' })}
           />
           <div className="h-px bg-[#BE0D3E]/8 mx-4" />
           <ActionRow
             icon={<HelpCircle className="w-4 h-4 text-[#BE0D3E]" strokeWidth={2.5} />}
             label="Suporte"
-            hint="Tire suas dúvidas"
+            hint={t('profile.menu.suporteHint')}
             onClick={() => toast({ title: 'Em breve', description: 'Canal de suporte em preparação' })}
           />
         </section>

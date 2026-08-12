@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAgents } from '@/data/agents';
 import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
-import { formatDateNumeric } from '@/lib/formatLocale';
+import { formatDateNumeric, localeTag } from '@/lib/formatLocale';
 import { useCurrentLang, type SupportedLang } from '@/i18n/LanguageProvider';
 
 /* ─────────────────────────────────────────────
@@ -76,22 +76,16 @@ interface LibraryGroup {
 const LIBRARY_SECTIONS = [
   {
     id: 'curso',
-    title: 'Construção do curso',
-    description: 'Estrutura, aulas e material de apoio',
     slugs: ['agente-1', 'agente-2', 'agente-3'],
     Icon: Layers3,
   },
   {
     id: 'estrategia',
-    title: 'Estratégia e oferta',
-    description: 'Pesquisa, nome e promessa do produto',
     slugs: ['agente-4', 'agente-5', 'agente-6'],
     Icon: Sparkles,
   },
   {
     id: 'conteudo',
-    title: 'Conteúdo e divulgação',
-    description: 'Roteiros, anúncios e formatos virais',
     slugs: ['agente-7', 'agente-8', 'agente-9', 'agente-10', 'agente-11', 'agente-12'],
     Icon: BookOpen,
   },
@@ -151,13 +145,13 @@ const ModelsOverview: React.FC = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  const normalizedSearch = search.trim().toLocaleLowerCase('pt-BR');
+  const normalizedSearch = search.trim().toLocaleLowerCase(localeTag(lang));
   const filteredGroups = groups.filter(group =>
     !normalizedSearch
-    || group.name.toLocaleLowerCase('pt-BR').includes(normalizedSearch)
+    || group.name.toLocaleLowerCase(localeTag(lang)).includes(normalizedSearch)
     || LIBRARY_SECTIONS.some(section =>
       section.slugs.includes(group.slug)
-      && section.title.toLocaleLowerCase('pt-BR').includes(normalizedSearch)
+      && t(`biblioteca.secoes.${section.id}.title`).toLocaleLowerCase(localeTag(lang)).includes(normalizedSearch)
     )
   );
   const visibleSections = LIBRARY_SECTIONS
@@ -188,7 +182,7 @@ const ModelsOverview: React.FC = () => {
           <div className="min-w-0 flex-1">
             <div className="mb-2 flex items-center gap-2">
               <LibraryIcon size={18} className="shrink-0 text-[#FFD27A]" />
-              <span className="text-[9px] font-black uppercase tracking-[0.22em] text-white/75">Seu acervo criativo</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.22em] text-white/75">{t('biblioteca.seuAcervo')}</span>
             </div>
             <h2 className="text-[30px] font-black leading-none tracking-tight text-white">{TXT.title}</h2>
             <p className="mt-2 text-[11px] leading-relaxed text-white/75">{TXT.subtitle}</p>
@@ -238,8 +232,8 @@ const ModelsOverview: React.FC = () => {
                   <section.Icon size={15} />
                 </div>
                 <div>
-                  <h3 className="text-[14px] font-black leading-tight text-[#1E1B11]">{section.title}</h3>
-                  <p className="text-[9px] text-[#5B4041]/60">{section.description}</p>
+                  <h3 className="text-[14px] font-black leading-tight text-[#1E1B11]">{t(`biblioteca.secoes.${section.id}.title`)}</h3>
+                  <p className="text-[9px] text-[#5B4041]/60">{t(`biblioteca.secoes.${section.id}.description`)}</p>
                 </div>
               </div>
 
@@ -278,7 +272,7 @@ const ModelsOverview: React.FC = () => {
 
           {unclassified.length > 0 && (
             <section>
-              <h3 className="mb-2.5 px-1 text-[14px] font-black text-[#1E1B11]">Outros conteúdos</h3>
+              <h3 className="mb-2.5 px-1 text-[14px] font-black text-[#1E1B11]">{t('biblioteca.outrosConteudos')}</h3>
               <div className="grid gap-2.5 sm:grid-cols-2">
                 {unclassified.map(group => (
                   <button
