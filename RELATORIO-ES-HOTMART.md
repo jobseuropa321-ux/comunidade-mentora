@@ -109,15 +109,36 @@ guia é explícito em não traduzir string que só serve de entrada pro
 modelo — e a diretiva de idioma da FASE 5 já faz a IA responder em
 espanhol mesmo recebendo briefing em português.
 
-### 2. Capas em espanhol: mecanismo pronto, imagens não
+### 2. Capas e banners em espanhol: prontos, com 4 lacunas de arte
 
-As 33 capas de `06-assets/covers-es` do kit **não foram copiadas**. Elas são do
-conteúdo do Viral1MIN (cílios, carrossel viral, palestrinha) e não correspondem
-a nenhum módulo do DAM — copiar teria posto imagem errada em módulo certo.
+Recebidas em 2026-08-12 e convertidas para o padrão do projeto (WebP, capas
+800x1067, banners 1600x720): 600 MB de PNG viraram 1,4 MB.
 
-O mecanismo está pronto (`src/lib/moduleCover.ts` + coluna `cover_url_es`) e cai
-na capa em português enquanto não houver versão espanhola. Falta produzir as
-imagens.
+**12 módulos** já mostram capa em espanhol pela convenção de pasta espelho
+(`/covers/modulos/es/<slug>.webp`), que não depende de escrita no banco.
+Verificado servindo os caminhos: capa existente devolve `image/webp`, a
+inexistente devolve HTML e dispara o `onError`, que cai na capa portuguesa.
+
+**Revisão de decisão.** A primeira passada escolheu a coluna `cover_url_es`
+pelo argumento de trocar capa sem deploy. Ao ver o dado real, o argumento caiu:
+`cover_url` guarda caminho de arquivo do repositório, então trocar a imagem
+exige deploy de qualquer forma. A pasta espelho passou a ser o caminho normal.
+
+A coluna continua valendo como override — e é **obrigatória** para os 7 módulos
+criados pelo painel, que guardam URL do Supabase Storage e por isso ficam fora
+do espelho (CPF/CNPJ, barbearia, procrastinação, conteúdo 4D, clientes todos os
+dias, cursos presenciais e Viral 1 Min). O editor de módulo no Admin já tem o
+campo "Capa em espanhol", mas ele **só funciona depois da migration
+`20260812020200_modules_cover_url_es.sql`** — antes disso, salvar o módulo falha
+com erro de coluna inexistente.
+
+**Sem arte em espanhol** (caem na capa PT): guia de produto, guia de gravação,
+guia de área de membro e resultados de alunas.
+
+**Três capas ficaram sem módulo**, guardadas com `_` na frente em
+`public/covers/modulos/es/`: a do Zap Voice (módulo apagado a pedido em
+2026-08-12), "Cómo funciona el Aplicación" e "Indicaciones para crear contenido
+y imágenes" — estas duas não correspondem a nenhum módulo existente.
 
 ### 3. Conteúdo do banco continua só em português
 
