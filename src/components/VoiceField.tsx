@@ -4,6 +4,7 @@ import { supabase, SUPABASE_READY } from '@/integrations/supabase/client';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrentLang } from '@/i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
 
 /* ─────────────────────────────────────────────────────────────
    Campo de texto (input OU textarea) com MICROFONE embutido.
@@ -34,6 +35,7 @@ const VoiceField: React.FC<VoiceFieldProps> = ({
 }) => {
   const { toast } = useToast();
   const lang = useCurrentLang();
+  const { t } = useTranslation();
   const [transcribing, setTranscribing] = useState(false);
   const fieldRef = useRef<HTMLTextAreaElement | HTMLInputElement>(null);
   const {
@@ -41,7 +43,8 @@ const VoiceField: React.FC<VoiceFieldProps> = ({
     startRecording, stopRecording, cancelRecording,
   } = useAudioRecorder();
 
-  useEffect(() => { if (recorderError) toast({ title: recorderError }); }, [recorderError, toast]);
+  // recorderError é uma CHAVE de tradução (ver useAudioRecorder).
+  useEffect(() => { if (recorderError) toast({ title: t(recorderError) }); }, [recorderError, toast, t]);
 
   const handleMic = async () => {
     if (transcribing || disabled) return;
@@ -58,18 +61,18 @@ const VoiceField: React.FC<VoiceFieldProps> = ({
         const { data, error } = await supabase.functions.invoke('transcribe-audio', { body: form });
         if (error) throw error;
         const text = (data?.transcription ?? '').trim();
-        if (!text) { toast({ title: 'Não consegui entender o áudio. Tenta de novo.' }); return; }
+        if (!text) { toast({ title: t('audio.naoEntendi') }); return; }
         const next = value.trim() ? `${value.trim()} ${text}` : text;
         onChange(maxLength ? next.slice(0, maxLength) : next);
         requestAnimationFrame(() => fieldRef.current?.focus());
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Erro ao transcrever';
-        toast({ title: 'Falha na transcrição', description: msg });
+        const msg = err instanceof Error ? err.message : t('audio.erroTranscrever');
+        toast({ title: t('audio.falhaTranscricao'), description: msg });
       } finally {
         setTranscribing(false);
       }
     } else {
-      if (!SUPABASE_READY) { toast({ title: 'Disponível quando o backend for conectado 🛠️' }); return; }
+      if (!SUPABASE_READY) { toast({ title: t('audio.backendPendente') }); return; }
       await startRecording();
     }
   };

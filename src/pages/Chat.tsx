@@ -17,6 +17,7 @@ import { Robot, SceneFX, ACCENT, type RobotKind } from '@/components/estudio/Age
 import AnalisarPerfilAgent from '@/components/estudio/AnalisarPerfilAgent';
 import { useLocalizedNavigate, useCurrentLang } from '@/i18n/LanguageProvider';
 import { withAiLangMessages } from '@/i18n/aiLang';
+import { useTranslation } from 'react-i18next';
 
 /* ─────────────────────────────────────────────
    TEXTOS DA TELA (toda a "escrita" daqui)
@@ -830,6 +831,7 @@ const SkeletonPicker: React.FC<{
 const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   const navigate = useLocalizedNavigate();
   const lang = useCurrentLang();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
   const agent = AGENTS.find(f => f.slug === formatSlug);
@@ -869,8 +871,9 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   const [transcribing, setTranscribing] = useState(false);
 
   useEffect(() => {
-    if (recorderError) toast({ title: recorderError });
-  }, [recorderError, toast]);
+    // recorderError é CHAVE de tradução (ver useAudioRecorder).
+    if (recorderError) toast({ title: t(recorderError) });
+  }, [recorderError, toast, t]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

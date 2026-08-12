@@ -198,5 +198,41 @@
     "erroEnviar": "Erro ao enviar comentário",
     "comentarioExcluido": "Comentário excluído",
     "erroExcluir": "Erro ao excluir comentário"
+  },
+  "reset": {
+    "voltarLogin": "Voltar ao login",
+    "tituloPedir": "Criar ou recuperar senha",
+    "subPedir": "Digite o email que você usou na compra. Vamos te enviar um link pra criar sua senha de acesso.",
+    "emailCompra": "Email da compra",
+    "enviarLink": "Enviar link",
+    "emailInvalido": "Digite um email válido.",
+    "muitasTentativas": "Muitas tentativas seguidas. Espere alguns minutos e tente de novo.",
+    "falhaEnviar": "Não foi possível enviar agora. Tente de novo em instantes.",
+    "linkEnviado": "Link enviado!",
+    "abraEmail": "Abra o email <1>{{email}}</1> e toque no link pra criar sua senha.",
+    "olheSpam": "Não achou? Olhe também no <1>spam</1> e na aba <3>Promoções</3>.",
+    "enviarDeNovo": "Enviar de novo",
+    "novaSenha": "Nova senha",
+    "escolhaSenha": "Escolha uma senha nova para sua conta.",
+    "placeholderNova": "Nova senha",
+    "placeholderConfirmar": "Confirmar senha",
+    "salvarSenha": "Salvar senha",
+    "senhaCurta": "A senha deve ter ao menos 6 caracteres.",
+    "senhasDiferentes": "As senhas não coincidem.",
+    "senhaIgualAtual": "A senha nova precisa ser diferente da atual.",
+    "falhaSalvar": "Não foi possível salvar. Abra o link do email de novo e repita.",
+    "senhaCriada": "Senha criada!",
+    "jaLogada": "Você já está logada. Bem-vinda à comunidade!",
+    "entrarComunidade": "Entrar na comunidade"
+  },
+  "audio": {
+    "semSuporte": "Seu navegador não suporta gravação de áudio",
+    "micNegado": "Acesso ao microfone negado. Habilita nas configurações do navegador.",
+    "micNaoEncontrado": "Nenhum microfone encontrado.",
+    "falhaIniciar": "Não foi possível iniciar a gravação.",
+    "naoEntendi": "Não consegui entender o áudio. Tenta de novo.",
+    "falhaTranscricao": "Falha na transcrição",
+    "erroTranscrever": "Erro ao transcrever",
+    "backendPendente": "Disponível quando o backend for conectado 🛠️"
   }
 }

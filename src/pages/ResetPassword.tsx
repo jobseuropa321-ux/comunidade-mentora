@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Lock, Mail, ArrowLeft, CheckCircle2, Loader2, Inbox } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
+import { useTranslation, Trans } from 'react-i18next';
 
 /* ── Recuperação de senha REAL (antes era mock do blueprint: fingia sucesso
    sem chamar o Supabase — quem não recebia o email de boas-vindas caía aqui
@@ -26,6 +27,7 @@ const btnStyle: React.CSSProperties = { background: 'linear-gradient(135deg, #BE
 const ResetPassword: React.FC = () => {
   const navigate = useLocalizedNavigate();
   const lang = useCurrentLang();
+  const { t } = useTranslation();
   const [stage, setStage] = useState<Stage>('request');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,7 +52,7 @@ const ResetPassword: React.FC = () => {
     e.preventDefault();
     setError(null);
     const clean = email.trim().toLowerCase();
-    if (!/^\S+@\S+\.\S+$/.test(clean)) { setError('Digite um email válido.'); return; }
+    if (!/^\S+@\S+\.\S+$/.test(clean)) { setError(t('reset.emailInvalido')); return; }
     setLoading(true);
     const { error: err } = await supabase.auth.resetPasswordForEmail(clean, {
       // Sem localizedPath aqui, a aluna espanhola clica no link do e-mail e
@@ -62,8 +64,8 @@ const ResetPassword: React.FC = () => {
     if (err) {
       setError(
         err.status === 429
-          ? 'Muitas tentativas seguidas. Espere alguns minutos e tente de novo.'
-          : 'Não foi possível enviar agora. Tente de novo em instantes.',
+          ? t('reset.muitasTentativas')
+          : t('reset.falhaEnviar'),
       );
       return;
     }
@@ -73,16 +75,16 @@ const ResetPassword: React.FC = () => {
   const saveNewPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (password.length < 6) { setError('A senha deve ter ao menos 6 caracteres.'); return; }
-    if (password !== confirm) { setError('As senhas não coincidem.'); return; }
+    if (password.length < 6) { setError(t('reset.senhaCurta')); return; }
+    if (password !== confirm) { setError(t('reset.senhasDiferentes')); return; }
     setLoading(true);
     const { error: err } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (err) {
       setError(
         err.message?.includes('different from the old')
-          ? 'A senha nova precisa ser diferente da atual.'
-          : 'Não foi possível salvar. Abra o link do email de novo e repita.',
+          ? t('reset.senhaIgualAtual')
+          : t('reset.falhaSalvar'),
       );
       return;
     }
@@ -93,22 +95,22 @@ const ResetPassword: React.FC = () => {
     <div className="min-h-screen bg-[#FFF9EE] flex flex-col items-center justify-center px-6 py-10">
       <div className="w-full max-w-sm">
         <button onClick={() => navigate('/auth')} className="flex items-center gap-1.5 text-[12px] font-bold text-[#5B4041] mb-6 hover:text-[#BE0D3E] transition-colors">
-          <ArrowLeft size={14} /> Voltar ao login
+          <ArrowLeft size={14} /> {t('reset.voltarLogin')}
         </button>
 
         <div className={cardCls}>
           {stage === 'request' && (
             <>
-              <h1 className="text-[20px] font-black text-[#1E1B11] mb-1">Criar ou recuperar senha</h1>
+              <h1 className="text-[20px] font-black text-[#1E1B11] mb-1">{t('reset.tituloPedir')}</h1>
               <p className="text-[12px] text-[#5B4041] mb-5 leading-relaxed">
-                Digite o email que você usou na compra. Vamos te enviar um link pra criar sua senha de acesso.
+                {t('reset.subPedir')}
               </p>
               <form onSubmit={sendLink} className="space-y-3">
                 <div className="flex items-center gap-2 input-instagram">
                   <Mail size={16} className="text-[#BE0D3E]/60 shrink-0" />
                   <input
                     className="flex-1 bg-transparent outline-none text-[14px]"
-                    placeholder="Email da compra"
+                    placeholder={t('reset.emailCompra')}
                     type="email"
                     autoComplete="email"
                     value={email}
@@ -118,7 +120,7 @@ const ResetPassword: React.FC = () => {
                 {error && <p className="text-[11px] text-red-500 font-semibold px-1">{error}</p>}
                 <button type="submit" disabled={loading} className={btnCls} style={btnStyle}>
                   {loading && <Loader2 size={16} className="animate-spin" />}
-                  Enviar link
+                  {t('reset.enviarLink')}
                 </button>
               </form>
             </>
@@ -129,37 +131,37 @@ const ResetPassword: React.FC = () => {
               <div className="w-16 h-16 rounded-2xl bg-[#F6B43A] flex items-center justify-center mb-4">
                 <Inbox size={30} className="text-[#1E1B11]" />
               </div>
-              <h1 className="text-[18px] font-black text-[#1E1B11] mb-1">Link enviado!</h1>
+              <h1 className="text-[18px] font-black text-[#1E1B11] mb-1">{t('reset.linkEnviado')}</h1>
               <p className="text-[12px] text-[#5B4041] leading-relaxed mb-2">
-                Abra o email <strong className="text-[#1E1B11]">{email.trim().toLowerCase()}</strong> e
-                toque no link pra criar sua senha.
+                <Trans i18nKey="reset.abraEmail" values={{ email: email.trim().toLowerCase() }}
+                  components={{ 1: <strong className="text-[#1E1B11]" /> }} />
               </p>
               <p className="text-[11px] text-[#5B4041]/70 leading-relaxed mb-6">
-                Não achou? Olhe também no <strong>spam</strong> e na aba <strong>Promoções</strong>.
+                <Trans i18nKey="reset.olheSpam" components={{ 1: <strong />, 3: <strong /> }} />
               </p>
               <button onClick={() => setStage('request')} className="text-[11px] font-bold text-[#BE0D3E]">
-                Enviar de novo
+                {t('reset.enviarDeNovo')}
               </button>
             </div>
           )}
 
           {stage === 'update' && (
             <>
-              <h1 className="text-[20px] font-black text-[#1E1B11] mb-1">Nova senha</h1>
-              <p className="text-[12px] text-[#5B4041] mb-5">Escolha uma senha nova para sua conta.</p>
+              <h1 className="text-[20px] font-black text-[#1E1B11] mb-1">{t('reset.novaSenha')}</h1>
+              <p className="text-[12px] text-[#5B4041] mb-5">{t('reset.escolhaSenha')}</p>
               <form onSubmit={saveNewPassword} className="space-y-3">
                 <div className="flex items-center gap-2 input-instagram">
                   <Lock size={16} className="text-[#BE0D3E]/60 shrink-0" />
-                  <input className="flex-1 bg-transparent outline-none text-[14px]" placeholder="Nova senha" type="password" autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} />
+                  <input className="flex-1 bg-transparent outline-none text-[14px]" placeholder={t('reset.placeholderNova')} type="password" autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} />
                 </div>
                 <div className="flex items-center gap-2 input-instagram">
                   <Lock size={16} className="text-[#BE0D3E]/60 shrink-0" />
-                  <input className="flex-1 bg-transparent outline-none text-[14px]" placeholder="Confirmar senha" type="password" autoComplete="new-password" value={confirm} onChange={e => setConfirm(e.target.value)} />
+                  <input className="flex-1 bg-transparent outline-none text-[14px]" placeholder={t('reset.placeholderConfirmar')} type="password" autoComplete="new-password" value={confirm} onChange={e => setConfirm(e.target.value)} />
                 </div>
                 {error && <p className="text-[11px] text-red-500 font-semibold px-1">{error}</p>}
                 <button type="submit" disabled={loading} className={btnCls} style={btnStyle}>
                   {loading && <Loader2 size={16} className="animate-spin" />}
-                  Salvar senha
+                  {t('reset.salvarSenha')}
                 </button>
               </form>
             </>
@@ -170,10 +172,10 @@ const ResetPassword: React.FC = () => {
               <div className="w-16 h-16 rounded-2xl bg-[#F6B43A] flex items-center justify-center mb-4">
                 <CheckCircle2 size={30} className="text-[#1E1B11]" />
               </div>
-              <h1 className="text-[18px] font-black text-[#1E1B11] mb-1">Senha criada!</h1>
-              <p className="text-[12px] text-[#5B4041] mb-6">Você já está logada. Bem-vinda à comunidade!</p>
+              <h1 className="text-[18px] font-black text-[#1E1B11] mb-1">{t('reset.senhaCriada')}</h1>
+              <p className="text-[12px] text-[#5B4041] mb-6">{t('reset.jaLogada')}</p>
               <button onClick={() => navigate('/home')} className={btnCls} style={btnStyle}>
-                Entrar na comunidade
+                {t('reset.entrarComunidade')}
               </button>
             </div>
           )}

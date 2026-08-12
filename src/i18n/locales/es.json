@@ -198,5 +198,41 @@
     "erroEnviar": "Error al enviar el comentario",
     "comentarioExcluido": "Comentario eliminado",
     "erroExcluir": "Error al eliminar el comentario"
+  },
+  "reset": {
+    "voltarLogin": "Volver al inicio de sesión",
+    "tituloPedir": "Crear o recuperar contraseña",
+    "subPedir": "Escribe el correo que usaste en la compra. Te enviamos un enlace para crear tu contraseña de acceso.",
+    "emailCompra": "Correo de la compra",
+    "enviarLink": "Enviar enlace",
+    "emailInvalido": "Escribe un correo válido.",
+    "muitasTentativas": "Demasiados intentos seguidos. Espera unos minutos e inténtalo de nuevo.",
+    "falhaEnviar": "No se pudo enviar ahora. Inténtalo de nuevo en un momento.",
+    "linkEnviado": "¡Enlace enviado!",
+    "abraEmail": "Abre el correo <1>{{email}}</1> y toca el enlace para crear tu contraseña.",
+    "olheSpam": "¿No lo encuentras? Mira también en <1>spam</1> y en la pestaña <3>Promociones</3>.",
+    "enviarDeNovo": "Enviar de nuevo",
+    "novaSenha": "Nueva contraseña",
+    "escolhaSenha": "Elige una contraseña nueva para tu cuenta.",
+    "placeholderNova": "Nueva contraseña",
+    "placeholderConfirmar": "Confirmar contraseña",
+    "salvarSenha": "Guardar contraseña",
+    "senhaCurta": "La contraseña debe tener al menos 6 caracteres.",
+    "senhasDiferentes": "Las contraseñas no coinciden.",
+    "senhaIgualAtual": "La contraseña nueva tiene que ser distinta de la actual.",
+    "falhaSalvar": "No se pudo guardar. Abre otra vez el enlace del correo e inténtalo de nuevo.",
+    "senhaCriada": "¡Contraseña creada!",
+    "jaLogada": "Ya has iniciado sesión. ¡Bienvenida a la comunidad!",
+    "entrarComunidade": "Entrar en la comunidad"
+  },
+  "audio": {
+    "semSuporte": "Tu navegador no soporta la grabación de audio",
+    "micNegado": "Acceso al micrófono denegado. Actívalo en los ajustes del navegador.",
+    "micNaoEncontrado": "No se encontró ningún micrófono.",
+    "falhaIniciar": "No se pudo iniciar la grabación.",
+    "naoEntendi": "No entendí el audio. Inténtalo de nuevo.",
+    "falhaTranscricao": "Falló la transcripción",
+    "erroTranscrever": "Error al transcribir",
+    "backendPendente": "Disponible cuando se conecte el backend 🛠️"
   }
 }
