@@ -6,16 +6,25 @@ import BannerCarousel from '@/components/BannerCarousel';
 import { trackAscension } from '@/lib/ascension';
 import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
-import { moduleCover } from '@/lib/moduleCover';
+import { moduleCover, coverFallback } from '@/lib/moduleCover';
 
 // Pra adicionar/trocar banner: jogue o .webp em `public/covers/` e adicione aqui.
 // Slots sem arquivo somem do carrossel (BannerCarousel filtra 404).
 // Opcional: `href` pra deixar o banner clicável.
 // O array fica NEUTRO: só o arquivo. O texto alternativo é resolvido no render
 // pelo dicionário — duplicar o array por idioma foi a armadilha nº 1 do kit.
-const HOME_BANNERS = [
+//
+// Aqui os ARQUIVOS mudam por idioma (arte diferente, não texto traduzido), e
+// o espanhol tem 3 banners contra 2 do português — então é o único array da
+// tela que precisa variar de verdade.
+const BANNERS_PT = [
   { src: '/covers/banner-1.webp', altKey: 'home.bannerAlt1' },
   { src: '/covers/banner-2.webp', altKey: 'home.bannerAlt2' },
+];
+const BANNERS_ES = [
+  { src: '/covers/es/banner-3.webp', altKey: 'home.bannerAlt3' },
+  { src: '/covers/es/banner-1.webp', altKey: 'home.bannerAlt3' },
+  { src: '/covers/es/banner-2.webp', altKey: 'home.bannerAlt3' },
 ];
 
 /* ── PLACEHOLDER DE IMAGEM ──
@@ -55,6 +64,7 @@ const ModuleCard: React.FC<{ modulo: Module; priority?: boolean }> = ({ modulo, 
           // @ts-expect-error fetchpriority é suportado em browsers modernos
           fetchpriority={priority ? 'high' : 'auto'}
           draggable={false}
+          onError={lang === 'es' ? coverFallback(modulo.cover_url) : undefined}
         />
       ) : (
         // Capa vazia por enquanto — placeholder sinalizando que aqui entra uma imagem.
@@ -96,7 +106,7 @@ const Home: React.FC = () => {
       {/* Banner — placeholder vazio por enquanto (full bleed).
           Pra reativar o carrossel real, troque pela linha comentada abaixo. */}
       <section className="mb-5 -mt-1">
-        <BannerCarousel banners={HOME_BANNERS.map(b => ({ src: b.src, alt: t(b.altKey) }))} autoRotateMs={6000} height={180} heightDesktop={360} />
+        <BannerCarousel banners={(lang === 'es' ? BANNERS_ES : BANNERS_PT).map(b => ({ src: b.src, alt: t(b.altKey) }))} autoRotateMs={6000} height={180} heightDesktop={360} />
       </section>
 
       {loading ? (
