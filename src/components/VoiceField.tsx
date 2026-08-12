@@ -3,6 +3,7 @@ import { Mic, Loader2, X, Square } from 'lucide-react';
 import { supabase, SUPABASE_READY } from '@/integrations/supabase/client';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrentLang } from '@/i18n/LanguageProvider';
 
 /* ─────────────────────────────────────────────────────────────
    Campo de texto (input OU textarea) com MICROFONE embutido.
@@ -32,6 +33,7 @@ const VoiceField: React.FC<VoiceFieldProps> = ({
   value, onChange, placeholder, multiline = true, rows = 4, autoFocus, disabled, className = '', maxLength,
 }) => {
   const { toast } = useToast();
+  const lang = useCurrentLang();
   const [transcribing, setTranscribing] = useState(false);
   const fieldRef = useRef<HTMLTextAreaElement | HTMLInputElement>(null);
   const {
@@ -51,6 +53,8 @@ const VoiceField: React.FC<VoiceFieldProps> = ({
         const form = new FormData();
         const ext = (blob.type.split('/')[1] || 'webm').split(';')[0];
         form.append('audio', blob, `audio.${ext}`);
+        // Sem isso o Whisper chuta o idioma e às vezes traduz o áudio.
+        form.append('language', lang);
         const { data, error } = await supabase.functions.invoke('transcribe-audio', { body: form });
         if (error) throw error;
         const text = (data?.transcription ?? '').trim();

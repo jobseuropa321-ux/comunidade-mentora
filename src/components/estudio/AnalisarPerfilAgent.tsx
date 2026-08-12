@@ -27,7 +27,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Robot, ACCENT, type RobotKind } from '@/components/estudio/AgentRobot';
 import type { Agent } from '@/data/agents';
-import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
+import { useLocalizedNavigate, useCurrentLang } from '@/i18n/LanguageProvider';
 
 /* ── Textos da tela ────────────────────────────────────────────── */
 const TXT = {
@@ -135,6 +135,7 @@ const analysisToText = (a: ProfileAnalysis): string => [
 
 const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
   const navigate = useLocalizedNavigate();
+  const lang = useCurrentLang();
   const { user } = useAuth();
   const { toast } = useToast();
   const reduce = !!useReducedMotion();
@@ -215,6 +216,8 @@ const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
           image_base64: base64,
           image_mime: file.type,
           assistant_name: agent.name,
+          // A function usa isto para responder no idioma da aluna.
+          lang,
         }),
         signal: controller.signal,
       });

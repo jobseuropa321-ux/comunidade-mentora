@@ -15,7 +15,8 @@ import { AGENTS, CATEGORIES, defaultOpening, type Agent } from '@/data/agents';
 import VoiceField from '@/components/VoiceField';
 import { Robot, SceneFX, ACCENT, type RobotKind } from '@/components/estudio/AgentRobot';
 import AnalisarPerfilAgent from '@/components/estudio/AnalisarPerfilAgent';
-import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
+import { useLocalizedNavigate, useCurrentLang } from '@/i18n/LanguageProvider';
+import { withAiLangMessages } from '@/i18n/aiLang';
 
 /* ─────────────────────────────────────────────
    TEXTOS DA TELA (toda a "escrita" daqui)
@@ -828,6 +829,7 @@ const SkeletonPicker: React.FC<{
 
 const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   const navigate = useLocalizedNavigate();
+  const lang = useCurrentLang();
   const { user } = useAuth();
   const { toast } = useToast();
   const agent = AGENTS.find(f => f.slug === formatSlug);
@@ -941,9 +943,17 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       const { data, error } = await supabase.functions.invoke('chat-viral', {
         body: {
           formatSlug,
-          messages: contextoParaIA(next).map(m => ({ role: m.role, content: m.content })),
+          // Técnica A do guia: diretiva de idioma anexada à última mensagem do
+          // usuário. O prompt system da function continua em português — a IA
+          // acompanha o idioma da aluna sem precisar reescrever/deployar prompt.
+          messages: withAiLangMessages(
+            contextoParaIA(next).map(m => ({ role: m.role, content: m.content })),
+            lang,
+          ),
           sessionId: sessionIdRef.current,
           segment: agent?.category,
+          // Reforço de idioma no system prompt e erros no idioma da aluna.
+          lang,
         },
       });
       if (error) {
@@ -1222,6 +1232,9 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
         const form = new FormData();
         const ext = (blob.type.split('/')[1] || 'webm').split(';')[0];
         form.append('audio', blob, `audio.${ext}`);
+        // Técnica C: sem o parâmetro de idioma o Whisper chuta — e às vezes
+        // TRADUZ o áudio em vez de transcrever.
+        form.append('language', lang);
         const { data, error } = await supabase.functions.invoke('transcribe-audio', { body: form });
         if (error) throw error;
         const text = (data?.transcription ?? '').trim();

@@ -169,9 +169,50 @@ const USER_INSTRUCTION = `Essa e a print do topo do meu perfil do Instagram. Ana
 
 const ALLOWED_MIMES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 
-function buildSystemPrompt(assistantName: string): string {
+const SUPPORTED_LANGS = ['pt', 'es'] as const;
+type Lang = (typeof SUPPORTED_LANGS)[number];
+const parseLang = (raw: unknown): Lang =>
+  typeof raw === 'string' && (SUPPORTED_LANGS as readonly string[]).includes(raw) ? (raw as Lang) : 'pt';
+
+/* Técnica B do guia — necessária aqui, e só aqui.
+ *
+ * O template deste prompt manda, logo no começo, "Voce fala SEMPRE em PT-BR
+ * coloquial". Contra uma ordem dessas a diretiva invisível anexada à mensagem
+ * do usuário (técnica A, que basta no chat-viral) NÃO vence: a IA continua
+ * respondendo em português.
+ *
+ * ⚠️ ISTO É ACOPLAMENTO TEXTUAL FRÁGIL. Se alguém reescrever o prompt e mudar
+ * uma vírgula nestas frases, o replaceAll vira no-op SILENCIOSO: nenhum erro,
+ * nenhum log, só a IA voltando a falar português para a aluna espanhola. Por
+ * isso o console.warn abaixo — é o único sinal que sobra.
+ */
+const PT_DIRECTIVES: Array<[string, string]> = [
+  ['Voce fala SEMPRE em PT-BR coloquial', 'Hablas SIEMPRE en ESPAÑOL coloquial'],
+  ['em PT-BR coloquial', 'en ESPAÑOL coloquial'],
+  ['Todos os textos em PT-BR', 'Todos los textos en ESPAÑOL'],
+];
+
+function applyLang(prompt: string, lang: Lang): string {
+  if (lang !== 'es') return prompt;
+  let out = prompt;
+  let hits = 0;
+  for (const [from, to] of PT_DIRECTIVES) {
+    if (out.includes(from)) { hits++; out = out.replaceAll(from, to); }
+  }
+  if (hits === 0) {
+    console.warn('[analisar-perfil] nenhuma diretiva PT-BR casou no prompt — ' +
+      'o template mudou e a troca de idioma virou no-op. Revise PT_DIRECTIVES.');
+  }
+  return out +
+    '\n\n═══════════════════════════════════════\n' +
+    'IDIOMA OBLIGATORIO: respondes SIEMPRE en ESPAÑOL (español de España). ' +
+    'TODOS los textos del JSON deben estar en español, incluso si las ' +
+    'instrucciones de arriba están escritas en portugués.';
+}
+
+function buildSystemPrompt(assistantName: string, lang: Lang): string {
   const safe = (assistantName && assistantName.trim()) ? assistantName.trim() : 'seu analisador de perfil';
-  return SYSTEM_PROMPT_TEMPLATE.replaceAll('{{ASSISTANT_NAME}}', safe);
+  return applyLang(SYSTEM_PROMPT_TEMPLATE.replaceAll('{{ASSISTANT_NAME}}', safe), lang);
 }
 
 serve(async (req) => {
@@ -229,6 +270,7 @@ serve(async (req) => {
     const imageBase64 = typeof body?.image_base64 === 'string' ? body.image_base64 : '';
     const imageMime = typeof body?.image_mime === 'string' ? body.image_mime : 'image/png';
     const assistantName = typeof body?.assistant_name === 'string' ? body.assistant_name.slice(0, 40) : '';
+    const lang = parseLang(body?.lang);
 
     if (!imageBase64) {
       return json({ error: 'image_base64 obrigatorio (sem prefixo data:)' }, 400);
@@ -271,7 +313,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: MODEL,
         messages: [
-          { role: 'system', content: buildSystemPrompt(assistantName) },
+          { role: 'system', content: buildSystemPrompt(assistantName, lang) },
           {
             role: 'user',
             content: [
