@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { TrendingUp, TrendingDown, Users, Eye, Heart, Bookmark, BarChart3 } from 'lucide-react';
 import { formatNumber } from '@/lib/formatLocale';
 import { useCurrentLang, type SupportedLang } from '@/i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
 
 /* ── TIPOS ── */
 interface StatTile {
-  label: string;
+  /** chave de tradução em dashboard.tiles.<key> */
+  key: string;
   value: string;
   change: string;
   positive: boolean;
@@ -14,17 +16,18 @@ interface StatTile {
 
 interface TopPost {
   rank: number;
-  title: string;
+  /** chave de tradução em dashboard.posts.<key> */
+  key: string;
   views: string;
   gradient: string;
 }
 
 /* ── MOCK: cards de estatística ── */
 const STAT_TILES: StatTile[] = [
-  { label: 'Seguidores', value: '24,7K', change: '+8,4%', positive: true, Icon: Users },
-  { label: 'Alcance', value: '182,4K', change: '+12,1%', positive: true, Icon: Eye },
-  { label: 'Engajamento', value: '6,8%', change: '-1,2 p.p.', positive: false, Icon: Heart },
-  { label: 'Salvamentos', value: '3.920', change: '+21,6%', positive: true, Icon: Bookmark },
+  { key: 'seguidores',  value: '24,7K',  change: '+8,4%',    positive: true,  Icon: Users },
+  { key: 'alcance',     value: '182,4K', change: '+12,1%',   positive: true,  Icon: Eye },
+  { key: 'engajamento', value: '6,8%',   change: '-1,2 p.p.', positive: false, Icon: Heart },
+  { key: 'salvamentos', value: '3.920',  change: '+21,6%',   positive: true,  Icon: Bookmark },
 ];
 
 /* ── MOCK: visualizações dos últimos 7 dias (seg → dom) ── */
@@ -40,19 +43,19 @@ const formatViews = (n: number, lang: SupportedLang): string => formatNumber(n, 
 const TOP_POSTS: TopPost[] = [
   {
     rank: 1,
-    title: '3 erros que fazem seu Reels não viralizar',
+    key: 'p1',
     views: '184,2K',
     gradient: 'linear-gradient(135deg, #BE0D3E 0%, #E06B85 100%)',
   },
   {
     rank: 2,
-    title: 'Como gravar 10 Reels em 1 hora (método batelada)',
+    key: 'p2',
     views: '152,7K',
     gradient: 'linear-gradient(135deg, #F6B43A 0%, #9FCC00 100%)',
   },
   {
     rank: 3,
-    title: 'O hook que triplicou meu alcance em 7 dias',
+    key: 'p3',
     views: '97,4K',
     gradient: 'linear-gradient(135deg, #1E1B11 0%, #BE0D3E 100%)',
   },
@@ -60,7 +63,8 @@ const TOP_POSTS: TopPost[] = [
 
 /* ── COMPONENTE: tile de estatística ── */
 const StatTileCard: React.FC<{ tile: StatTile }> = ({ tile }) => {
-  const { label, value, change, positive, Icon } = tile;
+  const { t } = useTranslation();
+  const { key, value, change, positive, Icon } = tile;
   return (
     <div className="viral-card p-4 flex flex-col gap-3">
       <div
@@ -71,7 +75,7 @@ const StatTileCard: React.FC<{ tile: StatTile }> = ({ tile }) => {
       </div>
       <div>
         <p className="text-2xl font-black tracking-tighter text-[#1E1B11] leading-none">{value}</p>
-        <p className="text-[11px] font-bold text-[#5B4041] mt-1.5">{label}</p>
+        <p className="text-[11px] font-bold text-[#5B4041] mt-1.5">{t(`dashboard.tiles.${key}`)}</p>
       </div>
       <div
         className="inline-flex items-center gap-1 self-start px-2 py-0.5 rounded-full text-[10px] font-black"
@@ -89,6 +93,7 @@ const StatTileCard: React.FC<{ tile: StatTile }> = ({ tile }) => {
 
 /* ── COMPONENTE: linha de post no ranking ── */
 const TopPostRow: React.FC<{ post: TopPost }> = ({ post }) => {
+  const { t } = useTranslation();
   return (
     <div
       className="flex items-center gap-3 p-4 active:bg-[#FFF9EE]/70 transition-colors cursor-pointer"
@@ -107,7 +112,7 @@ const TopPostRow: React.FC<{ post: TopPost }> = ({ post }) => {
           className="text-sm font-bold text-[#1E1B11] leading-snug"
           style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
         >
-          {post.title}
+          {t(`dashboard.posts.${post.key}`)}
         </p>
         <div className="flex items-center gap-1 mt-1.5 text-[#5B4041]">
           <Eye className="w-3.5 h-3.5" />
@@ -120,6 +125,7 @@ const TopPostRow: React.FC<{ post: TopPost }> = ({ post }) => {
 
 /* ── TELA: Dashboard de métricas ── */
 const Dashboard: React.FC = () => {
+  const { t } = useTranslation();
   const lang = useCurrentLang();
   const [selectedDay, setSelectedDay] = useState<number>(PEAK_DAY_INDEX);
 
@@ -128,18 +134,18 @@ const Dashboard: React.FC = () => {
       {/* Cabeçalho */}
       <div className="mb-6">
         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50">
-          Painel de desempenho
+          {t('dashboard.painel')}
         </span>
-        <h1 className="page-title">Suas métricas</h1>
+        <h1 className="page-title">{t('dashboard.titulo')}</h1>
         <p className="text-sm text-[#5B4041] font-medium mt-1 leading-relaxed">
-          Acompanhe o crescimento da sua conta e descubra o que está funcionando pra viralizar mais.
+          {t('dashboard.subtitulo')}
         </p>
       </div>
 
       {/* Grid de stat tiles */}
       <div className="grid grid-cols-2 gap-3 mb-6">
         {STAT_TILES.map((tile) => (
-          <StatTileCard key={tile.label} tile={tile} />
+          <StatTileCard key={t(`dashboard.tiles.${tile.key}`)} tile={tile} />
         ))}
       </div>
 
@@ -154,10 +160,10 @@ const Dashboard: React.FC = () => {
           </div>
           <div>
             <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50 block">
-              Últimos 7 dias
+              {t('dashboard.ultimos7')}
             </span>
             <h2 className="text-[15px] font-black tracking-tight text-[#1E1B11] leading-tight">
-              Visualizações
+              {t('dashboard.visualizacoes')}
             </h2>
           </div>
         </div>
@@ -174,7 +180,7 @@ const Dashboard: React.FC = () => {
             +18,3%
           </div>
         </div>
-        <p className="text-xs text-[#5B4041] font-medium mb-6">vs. semana anterior · toque numa barra pra ver o dia</p>
+        <p className="text-xs text-[#5B4041] font-medium mb-6">{t('dashboard.vsSemanaAnterior')}</p>
 
         <div className="flex items-end justify-between gap-1.5 sm:gap-2 h-36 sm:h-40">
           {WEEKLY_VIEWS.map((views, i) => {
@@ -222,10 +228,10 @@ const Dashboard: React.FC = () => {
       {/* Top posts da semana */}
       <div className="mb-3">
         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50">
-          Top posts
+          {t('dashboard.topPosts')}
         </span>
         <h2 className="text-xl font-black tracking-tighter text-[#1E1B11] mt-1">
-          Melhores da semana
+          {t('dashboard.melhoresSemana')}
         </h2>
       </div>
 

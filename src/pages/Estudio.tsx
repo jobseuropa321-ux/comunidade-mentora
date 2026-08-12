@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ArrowLeft, Camera, Circle, RotateCcw, Square } from 'lucide-react';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
+import { useTranslation } from 'react-i18next';
 
 interface Roteiro {
   titulo: string;
@@ -9,32 +10,11 @@ interface Roteiro {
   texto: string;
 }
 
-const ROTEIROS: Record<string, Roteiro> = {
-  'gancho-3s': {
-    titulo: 'Gancho de 3 segundos',
-    categoria: 'Retenção',
-    texto:
-      'Se você posta todo dia e ninguém vê... o problema não é o algoritmo, é o seu primeiro segundo. Olha isso aqui antes de gravar seu próximo vídeo.',
-  },
-  'storytime-virou-caso': {
-    titulo: 'Storytime que virou caso',
-    categoria: 'Narrativa',
-    texto:
-      'Isso aconteceu comigo há duas semanas e eu ainda não superei. Eu tava gravando um Reels normal, quando do nada... [pausa dramática] deixa eu te contar do começo.',
-  },
-  'lista-erros': {
-    titulo: '3 erros que travam seu crescimento',
-    categoria: 'Educacional',
-    texto:
-      'Erro número um: postar sem pensar no primeiro corte. Erro número dois: legenda gigante sem call to action. Erro número três: sumir por três dias depois de viralizar. Anota aí.',
-  },
-  default: {
-    titulo: 'Roteiro livre',
-    categoria: 'Freestyle',
-    texto:
-      'Fala, comunidade! Hoje eu vim contar uma coisa que ninguém tava esperando... e que vai mudar a forma como você grava conteúdo a partir de agora.',
-  },
-};
+/* Só as chaves — título, categoria e texto do teleprompter vêm de
+   estudio.roteiros.<id> no render. */
+const ROTEIRO_IDS = ['gancho-3s', 'storytime-virou-caso', 'lista-erros'] as const;
+const roteiroId = (cardId: string | undefined) =>
+  cardId && (ROTEIRO_IDS as readonly string[]).includes(cardId) ? cardId : 'default';
 
 const formatTempo = (segundos: number): string => {
   const m = Math.floor(segundos / 60)
@@ -47,10 +27,17 @@ const formatTempo = (segundos: number): string => {
 type EstadoGravacao = 'idle' | 'contagem' | 'gravando';
 
 const Estudio: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useLocalizedNavigate();
   const { cardId } = useParams<{ cardId?: string }>();
 
-  const roteiro = (cardId && ROTEIROS[cardId]) || ROTEIROS.default;
+  // O roteiro é montado do dicionário: cardId desconhecido cai no 'default'.
+  const rid = roteiroId(cardId);
+  const roteiro = {
+    titulo: t(`estudio.roteiros.${rid}.titulo`),
+    categoria: t(`estudio.roteiros.${rid}.categoria`),
+    texto: t(`estudio.roteiros.${rid}.texto`),
+  };
 
   const [estado, setEstado] = useState<EstadoGravacao>('idle');
   const [contagem, setContagem] = useState(3);
@@ -121,7 +108,7 @@ const Estudio: React.FC = () => {
         </button>
 
         <div className="flex flex-col items-center">
-          <span className="font-lilita text-lg tracking-tight leading-none">Estúdio</span>
+          <span className="font-lilita text-lg tracking-tight leading-none">{t('estudio.titulo')}</span>
           <span className="text-[9px] font-black uppercase tracking-widest text-white/40 mt-0.5">
             {roteiro.categoria}
           </span>
@@ -154,7 +141,7 @@ const Estudio: React.FC = () => {
               className="text-xs font-bold uppercase tracking-widest text-white"
               style={{ transform: espelhado ? 'scaleX(-1)' : 'none' }}
             >
-              Prévia da câmera
+              {t('estudio.previaCamera')}
             </span>
           </div>
 
@@ -206,9 +193,9 @@ const Estudio: React.FC = () => {
       {/* Controles */}
       <div className="px-4 pb-8 pt-2 flex flex-col items-center gap-3 shrink-0">
         <span className="text-[11px] font-bold text-white/40 uppercase tracking-widest">
-          {estado === 'idle' && 'Toque para gravar'}
-          {estado === 'contagem' && 'Preparando...'}
-          {estado === 'gravando' && 'Gravando — toque para parar'}
+          {estado === 'idle' && t('estudio.toqueParaGravar')}
+          {estado === 'contagem' && t('estudio.preparando')}
+          {estado === 'gravando' && t('estudio.gravandoToque')}
         </span>
 
         <button
@@ -227,7 +214,7 @@ const Estudio: React.FC = () => {
                 ? '0 0 0 6px rgba(255,45,122,0.25), 0 8px 25px rgba(255,45,122,0.4)'
                 : 'none',
           }}
-          aria-label={estado === 'gravando' ? 'Parar gravação' : 'Iniciar gravação'}
+          aria-label={estado === 'gravando' ? t('estudio.pararGravacao') : t('estudio.iniciarGravacao')}
         >
           {estado === 'gravando' ? (
             <Square className="w-7 h-7 text-white" fill="white" strokeWidth={0} />

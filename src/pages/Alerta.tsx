@@ -1,24 +1,47 @@
 import React, { useMemo, useState } from 'react';
 import { CalendarClock, Bell, TrendingUp, Zap, ChevronLeft, ChevronRight, Flame } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useCurrentLang, type SupportedLang } from '@/i18n/LanguageProvider';
+import { localeTag } from '@/lib/formatLocale';
 
 /* ── HELPERS ── */
-const MESES = [
-  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-];
-const DIAS_SEMANA = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+/* Meses e iniciais dos dias vêm do Intl, não de um array traduzido.
+   Array de mês é o exemplo que o kit dá de armadilha: se o espanhol ficar com
+   11 itens em vez de 12, a tela renderiza `undefined` e o script de paridade
+   de CHAVES não pega — só o de comprimento. Com Intl o problema não existe. */
+const mesesDoAno = (lang: SupportedLang): string[] => {
+  const fmt = new Intl.DateTimeFormat(localeTag(lang), { month: 'long' });
+  return Array.from({ length: 12 }, (_, m) => {
+    const nome = fmt.format(new Date(2026, m, 1));
+    return nome.charAt(0).toUpperCase() + nome.slice(1);
+  });
+};
+
+const iniciaisDosDias = (lang: SupportedLang): string[] => {
+  const fmt = new Intl.DateTimeFormat(localeTag(lang), { weekday: 'narrow' });
+  // 2026-02-01 é um domingo — a semana do calendário começa no domingo.
+  return Array.from({ length: 7 }, (_, i) =>
+    fmt.format(new Date(2026, 1, 1 + i)).toUpperCase());
+};
+
+/* Os alertas: só o dia, o ícone e o estilo. Título, descrição e tag vêm do
+   dicionário (alerta.itens.<id>). */
+const ALERTA_IDS = ['trend', 'bastidor', 'horario', 'hashtags'] as const;
 
 interface AlertaItem {
+  /** chave em alerta.itens.<id> */
+  id: string;
   dia: number;
-  titulo: string;
-  descricao: string;
   icon: React.ElementType;
-  tag: string;
   cardClass: string;
 }
 
 /* ── TELA ── */
 const Alerta: React.FC = () => {
+  const { t } = useTranslation();
+  const lang = useCurrentLang();
+  const MESES = useMemo(() => mesesDoAno(lang), [lang]);
+  const DIAS_SEMANA = useMemo(() => iniciaisDosDias(lang), [lang]);
   const hoje = useMemo(() => new Date(), []);
   const anoAtual = hoje.getFullYear();
   const mesAtual = hoje.getMonth();
@@ -55,35 +78,27 @@ const Alerta: React.FC = () => {
 
   const proximosAlertas: AlertaItem[] = [
     {
+      id: 'trend',
       dia: diaHoje + 1 > totalDias ? 1 : diaHoje + 1,
-      titulo: 'Trend do áudio "Efeito Espelho" em alta',
-      descricao: 'Uso subindo 340% nas últimas 48h. Corre pra entrar antes de saturar.',
       icon: TrendingUp,
-      tag: 'Trend quente',
       cardClass: 'card-glass-liquid-pink',
     },
     {
+      id: 'bastidor',
       dia: diaHoje + 3 > totalDias ? 2 : diaHoje + 3,
-      titulo: 'Dia de Reels de bastidor',
-      descricao: 'Seu público engaja 2x mais com conteúdo de rotina às quartas.',
       icon: CalendarClock,
-      tag: 'Rotina',
       cardClass: 'card-glass-liquid',
     },
     {
+      id: 'horario',
       dia: diaHoje + 5 > totalDias ? 4 : diaHoje + 5,
-      titulo: 'Horário nobre: 19h–21h',
-      descricao: 'Pico de audiência prevista pro seu nicho nesta janela.',
       icon: Zap,
-      tag: 'Horário nobre',
       cardClass: 'card-glass-liquid-lime',
     },
     {
+      id: 'hashtags',
       dia: diaHoje + 8 > totalDias ? 7 : diaHoje + 8,
-      titulo: 'Reset de hashtags da semana',
-      descricao: 'Renove seu banco de hashtags antes que percam alcance.',
       icon: Bell,
-      tag: 'Manutenção',
       cardClass: 'card-glass-liquid',
     },
   ];
@@ -93,11 +108,11 @@ const Alerta: React.FC = () => {
       {/* Cabeçalho da tela */}
       <div className="mb-5">
         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50">
-          Fique de olho
+          {t('alerta.fiqueDeOlho')}
         </span>
-        <h1 className="page-title mt-1">Calendário de alerta</h1>
+        <h1 className="page-title mt-1">{t('alerta.titulo')}</h1>
         <p className="text-[13px] text-[#5B4041] mt-1.5 leading-relaxed">
-          As datas certas pra postar, com base no que tá bombando agora.
+          {t('alerta.subtitulo')}
         </p>
       </div>
 
@@ -174,11 +189,11 @@ const Alerta: React.FC = () => {
         <div className="flex items-center gap-4 mt-4 pt-3 border-t border-[#BE0D3E]/10">
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-md" style={{ background: '#BE0D3E' }} />
-            <span className="text-[10px] font-bold text-[#5B4041]">Hoje</span>
+            <span className="text-[10px] font-bold text-[#5B4041]">{t('alerta.hoje')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#BE0D3E' }} />
-            <span className="text-[10px] font-bold text-[#5B4041]">Alerta de trend</span>
+            <span className="text-[10px] font-bold text-[#5B4041]">{t('alerta.alertaTrend')}</span>
           </div>
         </div>
       </div>
@@ -187,7 +202,7 @@ const Alerta: React.FC = () => {
       <div className="mt-6">
         <div className="flex items-center justify-between mb-3">
           <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50">
-            Próximos alertas
+            {t('alerta.proximosAlertas')}
           </span>
           <span className="flex items-center gap-1 text-[10px] font-black text-[#BE0D3E]">
             <Flame size={12} strokeWidth={2.5} />
@@ -219,14 +234,14 @@ const Alerta: React.FC = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="text-[10px] font-black uppercase tracking-wide text-[#BE0D3E]">
-                        Dia {alerta.dia} · {alerta.tag}
+                        {t('alerta.diaTag', { dia: alerta.dia, tag: t(`alerta.itens.${alerta.id}.tag`) })}
                       </span>
                     </div>
                     <p className="text-[14px] font-black text-[#1E1B11] tracking-tight leading-snug">
-                      {alerta.titulo}
+                      {t(`alerta.itens.${alerta.id}.titulo`)}
                     </p>
                     <p className="text-[12px] text-[#5B4041] mt-0.5 leading-relaxed">
-                      {alerta.descricao}
+                      {t(`alerta.itens.${alerta.id}.descricao`)}
                     </p>
                   </div>
                 </div>
@@ -246,7 +261,7 @@ const Alerta: React.FC = () => {
         }}
       >
         <Bell size={16} strokeWidth={2.5} />
-        Ativar notificações de trend
+        {t('alerta.ativarNotificacoes')}
       </button>
     </div>
   );

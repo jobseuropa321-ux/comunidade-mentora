@@ -662,5 +662,156 @@
         "descricao": "Narrativa personal con plot twist para aguantar hasta el último segundo."
       }
     }
+  },
+  "biblioteca": {
+    "back": "Volver",
+    "title": "Biblioteca",
+    "subtitle": "Tu archivo creativo, organizado por etapa",
+    "empty": "Biblioteca vacía",
+    "empty_desc": "Los contenidos creados por los agentes aparecen aquí en cuanto se guardan.",
+    "saved_one": "guardado",
+    "saved_many": "guardados",
+    "model_empty": "Todavía no hay ningún guion guardado en este modelo.",
+    "save_title": "Guardar título",
+    "cancel": "Cancelar",
+    "copied": "Copiado",
+    "copy": "Copiar",
+    "rename": "Renombrar",
+    "delete": "Eliminar",
+    "briefing": "Tu briefing",
+    "ai_response": "Respuesta de la IA",
+    "edit": "Editar",
+    "save": "Guardar",
+    "toast_error": "Error",
+    "toast_title_updated": "Título actualizado",
+    "toast_delete_error": "Error al eliminar",
+    "toast_removed": "Eliminado de la biblioteca",
+    "toast_updated": "Guion actualizado",
+    "load_error": "No se pudo cargar la Biblioteca",
+    "search_placeholder": "Buscar por agente o etapa...",
+    "no_results": "No se encontró ningún contenido en esa búsqueda."
+  },
+  "kanban": {
+    "organizacao": "Organización de contenido",
+    "titulo": "Mis guiones",
+    "subtitulo": "Saca la idea de la cabeza al papel, graba y publica. Usa las flechas para mover cada guion",
+    "novaIdeia": "Nueva idea",
+    "vazio": "Todavía no hay nada aquí",
+    "dica": "Consejo de la comunidad: mantén como máximo 3 guiones en «Grabando» a la vez — el foco es lo que más",
+    "colunas": {
+      "ideias": "Ideas",
+      "gravando": "Grabando",
+      "publicado": "Publicado"
+    },
+    "categorias": {
+      "Humor": "Humor",
+      "Educativo": "Educativo",
+      "Trend": "Tendencia",
+      "Bastidores": "Detrás de cámaras",
+      "Storytime": "Storytime"
+    },
+    "itens": {
+      "rt-1": "3 errores que frenan tu Reels en los primeros 2 segundos",
+      "rt-2": "POV: tu jefe descubre que editas vídeo de madrugada",
+      "rt-3": "Recreando la tendencia del audio «esto no estaba en los planes»",
+      "rt-4": "Detrás de cámaras: cómo grabo 5 vídeos en solo 1 hora",
+      "rt-5": "La vez que mi vídeo petó sin esperarlo (storytime)"
+    },
+    "novasIdeias": [
+      "Nuevo gancho: «nadie te contó esto sobre...»",
+      "Idea rápida: detrás del proceso creativo",
+      "Probar formato de lista con 3 consejos",
+      "Reaccionar a una tendencia nueva de la semana",
+      "Storytime sobre un error que se volvió aprendizaje"
+    ]
+  },
+  "alerta": {
+    "fiqueDeOlho": "Mantente atenta",
+    "titulo": "Calendario de alertas",
+    "subtitulo": "Las fechas correctas para publicar, según lo que está petando ahora.",
+    "hoje": "Hoy",
+    "proximosAlertas": "Próximas alertas",
+    "diaTag": "Día {{dia}} · {{tag}}",
+    "ativarNotificacoes": "Activar notificaciones de tendencias",
+    "alertaTrend": "Alerta de tendencia",
+    "itens": {
+      "trend": {
+        "titulo": "La tendencia del audio «Efecto Espejo» en alza",
+        "descricao": "El uso sube un 340% en las últimas 48h. Corre a entrar antes de que se sature.",
+        "tag": "Tendencia caliente"
+      },
+      "bastidor": {
+        "titulo": "Día de Reels de detrás de cámaras",
+        "descricao": "Tu público interactúa 2x más con contenido de rutina los miércoles.",
+        "tag": "Rutina"
+      },
+      "horario": {
+        "titulo": "Horario estrella: 19h–21h",
+        "descricao": "Pico de audiencia previsto para tu nicho en esa franja.",
+        "tag": "Horario estrella"
+      },
+      "hashtags": {
+        "titulo": "Reinicio de hashtags de la semana",
+        "descricao": "Renueva tu banco de hashtags antes de que pierdan alcance.",
+        "tag": "Mantenimiento"
+      }
+    }
+  },
+  "estudio": {
+    "titulo": "Estudio",
+    "previaCamera": "Vista previa de la cámara",
+    "iniciarGravacao": "Iniciar grabación",
+    "pararGravacao": "Parar grabación",
+    "toqueParaGravar": "Toca para grabar",
+    "gravandoToque": "Grabando — toca para parar",
+    "preparando": "Preparando...",
+    "roteiros": {
+      "gancho-3s": {
+        "titulo": "Gancho de 3 segundos",
+        "categoria": "Retención",
+        "texto": "Si publicas todos los días y nadie te ve... el problema no es el algoritmo, es tu primer segundo. Mira esto antes de grabar tu próximo vídeo."
+      },
+      "storytime-virou-caso": {
+        "titulo": "Storytime que se volvió caso",
+        "categoria": "Narrativa",
+        "texto": "Esto me pasó hace dos semanas y todavía no lo he superado. Estaba grabando un Reels normal, cuando de la nada... [pausa dramática] deja que te cuente desde el principio."
+      },
+      "lista-erros": {
+        "titulo": "3 errores que frenan tu crecimiento",
+        "categoria": "Educacional",
+        "texto": "Error número uno: publicar sin pensar en el primer corte. Error número dos: pie de foto gigante sin llamada a la acción. Error número tres: desaparecer tres días después de viralizar. Apunta."
+      },
+      "default": {
+        "titulo": "Guion libre",
+        "categoria": "Freestyle",
+        "texto": "¡Hola, comunidad! Hoy vine a contarles algo que nadie esperaba... y que va a cambiar la forma en que grabas contenido a partir de ahora."
+      }
+    }
+  },
+  "dashboard": {
+    "painel": "Panel de rendimiento",
+    "titulo": "Tus métricas",
+    "subtitulo": "Sigue el crecimiento de tu cuenta y descubre qué está funcionando para viralizar más.",
+    "ultimos7": "Últimos 7 días",
+    "visualizacoes": "Visualizaciones",
+    "vsSemanaAnterior": "vs. semana anterior · toca una barra para ver el día",
+    "topPosts": "Top publicaciones",
+    "melhoresSemana": "Las mejores de la semana",
+    "tiles": {
+      "seguidores": "Seguidores",
+      "alcance": "Alcance",
+      "engajamento": "Interacción",
+      "salvamentos": "Guardados"
+    },
+    "posts": {
+      "p1": "3 errores que hacen que tu Reels no se viralice",
+      "p2": "Cómo grabar 10 Reels en 1 hora (método por lotes)",
+      "p3": "El hook que triplicó mi alcance en 7 días"
+    }
+  },
+  "oferta": {
+    "aprenda": "APRENDE EN ESTA CLASE CÓMO VIRALIZAR",
+    "surpresa": "AL FINAL TENEMOS UNA SORPRESA...",
+    "cta": "Quiero mi acceso con descuento ahora"
   }
 }

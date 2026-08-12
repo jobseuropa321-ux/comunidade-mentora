@@ -9,6 +9,7 @@ import { supabase, SUPABASE_READY } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useAgents } from '@/data/agents';
+import { useTranslation } from 'react-i18next';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 import { formatDateNumeric } from '@/lib/formatLocale';
 import { useCurrentLang, type SupportedLang } from '@/i18n/LanguageProvider';
@@ -16,34 +17,35 @@ import { useCurrentLang, type SupportedLang } from '@/i18n/LanguageProvider';
 /* ─────────────────────────────────────────────
    TEXTOS DA TELA (toda a "escrita" daqui)
 ───────────────────────────────────────────── */
-const TXT = {
-  back: 'Voltar',
-  title: 'Biblioteca',
-  subtitle: 'Seu acervo criativo, organizado por etapa',
-  empty: 'Biblioteca vazia',
-  empty_desc: 'Os conteúdos criados pelos agentes aparecem aqui assim que forem salvos.',
-  saved_one: 'salvo',
-  saved_many: 'salvos',
-  model_empty: 'Nenhum roteiro salvo nesse modelo ainda.',
-  save_title: 'Salvar título',
-  cancel: 'Cancelar',
-  copied: 'Copiado',
-  copy: 'Copiar',
-  rename: 'Renomear',
-  delete: 'Excluir',
-  briefing: 'Seu briefing',
-  ai_response: 'Resposta da IA',
-  edit: 'Editar',
-  save: 'Salvar',
-  toast_error: 'Erro',
-  toast_title_updated: 'Título atualizado',
-  toast_delete_error: 'Erro ao deletar',
-  toast_removed: 'Removido da biblioteca',
-  toast_updated: 'Roteiro atualizado',
-  load_error: 'Não foi possível carregar a Biblioteca',
-  search_placeholder: 'Buscar por agente ou etapa...',
-  no_results: 'Nenhum conteúdo encontrado nessa busca.',
-};
+/* Textos do dicionário, mantendo a forma do objeto TXT. */
+const makeTxt = (t: (k: string) => string) => ({
+  back: t('biblioteca.back'),
+  title: t('biblioteca.title'),
+  subtitle: t('biblioteca.subtitle'),
+  empty: t('biblioteca.empty'),
+  empty_desc: t('biblioteca.empty_desc'),
+  saved_one: t('biblioteca.saved_one'),
+  saved_many: t('biblioteca.saved_many'),
+  model_empty: t('biblioteca.model_empty'),
+  save_title: t('biblioteca.save_title'),
+  cancel: t('biblioteca.cancel'),
+  copied: t('biblioteca.copied'),
+  copy: t('biblioteca.copy'),
+  rename: t('biblioteca.rename'),
+  delete: t('biblioteca.delete'),
+  briefing: t('biblioteca.briefing'),
+  ai_response: t('biblioteca.ai_response'),
+  edit: t('biblioteca.edit'),
+  save: t('biblioteca.save'),
+  toast_error: t('biblioteca.toast_error'),
+  toast_title_updated: t('biblioteca.toast_title_updated'),
+  toast_delete_error: t('biblioteca.toast_delete_error'),
+  toast_removed: t('biblioteca.toast_removed'),
+  toast_updated: t('biblioteca.toast_updated'),
+  load_error: t('biblioteca.load_error'),
+  search_placeholder: t('biblioteca.search_placeholder'),
+  no_results: t('biblioteca.no_results'),
+});
 
 interface SavedItem {
   id: string;
@@ -99,6 +101,8 @@ const LIBRARY_SECTIONS = [
    ACERVO ORGANIZADO POR ETAPA
 ───────────────────────────────────────────── */
 const ModelsOverview: React.FC = () => {
+  const { t } = useTranslation();
+  const TXT = makeTxt(t);
   const lang = useCurrentLang();
   const AGENTS = useAgents();
   const navigate = useLocalizedNavigate();
@@ -299,6 +303,8 @@ const ModelsOverview: React.FC = () => {
    LISTA DE ITENS DE UM MODELO
 ───────────────────────────────────────────── */
 const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
+  const { t } = useTranslation();
+  const TXT = makeTxt(t);
   const lang = useCurrentLang();
   const AGENTS = useAgents();
   const navigate = useLocalizedNavigate();

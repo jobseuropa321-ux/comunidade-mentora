@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 type ColunaId = 'ideias' | 'gravando' | 'publicado';
 
@@ -7,22 +8,24 @@ type Categoria = 'Humor' | 'Educativo' | 'Trend' | 'Bastidores' | 'Storytime';
 
 interface Roteiro {
   id: string;
-  titulo: string;
+  /** Só os cards criados na hora carregam texto próprio; os iniciais vêm do
+   *  dicionário por id (kanban.itens.<id>). */
+  titulo?: string;
   categoria: Categoria;
   coluna: ColunaId;
 }
 
 interface ColunaConfig {
   id: ColunaId;
-  titulo: string;
   emoji: string;
   corBarra: string;
 }
 
+/* Sem título: o rótulo da coluna sai de kanban.colunas.<id> no render. */
 const COLUNAS: ColunaConfig[] = [
-  { id: 'ideias', titulo: 'Ideias', emoji: '💡', corBarra: '#F6B43A' },
-  { id: 'gravando', titulo: 'Gravando', emoji: '🎬', corBarra: '#E06B85' },
-  { id: 'publicado', titulo: 'Publicado', emoji: '✅', corBarra: '#BE0D3E' },
+  { id: 'ideias', emoji: '💡', corBarra: '#F6B43A' },
+  { id: 'gravando', emoji: '🎬', corBarra: '#E06B85' },
+  { id: 'publicado', emoji: '✅', corBarra: '#BE0D3E' },
 ];
 
 const CATEGORIA_COR: Record<Categoria, { bg: string; texto: string }> = {
@@ -33,46 +36,16 @@ const CATEGORIA_COR: Record<Categoria, { bg: string; texto: string }> = {
   Storytime: { bg: 'rgba(255,90,153,0.15)', texto: '#BE0D3E' },
 };
 
+/* Array neutro: o título de cada card vem de kanban.itens.<id>. */
 const ROTEIROS_INICIAIS: Roteiro[] = [
-  {
-    id: 'rt-1',
-    titulo: '3 erros que travam seu Reels nos primeiros 2 segundos',
-    categoria: 'Educativo',
-    coluna: 'ideias',
-  },
-  {
-    id: 'rt-2',
-    titulo: 'POV: seu chefe descobre que você edita vídeo de madrugada',
-    categoria: 'Humor',
-    coluna: 'ideias',
-  },
-  {
-    id: 'rt-3',
-    titulo: 'Recriando o trend do áudio "isso não tava nos planos"',
-    categoria: 'Trend',
-    coluna: 'gravando',
-  },
-  {
-    id: 'rt-4',
-    titulo: 'Bastidor: como gravo 5 vídeos em 1 hora só',
-    categoria: 'Bastidores',
-    coluna: 'gravando',
-  },
-  {
-    id: 'rt-5',
-    titulo: 'A vez que meu vídeo bombou sem eu esperar (storytime)',
-    categoria: 'Storytime',
-    coluna: 'publicado',
-  },
+  { id: 'rt-1', categoria: 'Educativo',  coluna: 'ideias' },
+  { id: 'rt-2', categoria: 'Humor',      coluna: 'ideias' },
+  { id: 'rt-3', categoria: 'Trend',      coluna: 'gravando' },
+  { id: 'rt-4', categoria: 'Bastidores', coluna: 'gravando' },
+  { id: 'rt-5', categoria: 'Storytime',  coluna: 'publicado' },
 ];
 
-const NOVA_IDEIA_TITULOS = [
-  'Novo gancho: "ninguém te contou isso sobre..."',
-  'Ideia rápida: bastidor do processo criativo',
-  'Testar formato de lista com 3 dicas',
-  'Reagir a um trend novo da semana',
-  'Storytime sobre um erro que virou aprendizado',
-];
+
 
 const ORDEM_COLUNA: ColunaId[] = ['ideias', 'gravando', 'publicado'];
 
@@ -80,6 +53,7 @@ const KanbanCard: React.FC<{
   roteiro: Roteiro;
   onMover: (id: string, direcao: 1 | -1) => void;
 }> = ({ roteiro, onMover }) => {
+  const { t } = useTranslation();
   const indiceAtual = ORDEM_COLUNA.indexOf(roteiro.coluna);
   const podeVoltar = indiceAtual > 0;
   const podeAvancar = indiceAtual < ORDEM_COLUNA.length - 1;
@@ -91,11 +65,11 @@ const KanbanCard: React.FC<{
         className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest"
         style={{ background: cor.bg, color: cor.texto }}
       >
-        {roteiro.categoria}
+        {t(`kanban.categorias.${roteiro.categoria}`)}
       </span>
 
       <h3 className="mt-2 text-[13px] font-black text-[#1E1B11] leading-snug tracking-tight">
-        {roteiro.titulo}
+        {roteiro.titulo ?? t(`kanban.itens.${roteiro.id}`)}
       </h3>
 
       <div className="mt-3 flex items-center justify-between">
@@ -138,6 +112,7 @@ const KanbanCard: React.FC<{
 };
 
 const Kanban: React.FC = () => {
+  const { t } = useTranslation();
   const [roteiros, setRoteiros] = useState<Roteiro[]>(ROTEIROS_INICIAIS);
   const [proximaIdeia, setProximaIdeia] = useState(0);
 
@@ -154,7 +129,8 @@ const Kanban: React.FC = () => {
   };
 
   const adicionarIdeia = () => {
-    const titulo = NOVA_IDEIA_TITULOS[proximaIdeia % NOVA_IDEIA_TITULOS.length];
+    const novas = t('kanban.novasIdeias', { returnObjects: true }) as string[];
+    const titulo = novas[proximaIdeia % novas.length];
     const novoCard: Roteiro = {
       id: `rt-novo-${Date.now()}`,
       titulo,
@@ -171,11 +147,11 @@ const Kanban: React.FC = () => {
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-28">
       <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50">
-        Organização de conteúdo
+        {t('kanban.organizacao')}
       </span>
-      <h1 className="page-title">Meus roteiros</h1>
+      <h1 className="page-title">{t('kanban.titulo')}</h1>
       <p className="mt-2 text-[13px] text-[#5B4041] font-medium leading-relaxed">
-        Arrasta a ideia da cabeça pro papel, grava e publica. Usa as setas pra mover cada roteiro
+        {t('kanban.subtitulo')}
         entre as etapas.
       </p>
 
@@ -197,7 +173,7 @@ const Kanban: React.FC = () => {
                     style={{ background: coluna.corBarra }}
                   />
                   <h2 className="text-[13px] font-black text-[#1E1B11] tracking-tight">
-                    {coluna.titulo}
+                    {t(`kanban.colunas.${coluna.id}`)}
                   </h2>
                   <span className="text-[10px] font-black text-[#5B4041]/50">
                     {contagemPorColuna(coluna.id)}
@@ -216,7 +192,7 @@ const Kanban: React.FC = () => {
                   className="mb-3 w-full rounded-2xl py-2.5 flex items-center justify-center gap-1.5 text-white text-[12px] font-black tracking-tight active:scale-[0.98] transition-transform"
                 >
                   <Plus className="w-3.5 h-3.5" strokeWidth={3} />
-                  Nova ideia
+                  {t('kanban.novaIdeia')}
                 </button>
               )}
 
@@ -229,7 +205,7 @@ const Kanban: React.FC = () => {
                   <div className="viral-card p-5 flex flex-col items-center text-center gap-2 opacity-60">
                     <FileText className="w-5 h-5 text-[#5B4041]" />
                     <p className="text-[11px] font-bold text-[#5B4041]">
-                      Nada por aqui ainda
+                      {t('kanban.vazio')}
                     </p>
                   </div>
                 )}
@@ -242,7 +218,7 @@ const Kanban: React.FC = () => {
       {/* Dica final */}
       <div className="card-glass-liquid-lime mt-5 p-4 rounded-2xl">
         <p className="text-[12px] font-black text-[#1E1B11] leading-snug">
-          Dica da comunidade: mantém no máximo 3 roteiros em "Gravando" por vez — foco é o que mais
+          {t('kanban.dica')}
           faz sua constância virar resultado.
         </p>
       </div>

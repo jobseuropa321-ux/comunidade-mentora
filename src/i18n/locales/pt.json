@@ -662,5 +662,156 @@
         "descricao": "Narrativa pessoal com plot twist pra segurar até o último segundo."
       }
     }
+  },
+  "biblioteca": {
+    "back": "Voltar",
+    "title": "Biblioteca",
+    "subtitle": "Seu acervo criativo, organizado por etapa",
+    "empty": "Biblioteca vazia",
+    "empty_desc": "Os conteúdos criados pelos agentes aparecem aqui assim que forem salvos.",
+    "saved_one": "salvo",
+    "saved_many": "salvos",
+    "model_empty": "Nenhum roteiro salvo nesse modelo ainda.",
+    "save_title": "Salvar título",
+    "cancel": "Cancelar",
+    "copied": "Copiado",
+    "copy": "Copiar",
+    "rename": "Renomear",
+    "delete": "Excluir",
+    "briefing": "Seu briefing",
+    "ai_response": "Resposta da IA",
+    "edit": "Editar",
+    "save": "Salvar",
+    "toast_error": "Erro",
+    "toast_title_updated": "Título atualizado",
+    "toast_delete_error": "Erro ao deletar",
+    "toast_removed": "Removido da biblioteca",
+    "toast_updated": "Roteiro atualizado",
+    "load_error": "Não foi possível carregar a Biblioteca",
+    "search_placeholder": "Buscar por agente ou etapa...",
+    "no_results": "Nenhum conteúdo encontrado nessa busca."
+  },
+  "kanban": {
+    "organizacao": "Organização de conteúdo",
+    "titulo": "Meus roteiros",
+    "subtitulo": "Arrasta a ideia da cabeça pro papel, grava e publica. Usa as setas pra mover cada roteiro",
+    "novaIdeia": "Nova ideia",
+    "vazio": "Nada por aqui ainda",
+    "dica": "Dica da comunidade: mantém no máximo 3 roteiros em \"Gravando\" por vez — foco é o que mais",
+    "colunas": {
+      "ideias": "Ideias",
+      "gravando": "Gravando",
+      "publicado": "Publicado"
+    },
+    "categorias": {
+      "Humor": "Humor",
+      "Educativo": "Educativo",
+      "Trend": "Trend",
+      "Bastidores": "Bastidores",
+      "Storytime": "Storytime"
+    },
+    "itens": {
+      "rt-1": "3 erros que travam seu Reels nos primeiros 2 segundos",
+      "rt-2": "POV: seu chefe descobre que você edita vídeo de madrugada",
+      "rt-3": "Recriando o trend do áudio \"isso não tava nos planos\"",
+      "rt-4": "Bastidor: como gravo 5 vídeos em 1 hora só",
+      "rt-5": "A vez que meu vídeo bombou sem eu esperar (storytime)"
+    },
+    "novasIdeias": [
+      "Novo gancho: \"ninguém te contou isso sobre...\"",
+      "Ideia rápida: bastidor do processo criativo",
+      "Testar formato de lista com 3 dicas",
+      "Reagir a um trend novo da semana",
+      "Storytime sobre um erro que virou aprendizado"
+    ]
+  },
+  "alerta": {
+    "fiqueDeOlho": "Fique de olho",
+    "titulo": "Calendário de alerta",
+    "subtitulo": "As datas certas pra postar, com base no que tá bombando agora.",
+    "hoje": "Hoje",
+    "proximosAlertas": "Próximos alertas",
+    "diaTag": "Dia {{dia}} · {{tag}}",
+    "ativarNotificacoes": "Ativar notificações de trend",
+    "alertaTrend": "Alerta de trend",
+    "itens": {
+      "trend": {
+        "titulo": "Trend do áudio \"Efeito Espelho\" em alta",
+        "descricao": "Uso subindo 340% nas últimas 48h. Corre pra entrar antes de saturar.",
+        "tag": "Trend quente"
+      },
+      "bastidor": {
+        "titulo": "Dia de Reels de bastidor",
+        "descricao": "Seu público engaja 2x mais com conteúdo de rotina às quartas.",
+        "tag": "Rotina"
+      },
+      "horario": {
+        "titulo": "Horário nobre: 19h–21h",
+        "descricao": "Pico de audiência prevista pro seu nicho nesta janela.",
+        "tag": "Horário nobre"
+      },
+      "hashtags": {
+        "titulo": "Reset de hashtags da semana",
+        "descricao": "Renove seu banco de hashtags antes que percam alcance.",
+        "tag": "Manutenção"
+      }
+    }
+  },
+  "estudio": {
+    "titulo": "Estúdio",
+    "previaCamera": "Prévia da câmera",
+    "iniciarGravacao": "Iniciar gravação",
+    "pararGravacao": "Parar gravação",
+    "toqueParaGravar": "Toque para gravar",
+    "gravandoToque": "Gravando — toque para parar",
+    "preparando": "Preparando...",
+    "roteiros": {
+      "gancho-3s": {
+        "titulo": "Gancho de 3 segundos",
+        "categoria": "Retenção",
+        "texto": "Se você posta todo dia e ninguém vê... o problema não é o algoritmo, é o seu primeiro segundo. Olha isso aqui antes de gravar seu próximo vídeo."
+      },
+      "storytime-virou-caso": {
+        "titulo": "Storytime que virou caso",
+        "categoria": "Narrativa",
+        "texto": "Isso aconteceu comigo há duas semanas e eu ainda não superei. Eu tava gravando um Reels normal, quando do nada... [pausa dramática] deixa eu te contar do começo."
+      },
+      "lista-erros": {
+        "titulo": "3 erros que travam seu crescimento",
+        "categoria": "Educacional",
+        "texto": "Erro número um: postar sem pensar no primeiro corte. Erro número dois: legenda gigante sem call to action. Erro número três: sumir por três dias depois de viralizar. Anota aí."
+      },
+      "default": {
+        "titulo": "Roteiro livre",
+        "categoria": "Freestyle",
+        "texto": "Fala, comunidade! Hoje eu vim contar uma coisa que ninguém tava esperando... e que vai mudar a forma como você grava conteúdo a partir de agora."
+      }
+    }
+  },
+  "dashboard": {
+    "painel": "Painel de desempenho",
+    "titulo": "Suas métricas",
+    "subtitulo": "Acompanhe o crescimento da sua conta e descubra o que está funcionando pra viralizar mais.",
+    "ultimos7": "Últimos 7 dias",
+    "visualizacoes": "Visualizações",
+    "vsSemanaAnterior": "vs. semana anterior · toque numa barra pra ver o dia",
+    "topPosts": "Top posts",
+    "melhoresSemana": "Melhores da semana",
+    "tiles": {
+      "seguidores": "Seguidores",
+      "alcance": "Alcance",
+      "engajamento": "Engajamento",
+      "salvamentos": "Salvamentos"
+    },
+    "posts": {
+      "p1": "3 erros que fazem seu Reels não viralizar",
+      "p2": "Como gravar 10 Reels em 1 hora (método batelada)",
+      "p3": "O hook que triplicou meu alcance em 7 dias"
+    }
+  },
+  "oferta": {
+    "aprenda": "APRENDA NESSA AULA COMO VIRALIZAR",
+    "surpresa": "NO FINAL TEMOS UMA SURPRESA...",
+    "cta": "Quero meu acesso com desconto agora"
   }
 }
