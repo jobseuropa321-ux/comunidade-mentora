@@ -18,7 +18,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { checkSubscription, AccessDeniedError, SUB_DENIED_MSG, type SubStatus } from '@/lib/subscription';
+import { checkSubscription, AccessDeniedError, type SubStatus } from '@/lib/subscription';
 import { getLangFromPath, localizedPath } from '@/i18n/LanguageProvider';
 
 export interface Profile {
@@ -168,7 +168,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // que uma assinatura válida (ou role de equipe) foi confirmada.
       const status = await validateAndPublishSession(data.session);
       if (status !== 'active') {
-        return { error: new AccessDeniedError(SUB_DENIED_MSG[status]) };
+        // A mensagem do Error nunca chega à tela: a Auth mostra o texto
+        // traduzido a partir do status. Aqui vai o status para log/diagnóstico.
+        return { error: new AccessDeniedError(status) };
       }
       return { error: null };
     } finally {

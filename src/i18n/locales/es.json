@@ -813,5 +813,53 @@
     "aprenda": "APRENDE EN ESTA CLASE CÓMO VIRALIZAR",
     "surpresa": "AL FINAL TENEMOS UNA SORPRESA...",
     "cta": "Quiero mi acceso con descuento ahora"
+  },
+  "pet": {
+    "gamificacao": "Gamificación · Amentora",
+    "titulo": "Tu Mascota Creadora",
+    "subtitulo": "Cuida a {{nome}} todos los días y mantén viva tu racha.",
+    "subiuNivel": "¡Subió de nivel!",
+    "toqueCarinho": "toca a {{nome}} para hacerle mimos",
+    "deOfensiva": "de racha",
+    "faltamXp": "faltan {{xp}} XP para el nivel {{nivel}}",
+    "alimentar": "Alimentar",
+    "brincar": "Jugar",
+    "missoesDoDia": "Misiones del día",
+    "todasConcluidas": "¡Todas las misiones completadas!",
+    "naoPercaOfensiva": "¡No pierdas la racha!",
+    "toastXp": "+{{xp}} XP · {{acao}}",
+    "acaoAlimentou": "Alimentaste a {{nome}}",
+    "acaoBrincou": "Jugaste con {{nome}}",
+    "acaoCarinho": "Mimos",
+    "humor": {
+      "animada": "Animada",
+      "cochilando": "Dormitando"
+    },
+    "niveis": [
+      "Cachorrita Creadora",
+      "Gatita Curiosa",
+      "Creadora en Ascenso",
+      "Estrella en Alza",
+      "Fiera del Algoritmo",
+      "Leyenda de la Comunidad"
+    ],
+    "missoes": {
+      "reels": {
+        "label": "Publica 1 Reels o Short hoy",
+        "hint": "La constancia es lo que más alimenta el algoritmo"
+      },
+      "comentarios": {
+        "label": "Comenta en 3 publicaciones de la comunidad",
+        "hint": "La interacción genera reconocimiento entre los miembros"
+      },
+      "aula": {
+        "label": "Mira 1 clase del itinerario Amentora",
+        "hint": "Cada día un poco de técnica nueva"
+      },
+      "curtidas": {
+        "label": "Deja 5 me gusta en publicaciones de otros creadores",
+        "hint": "Una comunidad fuerte crece junta"
+      }
+    }
   }
 }
