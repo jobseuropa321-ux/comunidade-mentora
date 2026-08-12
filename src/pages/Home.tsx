@@ -7,6 +7,7 @@ import { trackAscension } from '@/lib/ascension';
 import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 import { moduleCover, coverFallback } from '@/lib/moduleCover';
+import { isInEsCatalog } from '@/i18n/esCatalog';
 
 // Pra adicionar/trocar banner: jogue o .webp em `public/covers/` e adicione aqui.
 // Slots sem arquivo somem do carrossel (BannerCarousel filtra 404).
@@ -97,9 +98,14 @@ const Home: React.FC = () => {
   const { t } = useTranslation();
   const lang = useCurrentLang();
 
-  const inicio = modules.filter(m => m.home_section === 'inicio');
-  const main = modules.filter(m => m.home_section === 'modulos');
-  const materiais = modules.filter(m => m.home_section === 'materiais');
+  // A versão espanhola mostra só os módulos que têm capa em espanhol
+  // (src/i18n/esCatalog.ts, gerado da pasta de capas). Módulo sem versão
+  // própria fica de fora em vez de aparecer com a capa em português.
+  const visiveis = lang === 'es' ? modules.filter(isInEsCatalog) : modules;
+
+  const inicio = visiveis.filter(m => m.home_section === 'inicio');
+  const main = visiveis.filter(m => m.home_section === 'modulos');
+  const materiais = visiveis.filter(m => m.home_section === 'materiais');
 
   return (
     <div className="pb-28">
@@ -145,9 +151,12 @@ const Home: React.FC = () => {
           )}
 
           {/* Ferramentas avançadas — upsell do Viral 1 Min (produto irmão).
+              Fora do espanhol: é produto vendido em português, e não veio
+              capa nem oferta em espanhol para ele.
               O card é fixo aqui (o módulo tem home_section NULL de propósito,
               pra não cair junto das fileiras normais). Abre o módulo, que tem
               a aula levando pra oferta com a VSL — tudo dentro do app. */}
+          {lang !== 'es' && (
           <section className="mb-4">
             <div className="px-4 mb-3">
               <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">{t('home.ferramentasAvancadas')}</h2>
@@ -174,6 +183,7 @@ const Home: React.FC = () => {
               <div className="w-1 shrink-0" />
             </div>
           </section>
+          )}
         </>
       )}
     </div>
