@@ -15,7 +15,7 @@ leituras para levantar o estado real. As migrations existem como arquivo.
 git checkout feat/espanhol-hotmart
 npm install
 npm run build          # passa
-npm run i18n:check     # paridade pt/es: 231 chaves de cada lado, 0 divergências
+npm run i18n:check     # paridade pt/es: 265 chaves de cada lado, 0 divergências
 node scripts/audit-i18n.mjs   # o que ainda falta traduzir, arquivo a arquivo
 npm run dev -- --port 5199    # a porta 5173 está ocupada por outro projeto seu
 ```
@@ -81,7 +81,7 @@ quando a conta já existe) — que é mais maduro que o webhook do kit.
 
 ## O que NÃO ficou pronto
 
-### 1. Tradução: cerca de 217 strings pendentes fora do Admin
+### 1. Tradução: cerca de 206 strings pendentes fora do Admin
 
 O guia chama a FASE 2 de "o grosso do trabalho" e no app original ela levou três
 commits ao longo de 12 dias, com 512 strings encontradas em duas varreduras.
@@ -92,14 +92,18 @@ Rode `node scripts/audit-i18n.mjs` para a lista viva. No fechamento:
 | Situação | Arquivos | Strings |
 |---|---|---|
 | Sem candidato restante | 12 | 0 |
-| Parcial (já usa `t()`, sobrou texto) | 4 | ~39 |
-| Não iniciado | 21 | ~178 |
+| Parcial (já usa `t()`, sobrou texto) | 6 | ~45 |
+| Não iniciado | 19 | ~161 |
 | Admin — fora de escopo por decisão do kit | 6 | ~70 |
 
 Maiores pendências: `Chat.tsx` (~35, é a tela mais longa do app),
 `src/data/agents.ts` (~26, é array de dados — resolver por slug, **não**
 duplicar o array), `AnalisarPerfilAgent.tsx` (~20), `Modelos.tsx` (~16),
 `Referencias.tsx` (~15), `Biblioteca.tsx` (~13), `CameraScriptPicker.tsx` (~13).
+
+Telas já cobertas por inteiro: login, recuperação de senha, navegação inferior,
+header, home, detalhe de módulo, aula, fórum da aula, comunidade, instalação do
+PWA (tela e modal), mentoria ao vivo e perfil.
 
 O número é uma estimativa por heurística: conta linhas com texto em português em
 posição de UI. Serve para priorizar e medir progresso, não como contagem exata.
