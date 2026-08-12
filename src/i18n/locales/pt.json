@@ -528,5 +528,62 @@
     "tituloAnalise": "Análise do meu perfil — {{data}}",
     "sugestoesLabel": "Sugestões:",
     "bioSugeridaLabel": "Bio sugerida:"
+  },
+  "modelos": {
+    "formatosProntos": "Formatos prontos",
+    "titulo": "Modelos que viralizam",
+    "subtitulo": "Escolha um formato testado por criadores de verdade. A IA monta o roteiro completo pra você em segundos.",
+    "todos": "Todos",
+    "vazio": "Nenhum modelo nesse objetivo ainda.",
+    "gerarRoteiro": "Gerar roteiro",
+    "dicaRodape": "Sem ideia de qual usar? Comece pelo <1>Problema → Solução</1> — é o formato que mais converte pra quem tá começando.",
+    "objetivos": {
+      "Alcance": "Alcance",
+      "Engajamento": "Engajamento",
+      "Vendas": "Vendas",
+      "Autoridade": "Autoridade"
+    },
+    "itens": {
+      "problema-solucao": {
+        "nome": "Problema → Solução",
+        "desc": "Mostra a dor da audiência e resolve em segundos. Retenção alta."
+      },
+      "lista-x-coisas": {
+        "nome": "Lista X coisas",
+        "desc": "\"5 erros que...\", \"3 jeitos de...\". Fácil de consumir e salvar."
+      },
+      "pov": {
+        "nome": "POV",
+        "desc": "Coloca o espectador na cena. Gera identificação instantânea."
+      },
+      "antes-depois": {
+        "nome": "Antes e Depois",
+        "desc": "Prova visual de transformação. Ótimo pra vender resultado."
+      },
+      "storytelling-60s": {
+        "nome": "Storytelling 60s",
+        "desc": "Uma história curta com virada no fim. Prende até o último segundo."
+      },
+      "tutorial-rapido": {
+        "nome": "Tutorial rápido",
+        "desc": "Ensina algo prático em poucos passos. Constrói autoridade rápido."
+      },
+      "erro-comum": {
+        "nome": "Erro que todo mundo comete",
+        "desc": "Aponta um erro comum do nicho e mostra como evitar. Gera comentários."
+      },
+      "bastidores": {
+        "nome": "Bastidores",
+        "desc": "Mostra o processo real por trás do resultado. Cria conexão."
+      },
+      "comparativo": {
+        "nome": "Comparativo A vs B",
+        "desc": "Coloca duas opções lado a lado e aponta a vencedora. Ótimo gancho."
+      },
+      "trend-remix": {
+        "nome": "Desafio / Trend remix",
+        "desc": "Pega uma trend do momento e adapta pro seu nicho. Fácil de viralizar."
+      }
+    }
   }
 }

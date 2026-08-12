@@ -528,5 +528,62 @@
     "tituloAnalise": "Análisis de mi perfil — {{data}}",
     "sugestoesLabel": "Sugerencias:",
     "bioSugeridaLabel": "Bio sugerida:"
+  },
+  "modelos": {
+    "formatosProntos": "Formatos listos",
+    "titulo": "Modelos que se vuelven virales",
+    "subtitulo": "Elige un formato probado por creadores de verdad. La IA monta el guion completo para ti en segundos.",
+    "todos": "Todos",
+    "vazio": "Todavía no hay ningún modelo con ese objetivo.",
+    "gerarRoteiro": "Generar guion",
+    "dicaRodape": "¿No sabes cuál usar? Empieza por <1>Problema → Solución</1> — es el formato que más convierte para quien está empezando.",
+    "objetivos": {
+      "Alcance": "Alcance",
+      "Engajamento": "Interacción",
+      "Vendas": "Ventas",
+      "Autoridade": "Autoridad"
+    },
+    "itens": {
+      "problema-solucao": {
+        "nome": "Problema → Solución",
+        "desc": "Muestra el dolor de la audiencia y lo resuelve en segundos. Retención alta."
+      },
+      "lista-x-coisas": {
+        "nome": "Lista de X cosas",
+        "desc": "«5 errores que...», «3 formas de...». Fácil de consumir y de guardar."
+      },
+      "pov": {
+        "nome": "POV",
+        "desc": "Pone al espectador en la escena. Genera identificación instantánea."
+      },
+      "antes-depois": {
+        "nome": "Antes y Después",
+        "desc": "Prueba visual de transformación. Buenísimo para vender resultado."
+      },
+      "storytelling-60s": {
+        "nome": "Storytelling 60s",
+        "desc": "Una historia corta con giro al final. Engancha hasta el último segundo."
+      },
+      "tutorial-rapido": {
+        "nome": "Tutorial rápido",
+        "desc": "Enseña algo práctico en pocos pasos. Construye autoridad rápido."
+      },
+      "erro-comum": {
+        "nome": "El error que todo el mundo comete",
+        "desc": "Señala un error común del nicho y muestra cómo evitarlo. Genera comentarios."
+      },
+      "bastidores": {
+        "nome": "Detrás de cámaras",
+        "desc": "Muestra el proceso real detrás del resultado. Crea conexión."
+      },
+      "comparativo": {
+        "nome": "Comparativa A vs B",
+        "desc": "Pone dos opciones lado a lado y señala la ganadora. Buenísimo gancho."
+      },
+      "trend-remix": {
+        "nome": "Reto / Remix de tendencia",
+        "desc": "Coge una tendencia del momento y la adapta a tu nicho. Fácil de viralizar."
+      }
+    }
   }
 }

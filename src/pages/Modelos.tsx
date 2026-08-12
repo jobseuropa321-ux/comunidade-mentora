@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
+import { useTranslation, Trans } from 'react-i18next';
 
 import {
   Target,
@@ -21,9 +22,9 @@ type Objetivo = 'Alcance' | 'Engajamento' | 'Vendas' | 'Autoridade';
 
 interface Modelo {
   id: string;
-  nome: string;
-  descricao: string;
   icon: LucideIcon;
+  /** 'Alcance' | 'Engajamento' | ... — é IDENTIFICADOR, não rótulo. O texto
+   *  exibido sai de modelos.objetivos.<id>. */
   objetivo: Objetivo;
 }
 
@@ -36,81 +37,24 @@ const OBJETIVO_STYLE: Record<Objetivo, { bg: string; text: string }> = {
   Autoridade: { bg: '#1E1B11', text: '#FFFFFF' },
 };
 
+/* Só o que NÃO é texto. Nome e descrição vêm do dicionário
+   (modelos.itens.<id>), resolvidos no render. */
 const MODELOS: Modelo[] = [
-  {
-    id: 'problema-solucao',
-    nome: 'Problema → Solução',
-    descricao: 'Mostra a dor da audiência e resolve em segundos. Retenção alta.',
-    icon: Target,
-    objetivo: 'Vendas',
-  },
-  {
-    id: 'lista-x-coisas',
-    nome: 'Lista X coisas',
-    descricao: '"5 erros que...", "3 jeitos de...". Fácil de consumir e salvar.',
-    icon: ListOrdered,
-    objetivo: 'Alcance',
-  },
-  {
-    id: 'pov',
-    nome: 'POV',
-    descricao: 'Coloca o espectador na cena. Gera identificação instantânea.',
-    icon: Eye,
-    objetivo: 'Engajamento',
-  },
-  {
-    id: 'antes-depois',
-    nome: 'Antes e Depois',
-    descricao: 'Prova visual de transformação. Ótimo pra vender resultado.',
-    icon: RefreshCw,
-    objetivo: 'Vendas',
-  },
-  {
-    id: 'storytelling-60s',
-    nome: 'Storytelling 60s',
-    descricao: 'Uma história curta com virada no fim. Prende até o último segundo.',
-    icon: BookOpen,
-    objetivo: 'Engajamento',
-  },
-  {
-    id: 'tutorial-rapido',
-    nome: 'Tutorial rápido',
-    descricao: 'Ensina algo prático em poucos passos. Constrói autoridade rápido.',
-    icon: GraduationCap,
-    objetivo: 'Autoridade',
-  },
-  {
-    id: 'erro-comum',
-    nome: 'Erro que todo mundo comete',
-    descricao: 'Aponta um erro comum do nicho e mostra como evitar. Gera comentários.',
-    icon: AlertTriangle,
-    objetivo: 'Autoridade',
-  },
-  {
-    id: 'bastidores',
-    nome: 'Bastidores',
-    descricao: 'Mostra o processo real por trás do resultado. Cria conexão.',
-    icon: Clapperboard,
-    objetivo: 'Alcance',
-  },
-  {
-    id: 'comparativo',
-    nome: 'Comparativo A vs B',
-    descricao: 'Coloca duas opções lado a lado e aponta a vencedora. Ótimo gancho.',
-    icon: Scale,
-    objetivo: 'Vendas',
-  },
-  {
-    id: 'trend-remix',
-    nome: 'Desafio / Trend remix',
-    descricao: 'Pega uma trend do momento e adapta pro seu nicho. Fácil de viralizar.',
-    icon: Flame,
-    objetivo: 'Alcance',
-  },
+  { id: 'problema-solucao', icon: Target,        objetivo: 'Vendas' },
+  { id: 'lista-x-coisas',   icon: ListOrdered,   objetivo: 'Alcance' },
+  { id: 'pov',              icon: Eye,           objetivo: 'Engajamento' },
+  { id: 'antes-depois',     icon: RefreshCw,     objetivo: 'Vendas' },
+  { id: 'storytelling-60s', icon: BookOpen,      objetivo: 'Engajamento' },
+  { id: 'tutorial-rapido',  icon: GraduationCap, objetivo: 'Autoridade' },
+  { id: 'erro-comum',       icon: AlertTriangle, objetivo: 'Autoridade' },
+  { id: 'bastidores',       icon: Clapperboard,  objetivo: 'Alcance' },
+  { id: 'comparativo',      icon: Scale,         objetivo: 'Vendas' },
+  { id: 'trend-remix',      icon: Flame,         objetivo: 'Engajamento' },
 ];
 
 const Modelos: React.FC = () => {
   const navigate = useLocalizedNavigate();
+  const { t } = useTranslation();
   const [filtro, setFiltro] = useState<'Todos' | Objetivo>('Todos');
 
   const modelosFiltrados = useMemo(() => {
@@ -119,19 +63,19 @@ const Modelos: React.FC = () => {
   }, [filtro]);
 
   const handleEscolherModelo = (modelo: Modelo) => {
-    navigate('/chat', { state: { modeloId: modelo.id, modeloNome: modelo.nome } });
+    navigate('/chat', { state: { modeloId: modelo.id, modeloNome: t(`modelos.itens.${modelo.id}.nome`) } });
   };
 
   return (
     <div className="max-w-lg mx-auto px-4 pt-4 pb-28">
       <div className="mb-1">
         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50">
-          Formatos prontos
+          {t('modelos.formatosProntos')}
         </span>
       </div>
-      <h1 className="page-title">Modelos que viralizam</h1>
+      <h1 className="page-title">{t('modelos.titulo')}</h1>
       <p className="text-[13px] text-[#5B4041] leading-snug mt-1 mb-5">
-        Escolha um formato testado por criadores de verdade. A IA monta o roteiro completo pra você em segundos.
+        {t('modelos.subtitulo')}
       </p>
 
       {/* Filtros por objetivo */}
@@ -161,7 +105,7 @@ const Modelos: React.FC = () => {
               }}
               className="shrink-0 whitespace-nowrap px-4 py-2 rounded-2xl text-[12.5px] font-black tracking-tight active:scale-[0.96] transition-transform"
             >
-              {opcao}
+              {opcao === 'Todos' ? t('modelos.todos') : t(`modelos.objetivos.${opcao}`)}
             </button>
           );
         })}
@@ -170,7 +114,7 @@ const Modelos: React.FC = () => {
       {/* Grid de modelos */}
       {modelosFiltrados.length === 0 ? (
         <div className="viral-card p-6 text-center">
-          <p className="text-sm text-[#5B4041] font-bold">Nenhum modelo nesse objetivo ainda.</p>
+          <p className="text-sm text-[#5B4041] font-bold">{t('modelos.vazio')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3">
@@ -195,13 +139,13 @@ const Modelos: React.FC = () => {
                     className="text-[8.5px] font-black uppercase tracking-widest px-2 py-1 rounded-full leading-none"
                     style={{ background: estiloObjetivo.bg, color: estiloObjetivo.text }}
                   >
-                    {modelo.objetivo}
+                    {t(`modelos.objetivos.${modelo.objetivo}`)}
                   </span>
                 </div>
 
                 <div>
                   <h3 className="font-black tracking-tight text-[#1E1B11] text-[14.5px] leading-tight">
-                    {modelo.nome}
+                    {t(`modelos.itens.${modelo.id}.nome`)}
                   </h3>
                   <p
                     className="text-[11.5px] text-[#5B4041] leading-snug mt-1"
@@ -212,13 +156,13 @@ const Modelos: React.FC = () => {
                       overflow: 'hidden',
                     }}
                   >
-                    {modelo.descricao}
+                    {t(`modelos.itens.${modelo.id}.desc`)}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-1 mt-auto pt-1">
                   <Sparkles size={12} color="#BE0D3E" strokeWidth={2.5} />
-                  <span className="text-[10.5px] font-black text-[#BE0D3E]">Gerar roteiro</span>
+                  <span className="text-[10.5px] font-black text-[#BE0D3E]">{t('modelos.gerarRoteiro')}</span>
                   <ArrowRight size={12} color="#BE0D3E" strokeWidth={2.5} />
                 </div>
               </button>
@@ -233,7 +177,7 @@ const Modelos: React.FC = () => {
           <Sparkles size={15} color="#F6B43A" strokeWidth={2.5} />
         </div>
         <p className="text-[12px] text-[#1E1B11] font-bold leading-snug">
-          Sem ideia de qual usar? Comece pelo <span className="text-[#BE0D3E]">Problema → Solução</span> — é o formato que mais converte pra quem tá começando.
+          <Trans i18nKey="modelos.dicaRodape" components={{ 1: <span className="text-[#BE0D3E]" /> }} />
         </p>
       </div>
     </div>
