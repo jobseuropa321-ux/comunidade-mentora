@@ -20,6 +20,7 @@ import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { checkSubscription, AccessDeniedError, type SubStatus } from '@/lib/subscription';
 import { getLangFromPath, localizedPath } from '@/i18n/LanguageProvider';
+import i18n from '@/i18n';
 
 export interface Profile {
   id: string;
@@ -161,7 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase.auth.signInWithPassword({ email: clean, password });
       if (error || !data.session) {
         setLoading(false);
-        return { error: error ?? new Error('Sessão não criada') };
+        return { error: error ?? new Error(i18n.t('auth.sessaoNaoCriada')) };
       }
 
       // Autenticar não basta: o usuário só chega às rotas protegidas depois

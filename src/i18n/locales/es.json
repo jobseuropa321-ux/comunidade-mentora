@@ -32,7 +32,8 @@
     "buscar": "Buscar",
     "verMais": "Ver más",
     "verTodos": "Ver todos",
-    "marca": "Comunidad Digital"
+    "marca": "Comunidad Digital",
+    "sair": "Salir"
   },
   "auth": {
     "titulo": "Entrar en la comunidad",
@@ -62,7 +63,8 @@
         "titulo": "Compra reembolsada",
         "msg": "Tu compra fue reembolsada, así que el acceso se cerró."
       }
-    }
+    },
+    "sessaoNaoCriada": "Sesión no creada"
   },
   "header": {
     "perfil": "Perfil",
@@ -238,7 +240,8 @@
     "naoEntendi": "No entendí el audio. Inténtalo de nuevo.",
     "falhaTranscricao": "Falló la transcripción",
     "erroTranscrever": "Error al transcribir",
-    "backendPendente": "Disponible cuando se conecte el backend 🛠️"
+    "backendPendente": "Disponible cuando se conecte el backend 🛠️",
+    "transcrevendo": "Transcribiendo..."
   },
   "install": {
     "leva30s": "Tarda 30 segundos",
@@ -376,7 +379,8 @@
     "sairConta": "Cerrar sesión",
     "emBreve": "Próximamente",
     "preparandoSecao": "Estamos preparando esta sección",
-    "canalSuporte": "Canal de soporte en preparación"
+    "canalSuporte": "Canal de soporte en preparación",
+    "naoInformado": "No indicado"
   },
   "chat": {
     "grid_title": "Estudio de Creación",
@@ -778,7 +782,12 @@
       "Probar formato de lista con 3 consejos",
       "Reaccionar a una tendencia nueva de la semana",
       "Storytime sobre un error que se volvió aprendizaje"
-    ]
+    ],
+    "estados": {
+      "ideias": "Borrador",
+      "gravando": "En producción",
+      "publicado": "Publicado"
+    }
   },
   "alerta": {
     "fiqueDeOlho": "Mantente atenta",

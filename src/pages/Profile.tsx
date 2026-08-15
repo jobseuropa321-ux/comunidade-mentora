@@ -304,7 +304,7 @@ const Profile: React.FC = () => {
                     autoFocus
                   />
                 ) : (
-                  <p className="text-sm font-bold text-[#1E1B11] truncate">{profile?.full_name || 'Não informado'}</p>
+                  <p className="text-sm font-bold text-[#1E1B11] truncate">{profile?.full_name || t('profile.naoInformado')}</p>
                 )}
               </div>
             </div>

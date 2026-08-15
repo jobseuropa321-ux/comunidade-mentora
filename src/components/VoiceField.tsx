@@ -104,7 +104,7 @@ const VoiceField: React.FC<VoiceFieldProps> = ({
           type="text"
           value={value}
           onChange={e => onChange(e.target.value)}
-          placeholder={transcribing ? 'Transcrevendo...' : placeholder}
+          placeholder={transcribing ? t('audio.transcrevendo') : placeholder}
           autoFocus={autoFocus}
           disabled={disabled || transcribing}
           maxLength={maxLength}

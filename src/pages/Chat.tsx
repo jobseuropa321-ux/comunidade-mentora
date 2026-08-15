@@ -667,7 +667,7 @@ const AgentIntakeForm: React.FC<{
       {/* Ações */}
       <div className="shrink-0 px-4 py-3 border-t border-[#BE0D3E]/10 flex gap-2" style={{ background: 'rgba(255,247,230,0.95)', backdropFilter: 'blur(20px)' }}>
         <button onClick={goBack} className="px-5 py-3 rounded-2xl text-[12px] font-black uppercase tracking-widest bg-[#F6D6DC] text-[#5B4041]" style={{ WebkitTapHighlightColor: 'transparent' }}>
-          {step === 0 ? 'Sair' : 'Voltar'}
+          {step === 0 ? t('common.sair') : t('common.voltar')}
         </button>
         <button
           onClick={goNext}

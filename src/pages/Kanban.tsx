@@ -88,9 +88,7 @@ const KanbanCard: React.FC<{
         </button>
 
         <span className="text-[9px] font-bold text-[#5B4041]/60 uppercase tracking-widest">
-          {roteiro.coluna === 'ideias' && 'Rascunho'}
-          {roteiro.coluna === 'gravando' && 'Em produção'}
-          {roteiro.coluna === 'publicado' && 'No ar'}
+          {t(`kanban.estados.${roteiro.coluna}`)}
         </span>
 
         <button

@@ -75,7 +75,7 @@ const CameraScriptPicker: React.FC<Props> = ({ open, onClose }) => {
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fechar"
+            aria-label={t('common.fechar')}
             className="w-9 h-9 shrink-0 rounded-full bg-[#1E1B11]/5 flex items-center justify-center active:scale-[0.92] transition-transform"
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
