@@ -40,3 +40,6 @@ supabase/.temp/
 
 # config local do Codex CLI
 .codex/
+
+# Intermediários de geração de imagem (5MB de PNG de trabalho)
+tmp/

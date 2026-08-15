@@ -49,7 +49,15 @@ fs.writeFileSync(`${destDir}/.origem-hash`, hashOrigem + '\n');
    em português e a tela inteira volta ao original, com erro #418. Por isso os
    assets são duplicados e traduzidos junto, e o caminho no HTML é reescrito. */
 const assetsDir = base + '/assets';
-if (fs.existsSync(assetsDir)) {
+/* Só duplicamos quando existe código pra traduzir. A edicao-ia tem 68 imagens
+   e ZERO .js em assets/: duplicar ali custava 4,4 MB no repositório e no
+   precache do service worker pra não trocar uma letra. Sem código, a cópia ES
+   segue apontando pros mesmos arquivos do português — imagem não tem idioma.
+   (As duas artes que TÊM texto em português são tratadas por entrada de
+   dicionário, trocando o nome do arquivo.) */
+const temCodigo = fs.existsSync(assetsDir) &&
+  fs.readdirSync(assetsDir).some((n) => /\.(js|css)$/.test(n));
+if (temCodigo) {
   const destAssets = destDir + '/assets';
   fs.rmSync(destAssets, { recursive: true, force: true });
   fs.cpSync(assetsDir, destAssets, { recursive: true });
