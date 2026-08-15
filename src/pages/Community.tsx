@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Heart, MessageCircle, Send, Image as ImageIcon, X, Trash2, Loader2, Users, Instagram } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { toast } from 'sonner';
-import { compressImage } from '@/lib/imageCompression';
+import { prepareImageUpload } from '@/lib/imageCompression';
 import { instagramUrl } from '@/lib/instagram';
 import { supabase } from '@/integrations/supabase/client';
 import { useLocalizedNavigate, useCurrentLang } from '@/i18n/LanguageProvider';
@@ -37,6 +37,7 @@ const makeTxt = (t: (k: string) => string) => ({
   toast_post_deleted: t('community.toast_post_deleted'),
   toast_empty_post: t('community.toast_empty_post'),
   toast_image_too_large: t('community.toast_image_too_large'),
+  toast_image_unsupported: t('community.toast_image_unsupported'),
   toast_load_error: t('community.toast_load_error'),
   toast_like_error: t('community.toast_like_error'),
   toast_comment_error: t('community.toast_comment_error'),
@@ -290,9 +291,19 @@ const Community: React.FC = () => {
     }
     setCompressingImage(true);
     try {
-      const compressed = await compressImage(file);
-      setSelectedImage(compressed);
-      setImagePreview(URL.createObjectURL(compressed));
+      // Vira JPEG aqui, não na hora de postar: o bucket só aceita jpeg/png/webp
+      // e assim quem escolhe um HEIC descobre na hora, e não depois de escrever
+      // o post inteiro.
+      const jpeg = await prepareImageUpload(file, {
+        maxWidth: 1080,
+        quality: 0.85,
+        maxBytes: 4 * 1024 * 1024, // bucket `community-images` = 5MB
+      });
+      setSelectedImage(jpeg);
+      setImagePreview(URL.createObjectURL(jpeg));
+    } catch (err) {
+      console.error(err);
+      toast.error(TXT.toast_image_unsupported);
     } finally {
       setCompressingImage(false);
       e.target.value = '';
@@ -310,9 +321,11 @@ const Community: React.FC = () => {
     try {
       let imageUrl: string | null = null;
       if (selectedImage) {
-        const ext = (selectedImage.name.split('.').pop() || 'jpg').toLowerCase();
-        const path = `${user.id}/${Date.now()}.${ext}`;
-        const { error: uploadError } = await supabase.storage.from('community-images').upload(path, selectedImage);
+        // Sempre .jpg: prepareImageUpload garante que selectedImage é image/jpeg.
+        const path = `${user.id}/${Date.now()}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from('community-images')
+          .upload(path, selectedImage, { contentType: 'image/jpeg' });
         if (uploadError) throw uploadError;
         imageUrl = supabase.storage.from('community-images').getPublicUrl(path).data.publicUrl;
       }

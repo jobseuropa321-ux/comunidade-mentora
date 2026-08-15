@@ -1,15 +1,15 @@
 {
   "nav": {
-    "home": "inicio",
+    "cursos": "cursos",
     "aoVivo": "en directo",
     "comunidade": "comunidad",
-    "cursos": "cursos",
+    "agentes": "agentes",
     "grupo": "grupo",
     "titles": {
-      "home": "Inicio",
+      "cursos": "Cursos",
       "aoVivo": "En directo",
       "comunidade": "Comunidad",
-      "cursos": "Cursos",
+      "agentes": "Agentes",
       "grupoWhatsapp": "Grupo de WhatsApp"
     }
   },
@@ -186,6 +186,7 @@
     "toast_post_deleted": "Publicación eliminada",
     "toast_empty_post": "Escribe algo o añade una imagen",
     "toast_image_too_large": "Imagen demasiado grande. Máximo 25MB.",
+    "toast_image_unsupported": "No pudimos procesar esa imagen. Prueba con otra foto (JPG o PNG).",
     "toast_load_error": "Error al cargar las publicaciones",
     "toast_like_error": "Error al dar me gusta",
     "toast_comment_error": "Error al comentar",
@@ -350,6 +351,7 @@
     "maximo25": "Máximo 25MB",
     "avatarAtualizado": "¡Foto actualizada!",
     "falhaAvatar": "No se pudo actualizar la foto",
+    "formatoNaoSuportado": "Formato de imagen no compatible. Usa JPG, PNG o WEBP.",
     "avatarRemovido": "Foto eliminada",
     "falhaRemoverAvatar": "No se pudo eliminar la foto",
     "alterarFoto": "Cambiar foto",
@@ -570,7 +572,8 @@
     "toast_save_error": "Error al guardar",
     "tituloAnalise": "Análisis de mi perfil — {{data}}",
     "sugestoesLabel": "Sugerencias:",
-    "bioSugeridaLabel": "Bio sugerida:"
+    "bioSugeridaLabel": "Bio sugerida:",
+    "saved_input": "Captura de la parte superior de mi perfil de Instagram"
   },
   "modelos": {
     "formatosProntos": "Formatos listos",
@@ -1184,6 +1187,12 @@
     },
     "semConteudo": "La IA no devolvió contenido",
     "mercado": "España",
+    "nomeSalvo": {
+      "pesquisa": "Investigación",
+      "ganchos": "Ganchos",
+      "roteiro": "Guion",
+      "carrossel": "Carrusel"
+    },
     "fb": {
       "traco": "—",
       "semNome": "(aún sin nombre definido)",
@@ -1244,7 +1253,8 @@
     "titulo": "Algo salió mal",
     "descricao": "No se pudo cargar la app ahora. Toca el botón de abajo — la mayoría de las veces con eso se arregla.",
     "recarregar": "Recargar la app",
-    "suporte": "Si sigue así, escribe al soporte y manda esta captura."
+    "suporte": "Si sigue así, escribe al soporte y manda esta captura.",
+    "atualizando": "Actualizando la app..."
   },
   "push": {
     "titulo": "Activa las notificaciones",

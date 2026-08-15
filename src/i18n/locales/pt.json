@@ -1,15 +1,15 @@
 {
   "nav": {
-    "home": "home",
+    "cursos": "cursos",
     "aoVivo": "ao vivo",
     "comunidade": "comunidade",
-    "cursos": "cursos",
+    "agentes": "agentes",
     "grupo": "grupo",
     "titles": {
-      "home": "Início",
+      "cursos": "Cursos",
       "aoVivo": "Ao vivo",
       "comunidade": "Comunidade",
-      "cursos": "Cursos",
+      "agentes": "Agentes",
       "grupoWhatsapp": "Grupo do WhatsApp"
     }
   },
@@ -186,6 +186,7 @@
     "toast_post_deleted": "Post excluído",
     "toast_empty_post": "Escreva algo ou adicione uma imagem",
     "toast_image_too_large": "Imagem muito grande. Máximo 25MB.",
+    "toast_image_unsupported": "Não conseguimos processar essa imagem. Tente outra foto (JPG ou PNG).",
     "toast_load_error": "Erro ao carregar posts",
     "toast_like_error": "Erro ao curtir",
     "toast_comment_error": "Erro ao comentar",
@@ -350,6 +351,7 @@
     "maximo25": "Máximo 25MB",
     "avatarAtualizado": "Avatar atualizado!",
     "falhaAvatar": "Não foi possível atualizar o avatar",
+    "formatoNaoSuportado": "Formato de imagem não suportado. Use JPG, PNG ou WEBP.",
     "avatarRemovido": "Avatar removido",
     "falhaRemoverAvatar": "Não foi possível remover o avatar",
     "alterarFoto": "Alterar foto",
@@ -570,7 +572,8 @@
     "toast_save_error": "Erro ao salvar",
     "tituloAnalise": "Análise do meu perfil — {{data}}",
     "sugestoesLabel": "Sugestões:",
-    "bioSugeridaLabel": "Bio sugerida:"
+    "bioSugeridaLabel": "Bio sugerida:",
+    "saved_input": "Print do topo do meu perfil do Instagram"
   },
   "modelos": {
     "formatosProntos": "Formatos prontos",
@@ -1184,6 +1187,12 @@
     },
     "semConteudo": "A IA não retornou conteúdo",
     "mercado": "Brasil",
+    "nomeSalvo": {
+      "pesquisa": "Pesquisa",
+      "ganchos": "Ganchos",
+      "roteiro": "Roteiro",
+      "carrossel": "Carrossel"
+    },
     "fb": {
       "traco": "—",
       "semNome": "(ainda sem nome definido)",
@@ -1244,7 +1253,8 @@
     "titulo": "Algo deu errado",
     "descricao": "Não foi possível carregar o app agora. Toque no botão abaixo — na maioria das vezes isso já resolve.",
     "recarregar": "Recarregar o app",
-    "suporte": "Se continuar assim, chame o suporte e mande este print."
+    "suporte": "Se continuar assim, chame o suporte e mande este print.",
+    "atualizando": "Atualizando o app..."
   },
   "push": {
     "titulo": "Ative as notificações",

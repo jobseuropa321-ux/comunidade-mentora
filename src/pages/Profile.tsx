@@ -13,7 +13,7 @@ import {
   LogOut, User, Mail, Edit2, Check, X, Camera, Loader2, Trash2, ImagePlus,
   Sparkles, Crown, ChevronRight, Shield, HelpCircle, Zap, ShieldCheck, Instagram,
 } from 'lucide-react';
-import { compressImage } from '@/lib/imageCompression';
+import { prepareImageUpload, ImageProcessingError } from '@/lib/imageCompression';
 import { normalizeInstagramHandle, instagramUrl } from '@/lib/instagram';
 import { supabase } from '@/integrations/supabase/client';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
@@ -94,15 +94,22 @@ const Profile: React.FC = () => {
     }
     setIsUploadingAvatar(true);
     try {
-      // Avatar é exibido em ~112px max — 400px de largura é mais que suficiente
-      // e converte HEIC/qualquer formato em JPEG automaticamente (canvas).
-      const compressed = await compressImage(file, { maxWidth: 400, quality: 0.88 });
+      // Avatar é exibido em ~112px max — 400px de largura é mais que suficiente.
+      // prepareImageUpload SEMPRE devolve JPEG: o bucket só aceita jpeg/png/webp
+      // e o HEIC do iPhone subindo cru era o que dava 400 aqui.
+      const jpeg = await prepareImageUpload(file, {
+        maxWidth: 400,
+        quality: 0.88,
+        maxBytes: 1.5 * 1024 * 1024, // bucket `avatars` = 5MB; folga de sobra
+      });
 
       // Sobe pro caminho `${user.id}/avatar.jpg` (upsert = sobrescreve a foto anterior).
+      // contentType aqui é decorativo: com corpo File o storage-js manda FormData
+      // e o mime que vale é o do próprio arquivo (garantido image/jpeg acima).
       const path = AVATAR_PATH(user.id);
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(path, compressed, { upsert: true, contentType: 'image/jpeg' });
+        .upload(path, jpeg, { upsert: true, contentType: 'image/jpeg' });
       if (uploadError) throw uploadError;
 
       // URL pública + cache-buster pra forçar o <img> a recarregar após re-upload.
@@ -114,7 +121,15 @@ const Profile: React.FC = () => {
       toast({ title: t('profile.avatarAtualizado') });
     } catch (error) {
       console.error(error);
-      toast({ title: t('profile.erro'), description: t('profile.falhaAvatar'), variant: 'destructive' });
+      // Formato que o navegador não decodifica (HEIC no Android/desktop, por ex.)
+      // merece uma mensagem que diga o que fazer, não um "falhou" genérico.
+      const unsupported =
+        error instanceof ImageProcessingError && (error.reason === 'not_image' || error.reason === 'decode');
+      toast({
+        title: t('profile.erro'),
+        description: unsupported ? t('profile.formatoNaoSuportado') : t('profile.falhaAvatar'),
+        variant: 'destructive',
+      });
     } finally {
       setIsUploadingAvatar(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
