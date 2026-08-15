@@ -70,6 +70,9 @@ const makeTxt = (t: (k: string, o?: Record<string, unknown>) => string) => ({
   session_expired: t('perfilIA.session_expired'),
   empty_reply: t('perfilIA.empty_reply'),
   timeout: t('perfilIA.timeout'),
+  // Vai pro banco como o "user_input" do item salvo e aparece na Biblioteca:
+  // precisa nascer no idioma da aluna, não no do código.
+  saved_input: t('perfilIA.saved_input'),
   unknown: t('perfilIA.unknown'),
   backend_pending: t('perfilIA.backend_pending'),
   copy_failed: t('perfilIA.copy_failed'),
@@ -278,7 +281,7 @@ const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
       model_slug: agent.slug,
       model_name: agent.name,
       title,
-      user_input: 'Print do topo do meu perfil do Instagram',
+      user_input: TXT.saved_input,
       ai_response: analysisToText(result, TXT, t),
     });
     if (saveError) {

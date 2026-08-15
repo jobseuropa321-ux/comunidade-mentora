@@ -16,10 +16,35 @@ import React from 'react';
 import i18n from '@/i18n';
 import { isStaleBuildError, recoverFromStaleBuild } from '@/lib/appRecovery';
 
-/* Class component não tem hook, então falamos com a instância do i18n direto.
-   O defaultValue é a rede de segurança da rede de segurança: se o erro derrubou
-   o app ANTES do i18n subir, a aluna vê a frase em português em vez da chave. */
-const tt = (chave: string, padrao: string) => i18n.t(chave, { defaultValue: padrao });
+/* Idioma lido direto da URL, sem passar por LanguageProvider nem por react-router:
+   esta é a rede de segurança do app, e ela não pode depender de um módulo que
+   pode ter sido justamente o que falhou ao carregar. */
+const langDaUrl = (): 'pt' | 'es' =>
+  typeof window !== 'undefined' && window.location.pathname.split('/')[1] === 'es' ? 'es' : 'pt';
+
+/* Rede de segurança da rede de segurança: se o erro derrubou o app ANTES do
+   i18n subir, a aluna vê a frase escrita aqui — e não a chave crua. Antes só
+   havia versão em português, então a aluna espanhola caía no PT. */
+const PADRAO: Record<'pt' | 'es', Record<string, string>> = {
+  pt: {
+    atualizando: 'Atualizando o app...',
+    titulo: 'Algo deu errado',
+    descricao: 'Não foi possível carregar o app agora. Toque no botão abaixo — na maioria das vezes isso já resolve.',
+    recarregar: 'Recarregar o app',
+    suporte: 'Se continuar assim, chame o suporte e mande este print.',
+  },
+  es: {
+    atualizando: 'Actualizando la app...',
+    titulo: 'Algo salió mal',
+    descricao: 'No se pudo cargar la app ahora. Toca el botón de abajo — la mayoría de las veces con eso se arregla.',
+    recarregar: 'Recargar la app',
+    suporte: 'Si sigue así, escribe al soporte y manda esta captura.',
+  },
+};
+
+/* Class component não tem hook, então falamos com a instância do i18n direto. */
+const tt = (chave: keyof (typeof PADRAO)['pt']) =>
+  i18n.t(`erroApp.${chave}`, { defaultValue: PADRAO[langDaUrl()][chave] });
 
 type Phase = 'ok' | 'recovering' | 'failed';
 
@@ -69,7 +94,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, State
       return (
         <Shell>
           <div className="w-10 h-10 border-2 border-[#BE0D3E] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-medium text-[#5B4041]">Atualizando o app...</p>
+          <p className="text-sm font-medium text-[#5B4041]">{tt('atualizando')}</p>
         </Shell>
       );
     }
@@ -77,19 +102,19 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, State
     if (phase === 'failed') {
       return (
         <Shell>
-          <h1 className="text-2xl text-[#1E1B11]">{tt('erroApp.titulo', 'Algo deu errado')}</h1>
+          <h1 className="text-2xl text-[#1E1B11]">{tt('titulo')}</h1>
           <p className="text-sm text-[#5B4041] max-w-xs leading-relaxed">
-            {tt('erroApp.descricao', 'Não foi possível carregar o app agora. Toque no botão abaixo — na maioria das vezes isso já resolve.')}
+            {tt('descricao')}
           </p>
           <button
             onClick={this.hardReload}
             className="mt-1 px-7 py-3 rounded-full text-white text-sm font-bold tracking-wide active:scale-95 transition-transform shadow-[0_5px_14px_-4px_rgba(190,13,62,0.45)]"
             style={{ background: 'linear-gradient(180deg, #E63462 0%, #CB1B49 100%)' }}
           >
-            {tt('erroApp.recarregar', 'Recarregar o app')}
+            {tt('recarregar')}
           </button>
           <p className="text-[11px] text-[#5B4041]/60 max-w-xs">
-            {tt('erroApp.suporte', 'Se continuar assim, chame o suporte e mande este print.')}
+            {tt('suporte')}
           </p>
           {message && (
             <code className="text-[10px] text-[#5B4041]/45 break-all max-w-xs">{message}</code>
