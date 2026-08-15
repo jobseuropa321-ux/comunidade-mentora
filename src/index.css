@@ -583,4 +583,15 @@
     max-height: 500px;
     object-fit: contain;
   }
+
+  /* Banner com arte própria por dispositivo (`banner-img--device`): preenche a
+     largura na proporção 20:9 das artes (mobile 1600x720, desktop 1920x864) em
+     vez de `contain`, que deixaria faixa vazia em cima e embaixo.
+     A arte de tablet vem 1024x768 com sobra de fundo — o corte central do
+     `cover` devolve a mesma faixa desenhada. */
+  .banner-carousel-container img.banner-img--device {
+    aspect-ratio: 20 / 9;
+    max-height: none;
+    object-fit: cover;
+  }
 }

@@ -107,3 +107,52 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
+
+/* ── PUSH ──────────────────────────────────────────────────────────────
+ * A notificação chega mesmo com o app fechado — quem exibe é o SW.
+ * O payload vem como JSON de supabase/functions/send-push:
+ *   { title, body, url, tag }
+ * `url` é o destino do clique; já vem com prefixo de idioma (/es/...) porque
+ * o disparo é feito por idioma.
+ * ────────────────────────────────────────────────────────────────────── */
+self.addEventListener("push", (event) => {
+  // Sem payload legível ainda vale notificar: o navegador exige que TODO push
+  // recebido vire notificação visível, senão ele revoga a permissão do site.
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : "" };
+  }
+
+  const title = data.title || "Comunidade";
+  const options = {
+    body: data.body || "",
+    icon: "/logo-icon-192.png",
+    badge: "/logo-icon-192.png",
+    // `tag` faz a notificação nova substituir a anterior do mesmo assunto em
+    // vez de empilhar várias iguais na bandeja.
+    tag: data.tag || "comunidade",
+    data: { url: data.url || "/" },
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const destino = (event.notification.data && event.notification.data.url) || "/";
+
+  // Se o app já está aberto, foca a janela em vez de abrir outra.
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((janelas) => {
+      for (const janela of janelas) {
+        if (janela.url.includes(self.location.origin) && "focus" in janela) {
+          janela.navigate(destino).catch(() => undefined);
+          return janela.focus();
+        }
+      }
+      return self.clients.openWindow(destino);
+    })
+  );
+});

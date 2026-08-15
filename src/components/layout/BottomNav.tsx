@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { usePlan } from '@/contexts/PlanContext';
 import UpgradeModal from '@/components/UpgradeModal';
 import { useLiveStatus } from '@/hooks/useLiveStatus';
-import { useLocalizedNavigate, useCurrentLang, unlocalizedPath } from '@/i18n/LanguageProvider';
+import { useLocalizedNavigate, useCurrentLang, unlocalizedPath, type SupportedLang } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 
 /* ── Ícones (SVG do design "A Mentora", herdam a cor via currentColor) ── */
@@ -92,8 +92,11 @@ const WhatsAppIcon: React.FC = () => (
   </svg>
 );
 
-/* Link do convite do grupo do WhatsApp da comunidade. */
-const WHATSAPP_GROUP_URL = 'https://chat.whatsapp.com/JUUOZVbvbLh1vMvDTC4D7P?mode=gi_t';
+/* Convite do grupo do WhatsApp da comunidade — um grupo por idioma. */
+const WHATSAPP_GROUP_URL: Record<SupportedLang, string> = {
+  pt: 'https://chat.whatsapp.com/JUUOZVbvbLh1vMvDTC4D7P?mode=gi_t',
+  es: 'https://chat.whatsapp.com/BlR0LA49cxVE4uPlY9XUPm?mode=gi_t',
+};
 
 const BottomNav: React.FC = () => {
   const location = useLocation();
@@ -163,7 +166,7 @@ const BottomNav: React.FC = () => {
                   <React.Fragment key="tab-1-plus-grupo">
                     {tab}
                     <a
-                      href={WHATSAPP_GROUP_URL}
+                      href={WHATSAPP_GROUP_URL[lang]}
                       target="_blank"
                       rel="noopener noreferrer"
                       title={t('nav.titles.grupoWhatsapp')}

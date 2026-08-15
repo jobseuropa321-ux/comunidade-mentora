@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 
-import { ArrowLeft, ShieldCheck, BookOpen, Radio, KeyRound, TrendingUp, Loader2 } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, BookOpen, Radio, KeyRound, TrendingUp, BellRing, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminCourses from '@/components/admin/AdminCourses';
 import AdminLive from '@/components/admin/AdminLive';
 import AdminAccess from '@/components/admin/AdminAccess';
 import AdminAscensao from '@/components/admin/AdminAscensao';
+import AdminPush from '@/components/admin/AdminPush';
+import { AdminLangProvider, AdminLangSwitch } from '@/components/admin/AdminLang';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
-type Tab = 'cursos' | 'aovivo' | 'acessos' | 'ascensao';
+type Tab = 'cursos' | 'aovivo' | 'avisos' | 'acessos' | 'ascensao';
 
 const Admin: React.FC = () => {
   const navigate = useLocalizedNavigate();
@@ -32,6 +34,7 @@ const Admin: React.FC = () => {
   const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: 'cursos', label: 'Cursos', icon: BookOpen },
     { id: 'aovivo', label: 'Ao Vivo', icon: Radio },
+    { id: 'avisos', label: 'Avisos', icon: BellRing },
     { id: 'acessos', label: 'Acessos', icon: KeyRound },
     { id: 'ascensao', label: 'Ascensão', icon: TrendingUp },
   ];
@@ -58,7 +61,7 @@ const Admin: React.FC = () => {
       </div>
 
       {/* Abas */}
-      <div className="grid grid-cols-4 gap-1 bg-[#F6D6DC]/50 p-1 rounded-xl mb-5">
+      <div className="grid grid-cols-5 gap-1 bg-[#F6D6DC]/50 p-1 rounded-xl mb-5">
         {TABS.map(t => {
           const active = tab === t.id;
           return (
@@ -70,14 +73,20 @@ const Admin: React.FC = () => {
               }`}
               style={{ WebkitTapHighlightColor: 'transparent' }}
             >
-              <t.icon size={12} className="shrink-0" /> {t.label}
+              <t.icon size={12} className="shrink-0" /> <span className="truncate">{t.label}</span>
             </button>
           );
         })}
       </div>
 
-      {tab === 'cursos' && <AdminCourses />}
-      {tab === 'aovivo' && <AdminLive />}
+      {/* Acessos e Ascensão são iguais nos dois idiomas (aluna, plano, funil),
+          então o seletor de idioma só aparece nas abas de conteúdo. */}
+      <AdminLangProvider>
+        {(tab === 'cursos' || tab === 'aovivo' || tab === 'avisos') && <AdminLangSwitch />}
+        {tab === 'cursos' && <AdminCourses />}
+        {tab === 'aovivo' && <AdminLive />}
+        {tab === 'avisos' && <AdminPush />}
+      </AdminLangProvider>
       {tab === 'acessos' && <AdminAccess />}
       {tab === 'ascensao' && <AdminAscensao />}
     </div>

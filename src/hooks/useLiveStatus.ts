@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useCurrentLang } from '@/i18n/LanguageProvider';
 
 export interface LiveStatus {
   is_active: boolean;
@@ -20,22 +21,25 @@ const DEFAULT: LiveStatus = {
 };
 
 /**
- * Lê e mantém em sync o singleton `live_settings` (id=1).
- * Usa Postgres realtime — qualquer UPDATE feito no admin reflete em todos os clientes.
+ * Lê e mantém em sync a live do idioma atual (`live_settings`, uma linha por
+ * idioma). Usa Postgres realtime — qualquer UPDATE feito no admin reflete em
+ * todos os clientes.
  */
 export function useLiveStatus() {
+  const lang = useCurrentLang();
   const [status, setStatus] = useState<LiveStatus>(DEFAULT);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
 
     (async () => {
       try {
         const { data } = await supabase
           .from('live_settings')
           .select('is_active, stream_url, title, description, presenter, updated_at')
-          .eq('id', 1)
+          .eq('lang', lang)
           .maybeSingle();
         if (!cancelled && data) setStatus(data);
       } catch (err) {
@@ -53,10 +57,12 @@ export function useLiveStatus() {
       .channel(channelName)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'live_settings', filter: 'id=eq.1' },
+        // Sem filtro no servidor: são duas linhas só, e conferir o idioma aqui
+        // evita depender de filtro em coluna que não é a chave primária.
+        { event: 'UPDATE', schema: 'public', table: 'live_settings' },
         (payload) => {
-          const next = payload.new as Partial<LiveStatus>;
-          if (next) {
+          const next = payload.new as Partial<LiveStatus> & { lang?: string };
+          if (next && next.lang === lang) {
             setStatus(prev => ({ ...prev, ...next }));
           }
         },
@@ -67,7 +73,7 @@ export function useLiveStatus() {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [lang]);
 
   return { status, loading };
 }

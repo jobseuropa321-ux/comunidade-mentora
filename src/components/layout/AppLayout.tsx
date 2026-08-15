@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import BottomNav from './BottomNav';
 import { useAppUsageTracking } from '@/hooks/useAppUsageTracking';
+import PushPermissionModal from '@/components/PushPermissionModal';
 
 const AppLayout: React.FC = () => {
   useAppUsageTracking();
@@ -21,6 +22,9 @@ const AppLayout: React.FC = () => {
         <Outlet />
       </main>
       {!isChatOpen && !isModuleOpen && !isAulaOpen && <BottomNav />}
+      {/* Convite de notificação: só dispara com o app instalado, então não
+          atrapalha quem ainda está navegando pelo Safari. */}
+      <PushPermissionModal />
     </div>
   );
 };

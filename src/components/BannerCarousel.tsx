@@ -3,8 +3,11 @@ import { Link } from 'react-router-dom';
 import { useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
 
 export interface BannerSlide {
+  /** Arte mobile (<768px). Sempre obrigatória — é o fallback de todo mundo. */
   src: string;
-  /** Fonte alternativa para desktop (>=768px). Se omitida, usa `src`. */
+  /** Arte de tablet (768px–1279px). Se omitida, cai no `src`. */
+  srcTablet?: string;
+  /** Arte de desktop (>=1280px). Se omitida, cai no `srcTablet` e depois no `src`. */
   srcDesktop?: string;
   alt: string;
   href?: string;
@@ -26,14 +29,21 @@ const BannerImg: React.FC<{
   loading?: 'eager' | 'lazy';
   onError: (src: string) => void;
 }> = ({ b, height, heightDesktop, loading = 'lazy', onError }) => (
+  // A ordem importa: o <picture> usa o PRIMEIRO <source> que casar, então
+  // desktop vem antes de tablet.
   <picture>
     {b.srcDesktop && (
-      <source media="(min-width: 768px)" srcSet={b.srcDesktop} />
+      <source media="(min-width: 1280px)" srcSet={b.srcDesktop} />
+    )}
+    {b.srcTablet && (
+      <source media="(min-width: 768px)" srcSet={b.srcTablet} />
     )}
     <img
       src={b.src}
       alt={b.alt}
-      className="w-full object-cover object-center"
+      // `banner-img--device`: banner com arte própria de tablet/desktop. Sem
+      // ela o CSS mantém o comportamento antigo (arte mobile esticada).
+      className={`w-full object-cover object-center${b.srcTablet || b.srcDesktop ? ' banner-img--device' : ''}`}
       style={{
         height,
         // @ts-expect-error CSS custom property for desktop override

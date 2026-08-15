@@ -147,12 +147,13 @@ const AoVivo: React.FC = () => {
         .from('live_replays')
         .select('id, title, description, video_url, cover_url, duration_label, recorded_at')
         .eq('is_published', true)
+        .eq('lang', lang)
         .order('position', { ascending: false })
         .order('recorded_at', { ascending: false, nullsFirst: false });
       if (!cancel && data) setReplays(data as Replay[]);
     })();
     return () => { cancel = true; };
-  }, []);
+  }, [lang]);
 
   const upcoming = getUpcomingLives();
 

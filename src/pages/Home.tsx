@@ -19,14 +19,18 @@ import { isInEsCatalog } from '@/i18n/esCatalog';
 // Aqui os ARQUIVOS mudam por idioma (arte diferente, não texto traduzido), e
 // o espanhol tem 3 banners contra 2 do português — então é o único array da
 // tela que precisa variar de verdade.
-const BANNERS_PT = [
+type BannerDef = { src: string; srcTablet?: string; srcDesktop?: string; altKey: string; href?: string };
+
+const BANNERS_PT: BannerDef[] = [
   { src: '/covers/banner-1.webp', altKey: 'home.bannerAlt1' },
   { src: '/covers/banner-2.webp', altKey: 'home.bannerAlt2' },
 ];
-const BANNERS_ES = [
-  { src: '/covers/es/banner-3.webp', altKey: 'home.bannerAlt3' },
-  { src: '/covers/es/banner-1.webp', altKey: 'home.bannerAlt3' },
-  { src: '/covers/es/banner-2.webp', altKey: 'home.bannerAlt3' },
+// O espanhol tem arte por dispositivo: mobile (1600x720), tablet (1024x768)
+// e desktop (1920x864). Quem não tem variante cai na arte mobile.
+const BANNERS_ES: BannerDef[] = [
+  { src: '/covers/es/banner-3.webp', srcTablet: '/covers/es/banner-3-tablet.webp', srcDesktop: '/covers/es/banner-3-desktop.webp', altKey: 'home.bannerAlt3' },
+  { src: '/covers/es/banner-1.webp', srcTablet: '/covers/es/banner-1-tablet.webp', srcDesktop: '/covers/es/banner-1-desktop.webp', altKey: 'home.bannerAlt3' },
+  { src: '/covers/es/banner-2.webp', srcTablet: '/covers/es/banner-2-tablet.webp', srcDesktop: '/covers/es/banner-2-desktop.webp', altKey: 'home.bannerAlt3' },
 ];
 
 /* ── PLACEHOLDER DE IMAGEM ──
@@ -113,7 +117,7 @@ const Home: React.FC = () => {
       {/* Banner — placeholder vazio por enquanto (full bleed).
           Pra reativar o carrossel real, troque pela linha comentada abaixo. */}
       <section className="mb-5 -mt-1">
-        <BannerCarousel banners={(lang === 'es' ? BANNERS_ES : BANNERS_PT).map(b => ({ src: b.src, alt: t(b.altKey) }))} autoRotateMs={6000} height={180} heightDesktop={360} />
+        <BannerCarousel banners={(lang === 'es' ? BANNERS_ES : BANNERS_PT).map(({ altKey, ...b }) => ({ ...b, alt: t(altKey) }))} autoRotateMs={6000} height={180} heightDesktop={360} />
       </section>
 
       {loading ? (

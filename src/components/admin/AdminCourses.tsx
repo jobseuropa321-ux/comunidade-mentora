@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAdminLang } from '@/components/admin/AdminLang';
 import { toast } from 'sonner';
 import {
   Plus, ArrowLeft, ArrowUp, ArrowDown, Pencil, Trash2, Save, Eye, EyeOff,
@@ -105,6 +106,7 @@ const AdminCourses: React.FC = () => {
 
 /* ── NÍVEL 1 · LISTA DE MÓDULOS ── */
 const ModuleList: React.FC<{ onEdit: (m: Module) => void }> = ({ onEdit }) => {
+  const { isEs } = useAdminLang();
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -179,8 +181,13 @@ const ModuleList: React.FC<{ onEdit: (m: Module) => void }> = ({ onEdit }) => {
             <button onClick={() => move(m, 1)} disabled={i === modules.length - 1} className="w-7 h-7 rounded-lg bg-[#F6D6DC] text-[#5B4041] flex items-center justify-center disabled:opacity-30 hover:brightness-95 transition-all"><ArrowDown size={12} /></button>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-black text-[#1E1B11] truncate">{m.title1} {m.title2}</p>
-            <p className="text-[10px] text-[#5B4041] truncate">/{m.slug} · {m.is_published ? 'Publicado' : 'Em breve'}</p>
+            <p className="text-[12px] font-black text-[#1E1B11] truncate">
+              {isEs ? `${m.title1_es ?? m.title1} ${m.title2_es ?? m.title2}` : `${m.title1} ${m.title2}`}
+            </p>
+            <p className="text-[10px] text-[#5B4041] truncate">
+              /{m.slug} · {m.is_published ? 'Publicado' : 'Em breve'}
+              {isEs && !m.title1_es && !m.title2_es && ' · sem tradução'}
+            </p>
           </div>
           <button onClick={() => togglePublished(m)} className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${m.is_published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
             {m.is_published ? <Eye size={13} /> : <EyeOff size={13} />}
@@ -205,6 +212,7 @@ const ModuleList: React.FC<{ onEdit: (m: Module) => void }> = ({ onEdit }) => {
 const ModuleEditor: React.FC<{
   module: Module; onBack: () => void; onEditLesson: (l: Lesson) => void; onModuleChanged: (m: Module) => void;
 }> = ({ module: mod, onBack, onEditLesson, onModuleChanged }) => {
+  const { adminLang, isEs } = useAdminLang();
   const [draft, setDraft] = useState<Module>(mod);
   const [saving, setSaving] = useState(false);
   const [lessons, setLessons] = useState<Lesson[]>([]);
@@ -301,25 +309,27 @@ const ModuleEditor: React.FC<{
 
       <div className="bg-white border border-[#BE0D3E]/15 rounded-2xl p-4 space-y-3">
         <h3 className="text-[10px] font-black uppercase tracking-widest text-[#BE0D3E]">Dados do módulo</h3>
-        <div className="grid grid-cols-2 gap-2">
-          <Field label="Título linha 1" value={draft.title1} onChange={v => setDraft({ ...draft, title1: v })} />
-          <Field label="Título linha 2" value={draft.title2} onChange={v => setDraft({ ...draft, title2: v })} />
-        </div>
-        <Field label="Slug (URL)" value={draft.slug} onChange={v => setDraft({ ...draft, slug: v })} hint="usado em /modulo/{slug}" />
-        <FieldArea label="Descrição" value={draft.descricao} onChange={v => setDraft({ ...draft, descricao: v })} rows={3} />
-
-        {/* Versão em espanhol. Em branco, o app mostra o texto em português —
-            módulo sem tradução não some da tela, só aparece no idioma original. */}
-        <div className="rounded-2xl border border-[#BE0D3E]/15 bg-[#FFF7E6]/40 p-3 space-y-3">
-          <p className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">
-            Versão em espanhol <span className="text-[#5B4041]/50">· opcional, em branco usa o português</span>
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Título linha 1 (ES)" value={draft.title1_es ?? ''} onChange={v => setDraft({ ...draft, title1_es: v || null })} />
-            <Field label="Título linha 2 (ES)" value={draft.title2_es ?? ''} onChange={v => setDraft({ ...draft, title2_es: v || null })} />
-          </div>
-          <FieldArea label="Descrição (ES)" value={draft.descricao_es ?? ''} onChange={v => setDraft({ ...draft, descricao_es: v || null })} rows={3} />
-        </div>
+        {/* Texto do idioma selecionado. No espanhol, o `hint` mostra o
+            português para o admin saber o que está traduzindo, e campo em
+            branco faz o app cair no português em vez de ficar buraco. */}
+        {isEs ? (
+          <>
+            <div className="grid grid-cols-2 gap-2">
+              <Field label="Título linha 1" value={draft.title1_es ?? ''} onChange={v => setDraft({ ...draft, title1_es: v || null })} hint={`PT: ${draft.title1}`} />
+              <Field label="Título linha 2" value={draft.title2_es ?? ''} onChange={v => setDraft({ ...draft, title2_es: v || null })} hint={`PT: ${draft.title2}`} />
+            </div>
+            <FieldArea label="Descrição" value={draft.descricao_es ?? ''} onChange={v => setDraft({ ...draft, descricao_es: v || null })} rows={3} hint={`PT: ${draft.descricao}`} />
+          </>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-2">
+              <Field label="Título linha 1" value={draft.title1} onChange={v => setDraft({ ...draft, title1: v })} />
+              <Field label="Título linha 2" value={draft.title2} onChange={v => setDraft({ ...draft, title2: v })} />
+            </div>
+            <FieldArea label="Descrição" value={draft.descricao} onChange={v => setDraft({ ...draft, descricao: v })} rows={3} />
+          </>
+        )}
+        <Field label="Slug (URL)" value={draft.slug} onChange={v => setDraft({ ...draft, slug: v })} hint="usado em /modulo/{slug} · vale para os dois idiomas" />
         <div className="grid grid-cols-2 gap-2">
           <Field label="Instrutor(a)" value={draft.instructor} onChange={v => setDraft({ ...draft, instructor: v })} />
           <Field label="Duração" value={draft.duracao} onChange={v => setDraft({ ...draft, duracao: v })} />
@@ -347,10 +357,13 @@ const ModuleEditor: React.FC<{
           </div>
         </div>
 
-        {/* Capa */}
+        {/* Capa do idioma selecionado: os dois blocos existem, mas só o do
+            idioma em edição aparece — foi mostrar os dois juntos que fez arte
+            em espanhol ser salva no campo do português. */}
+        {!isEs && (
         <div>
           <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">Capa do módulo</label>
-          <input ref={coverFileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={e => uploadCover(e, 'pt')} />
+          <input ref={coverFileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={e => uploadCover(e, adminLang)} />
           {draft.cover_url ? (
             <div className="mt-1.5 relative rounded-xl overflow-hidden border border-[#BE0D3E]/15 max-w-[180px]" style={{ aspectRatio: '3/4' }}>
               <img src={draft.cover_url} alt="Capa" className="w-full h-full object-cover" />
@@ -372,12 +385,14 @@ const ModuleEditor: React.FC<{
           <input value={draft.cover_url ?? ''} onChange={e => setDraft({ ...draft, cover_url: e.target.value || null })}
             placeholder="ou cole uma URL externa" className="mt-2 w-full bg-[#FFF7E6] border border-[#BE0D3E]/15 text-[#1E1B11] text-[11px] rounded-xl px-3 py-2 focus:border-[#BE0D3E]/50 focus:outline-none" />
         </div>
+        )}
 
-        {/* Capa em espanhol — usada quando a aluna está em /es.
-            Em branco, o app cai na capa normal (nunca fica buraco). */}
+        {/* Capa usada quando a aluna está em /es. Em branco, o app cai na capa
+            em português (nunca fica buraco). */}
+        {isEs && (
         <div>
-          <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">Capa em espanhol <span className="text-[#5B4041]/50">· opcional</span></label>
-          <input ref={coverEsFileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={e => uploadCover(e, 'es')} />
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">Capa do módulo <span className="text-[#5B4041]/50">· em branco usa a capa em português</span></label>
+          <input ref={coverEsFileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={e => uploadCover(e, adminLang)} />
           {draft.cover_url_es ? (
             <div className="mt-1.5 relative rounded-xl overflow-hidden border border-[#BE0D3E]/15 max-w-[180px]" style={{ aspectRatio: '3/4' }}>
               <img src={draft.cover_url_es} alt="Capa em espanhol" className="w-full h-full object-cover" />
@@ -399,6 +414,7 @@ const ModuleEditor: React.FC<{
           <input value={draft.cover_url_es ?? ''} onChange={e => setDraft({ ...draft, cover_url_es: e.target.value || null })}
             placeholder="ou cole uma URL externa" className="mt-2 w-full bg-[#FFF7E6] border border-[#BE0D3E]/15 text-[#1E1B11] text-[11px] rounded-xl px-3 py-2 focus:border-[#BE0D3E]/50 focus:outline-none" />
         </div>
+        )}
 
         {/* Seção da Home */}
         <div>
@@ -477,6 +493,7 @@ const ModuleEditor: React.FC<{
 const LessonEditor: React.FC<{
   lesson: Lesson; moduleTitle: string; onBack: () => void; onLessonChanged: (l: Lesson) => void;
 }> = ({ lesson, moduleTitle, onBack, onLessonChanged }) => {
+  const { isEs } = useAdminLang();
   const [draft, setDraft] = useState<Lesson>(lesson);
   const [saving, setSaving] = useState(false);
   const [materials, setMaterials] = useState<LessonMaterial[]>([]);
@@ -540,20 +557,22 @@ const LessonEditor: React.FC<{
 
       <div className="bg-white border border-[#BE0D3E]/15 rounded-2xl p-4 space-y-3">
         <h3 className="text-[10px] font-black uppercase tracking-widest text-[#BE0D3E]">Dados da aula</h3>
-        <Field label="Título" value={draft.titulo} onChange={v => setDraft({ ...draft, titulo: v })} />
-        <Field label="Duração" value={draft.duracao} onChange={v => setDraft({ ...draft, duracao: v })} hint="ex: 6 min" />
-        <FieldArea label="Descrição (curta)" value={draft.descricao ?? ''} onChange={v => setDraft({ ...draft, descricao: v || null })} rows={2} />
-        <FieldArea label="Conteúdo / Resumo / Transcrição" value={draft.conteudo ?? ''} onChange={v => setDraft({ ...draft, conteudo: v || null })} rows={6} />
-
-        {/* Versão em espanhol da aula. Em branco, cai no texto em português. */}
-        <div className="rounded-2xl border border-[#BE0D3E]/15 bg-[#FFF7E6]/40 p-3 space-y-3">
-          <p className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">
-            Versão em espanhol <span className="text-[#5B4041]/50">· opcional, em branco usa o português</span>
-          </p>
-          <Field label="Título (ES)" value={draft.titulo_es ?? ''} onChange={v => setDraft({ ...draft, titulo_es: v || null })} />
-          <FieldArea label="Descrição curta (ES)" value={draft.descricao_es ?? ''} onChange={v => setDraft({ ...draft, descricao_es: v || null })} rows={2} />
-          <FieldArea label="Conteúdo / Resumo (ES)" value={draft.conteudo_es ?? ''} onChange={v => setDraft({ ...draft, conteudo_es: v || null })} rows={6} />
-        </div>
+        {/* Texto do idioma selecionado no topo da administração. Em branco no
+            espanhol, a aluna vê o português. */}
+        {isEs ? (
+          <>
+            <Field label="Título" value={draft.titulo_es ?? ''} onChange={v => setDraft({ ...draft, titulo_es: v || null })} hint={`PT: ${draft.titulo}`} />
+            <FieldArea label="Descrição (curta)" value={draft.descricao_es ?? ''} onChange={v => setDraft({ ...draft, descricao_es: v || null })} rows={2} hint={draft.descricao ? `PT: ${draft.descricao}` : undefined} />
+            <FieldArea label="Conteúdo / Resumo / Transcrição" value={draft.conteudo_es ?? ''} onChange={v => setDraft({ ...draft, conteudo_es: v || null })} rows={6} />
+          </>
+        ) : (
+          <>
+            <Field label="Título" value={draft.titulo} onChange={v => setDraft({ ...draft, titulo: v })} />
+            <FieldArea label="Descrição (curta)" value={draft.descricao ?? ''} onChange={v => setDraft({ ...draft, descricao: v || null })} rows={2} />
+            <FieldArea label="Conteúdo / Resumo / Transcrição" value={draft.conteudo ?? ''} onChange={v => setDraft({ ...draft, conteudo: v || null })} rows={6} />
+          </>
+        )}
+        <Field label="Duração" value={draft.duracao} onChange={v => setDraft({ ...draft, duracao: v })} hint="ex: 6 min · vale para os dois idiomas" />
 
         <div>
           <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">URL do vídeo (embed)</label>

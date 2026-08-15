@@ -1,18 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { useAdminLang } from '@/components/admin/AdminLang';
 import { Loader2, Power, Save, ExternalLink, Plus, Pencil, Trash2, X, Video, Calendar, Eye, EyeOff } from 'lucide-react';
 
 /* ══════════════════════════════════════════════════════════════
-   ADMIN · AO VIVO — a live (singleton live_settings id=1, tempo real)
+   ADMIN · AO VIVO — a live (live_settings, uma linha por idioma, tempo real)
    + os replays (live_replays). Escreve direto no Supabase (RLS expert).
    Vídeo = URL colada (YouTube embeda / Meet abre nova aba no membro).
    ══════════════════════════════════════════════════════════════ */
 
-/* ── A LIVE ── */
+/* ── A LIVE ──
+   Uma linha por idioma: sem isso a transmissão em espanhol aparecia como
+   "ao vivo agora" também para a aluna brasileira. O idioma vem do seletor
+   do topo da administração. */
 const AdminLive: React.FC = () => {
   const { user } = useAuth();
+  const { adminLang: lang } = useAdminLang();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toggling, setToggling] = useState(false);
@@ -23,18 +28,20 @@ const AdminLive: React.FC = () => {
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
+    let cancel = false;
+    setLoading(true);
     (async () => {
-      const { data } = await supabase.from('live_settings').select('*').eq('id', 1).maybeSingle();
-      if (data) {
-        setStreamUrl(data.stream_url ?? '');
-        setTitle(data.title ?? '');
-        setDescription(data.description ?? '');
-        setPresenter(data.presenter ?? '');
-        setIsActive(data.is_active);
-      }
+      const { data } = await supabase.from('live_settings').select('*').eq('lang', lang).maybeSingle();
+      if (cancel) return;
+      setStreamUrl(data?.stream_url ?? '');
+      setTitle(data?.title ?? '');
+      setDescription(data?.description ?? '');
+      setPresenter(data?.presenter ?? '');
+      setIsActive(data?.is_active ?? false);
       setLoading(false);
     })();
-  }, []);
+    return () => { cancel = true; };
+  }, [lang]);
 
   const validUrl = (() => {
     try {
@@ -55,7 +62,7 @@ const AdminLive: React.FC = () => {
       updated_by: user.id,
       ...overrides,
     };
-    const { error } = await supabase.from('live_settings').update(payload).eq('id', 1);
+    const { error } = await supabase.from('live_settings').update(payload).eq('lang', lang);
     if (error) { toast.error('Erro ao salvar', { description: error.message }); return false; }
     return true;
   };
@@ -78,17 +85,20 @@ const AdminLive: React.FC = () => {
     setToggling(false);
     if (ok) {
       setIsActive(next);
-      toast.success(next ? 'Live ativada — todos veem agora' : 'Live desativada');
+      const versao = lang === 'es' ? 'espanhol' : 'português';
+      toast.success(next ? `Live ativada no ${versao}` : `Live desativada no ${versao}`);
     }
   };
-
-  if (loading) return <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-[#BE0D3E] animate-spin" /></div>;
 
   const inputCls = 'w-full bg-[#FFF7E6] border border-[#BE0D3E]/15 text-[#1E1B11] text-[12px] rounded-xl px-3 py-2 focus:border-[#BE0D3E]/50 focus:outline-none transition-colors';
   const labelCls = 'text-[10px] font-black uppercase tracking-widest text-[#5B4041]';
 
   return (
     <div className="space-y-4">
+      {loading ? (
+        <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-[#BE0D3E] animate-spin" /></div>
+      ) : (
+      <>
       {/* Status atual */}
       <div className={`rounded-2xl p-4 border-2 ${isActive ? 'bg-gradient-to-br from-[#BE0D3E] to-[#E06B85] border-[#94002D] text-white' : 'bg-white border-[#BE0D3E]/15 text-[#1E1B11]'}`}>
         <div className="flex items-center justify-between gap-3">
@@ -148,8 +158,11 @@ const AdminLive: React.FC = () => {
       </div>
 
       <p className="text-[10px] text-[#5B4041] leading-relaxed px-1">
-        Quando ativa, o ícone "Ao vivo" pisca vermelho na barra inferior pra todas as alunas (em tempo real) e a página Ao Vivo mostra a transmissão.
+        Quando ativa, o ícone "Ao vivo" pisca vermelho na barra inferior (em tempo real) e a página Ao Vivo mostra a transmissão —
+        só para as alunas da versão em {lang === 'es' ? 'espanhol' : 'português'}.
       </p>
+      </>
+      )}
 
       <div className="border-t border-[#BE0D3E]/15 my-6" />
 
@@ -171,20 +184,24 @@ interface DraftReplay {
 const EMPTY_DRAFT: DraftReplay = { title: '', description: '', video_url: '', cover_url: '', duration_label: '', recorded_at: '', is_published: true };
 
 const AdminLiveReplays: React.FC = () => {
+  const { adminLang: lang } = useAdminLang();
   const [items, setItems] = useState<Replay[]>([]);
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<DraftReplay | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<Replay | null>(null);
 
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
     const { data, error } = await supabase.from('live_replays').select('*')
+      .eq('lang', lang)
       .order('position', { ascending: false }).order('recorded_at', { ascending: false, nullsFirst: false });
     if (error) toast.error('Erro ao carregar replays', { description: error.message });
     else setItems((data ?? []) as Replay[]);
     setLoading(false);
-  };
-  useEffect(() => { fetchAll(); }, []);
+  }, [lang]);
+  // Troca de idioma no topo recarrega a lista: cada versão tem as suas gravações.
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const startNew = () => setDraft({ ...EMPTY_DRAFT });
   const startEdit = (r: Replay) => setDraft({
@@ -209,7 +226,7 @@ const AdminLiveReplays: React.FC = () => {
     };
     const { error } = draft.id
       ? await supabase.from('live_replays').update(payload).eq('id', draft.id)
-      : await supabase.from('live_replays').insert(payload);
+      : await supabase.from('live_replays').insert({ ...payload, lang });
     setSaving(false);
     if (error) { toast.error('Erro ao salvar', { description: error.message }); return; }
     toast.success(draft.id ? 'Replay atualizado' : 'Replay adicionado');
@@ -240,7 +257,9 @@ const AdminLiveReplays: React.FC = () => {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-[12px] font-black text-[#1E1B11] uppercase tracking-widest">Replays ({items.length})</h3>
+        <h3 className="text-[12px] font-black text-[#1E1B11] uppercase tracking-widest">
+          Replays em {lang === 'es' ? 'espanhol' : 'português'} ({items.length})
+        </h3>
         {!draft && (
           <button onClick={startNew} className="flex items-center gap-1.5 bg-[#BE0D3E] text-white text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg hover:bg-[#E06B85] transition-colors">
             <Plus size={12} /> Novo
