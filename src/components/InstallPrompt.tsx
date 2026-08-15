@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Download, X, ChevronRight, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useCurrentLang, type SupportedLang } from '@/i18n/LanguageProvider';
 
 /* ═══════════════════════════════════════════════════════════════════════
  *  InstallPrompt — tutorial de instalação do PWA na 1ª visita (mobile).
@@ -66,9 +67,11 @@ const wasDismissedRecently = () => {
 // Passos do tutorial iOS. O array guarda só os prints e o slug — título e
 // legenda saem do dicionário no render.
 //
-// ⚠️ Os prints em public/install/*.webp mostram um iPhone EM PORTUGUÊS. A
-// aluna espanhola lê a legenda em espanhol e vê a tela em português. Trocar
-// isso exige refazer as capturas com o aparelho em espanhol.
+// Os prints ficam em public/install/*.webp (iPhone em português). Para o
+// espanhol, o componente tenta primeiro public/install/es/<mesmo-nome>.webp e
+// cai de volta no português se o arquivo ainda não existir (ver PrintPasso).
+// Ou seja: basta largar as capturas em espanhol na pasta es/ com os MESMOS
+// nomes — não precisa mexer em código nem no dicionário.
 const IOS_STEPS: { imgs: string[]; slug: string }[] = [
   { imgs: ['/install/ios-step1a.webp', '/install/ios-step1b.webp'], slug: 'menu' },
   { imgs: ['/install/ios-step2.webp'],                              slug: 'compartilhar' },
@@ -77,9 +80,33 @@ const IOS_STEPS: { imgs: string[]; slug: string }[] = [
   { imgs: [],                                                       slug: 'confirmar' },
 ];
 
+/* Print do passo, com a versão em espanhol quando ela existe.
+   O fallback é no onError em vez de uma lista de arquivos: assim a captura em
+   espanhol entra só largando o arquivo em public/install/es/, e enquanto ela
+   não existir a aluna vê o print em português — que ainda é seguível, porque
+   o círculo vermelho marca a MESMA linha do menu nos dois idiomas. */
+const PrintPasso: React.FC<{ src: string; lang: SupportedLang; alt: string }> = ({ src, lang, alt }) => {
+  const esSrc = src.replace('/install/', '/install/es/');
+  const [atual, setAtual] = useState(lang === 'es' ? esSrc : src);
+
+  // Trocar de idioma sem remontar o componente precisa reavaliar a fonte.
+  useEffect(() => { setAtual(lang === 'es' ? esSrc : src); }, [lang, esSrc, src]);
+
+  return (
+    <img
+      src={atual}
+      alt={alt}
+      loading="lazy"
+      onError={() => { if (atual !== src) setAtual(src); }}
+      className="w-full rounded-xl border border-[#BE0D3E]/15 shadow-[0_8px_22px_rgba(0,0,0,0.12)]"
+    />
+  );
+};
+
 const InstallPrompt: React.FC = () => {
   const { t } = useTranslation();
   const TXT = makeTxt(t);
+  const lang = useCurrentLang();
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
@@ -210,11 +237,10 @@ const InstallPrompt: React.FC = () => {
                             {TXT.variant(j + 1)}
                           </p>
                         )}
-                        <img
+                        <PrintPasso
                           src={src}
+                          lang={lang}
                           alt={t(`installPrompt.steps.${step.slug}.title`)}
-                          loading="lazy"
-                          className="w-full rounded-xl border border-[#BE0D3E]/15 shadow-[0_8px_22px_rgba(0,0,0,0.12)]"
                         />
                       </div>
                     ))}
