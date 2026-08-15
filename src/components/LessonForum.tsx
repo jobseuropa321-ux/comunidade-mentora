@@ -173,11 +173,11 @@ const LessonForum: React.FC<Props> = ({ lessonId }) => {
             {sending ? (
               <>
                 <Loader2 size={16} className="animate-spin" strokeWidth={2.5} />
-                Enviando...
+                {t('forum.enviando')}
               </>
             ) : (
               <>
-                Enviar
+                {t('common.enviar')}
                 <Send size={16} strokeWidth={2.5} />
               </>
             )}
@@ -202,7 +202,7 @@ const LessonForum: React.FC<Props> = ({ lessonId }) => {
                         className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full text-white"
                         style={{ background: 'linear-gradient(135deg, #BE0D3E 0%, #E06B85 100%)' }}
                       >
-                        Você
+                        {t('forum.voce')}
                       </span>
                     )}
                     <span className="text-[11px] font-bold text-[#5B4041]">{timeAgoShort(comment.created_at, lang)}</span>

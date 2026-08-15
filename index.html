@@ -44,17 +44,27 @@
         document.head.appendChild(link);
 
         if (isEs) {
+          // A marca em espanhol é a da logo dos banners: "Comunidad Digital".
+          // "Amentora" é só a marca brasileira e não deve vazar para o /es.
+          var NOME_ES = 'Comunidad Digital';
           document.documentElement.lang = 'es';
-          document.title = 'Amentora';
+          document.title = NOME_ES;
           var desc = 'Área de miembros, mentorías en vivo y herramientas para crear contenido que se vuelve viral.';
-          var m = document.querySelector('meta[name="description"]');
-          if (m) m.setAttribute('content', desc);
-          var og = document.querySelector('meta[property="og:description"]');
-          if (og) og.setAttribute('content', desc);
-          var tw = document.querySelector('meta[name="twitter:description"]');
-          if (tw) tw.setAttribute('content', desc);
-          var ogl = document.querySelector('meta[property="og:locale"]');
-          if (ogl) ogl.setAttribute('content', 'es_ES');
+          var set = function (sel, attr, valor) {
+            var el = document.querySelector(sel);
+            if (el) el.setAttribute(attr, valor);
+          };
+          set('meta[name="description"]', 'content', desc);
+          set('meta[property="og:description"]', 'content', desc);
+          set('meta[name="twitter:description"]', 'content', desc);
+          set('meta[property="og:locale"]', 'content', 'es_ES');
+          // O iOS batiza o ícone da tela inicial por ESTA meta, não pelo
+          // manifest — sem trocar aqui a aluna instalava "Amentora" mesmo com
+          // o manifest-es correto.
+          set('meta[name="apple-mobile-web-app-title"]', 'content', NOME_ES);
+          set('meta[property="og:site_name"]', 'content', NOME_ES);
+          set('meta[property="og:title"]', 'content', NOME_ES);
+          set('meta[name="twitter:title"]', 'content', NOME_ES);
         }
       })();
     </script>

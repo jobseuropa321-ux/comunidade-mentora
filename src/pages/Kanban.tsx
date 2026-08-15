@@ -219,7 +219,6 @@ const Kanban: React.FC = () => {
       <div className="card-glass-liquid-lime mt-5 p-4 rounded-2xl">
         <p className="text-[12px] font-black text-[#1E1B11] leading-snug">
           {t('kanban.dica')}
-          faz sua constância virar resultado.
         </p>
       </div>
     </div>

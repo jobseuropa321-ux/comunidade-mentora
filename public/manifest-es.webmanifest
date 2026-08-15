@@ -1,9 +1,9 @@
 {
-  "name": "Amentora",
-  "short_name": "Amentora",
+  "name": "Comunidad Digital",
+  "short_name": "Comunidad Digital",
   "description": "Área de miembros, mentorías en vivo y herramientas para crear contenido que se vuelve viral.",
   "start_url": "/es/home",
-  "scope": "/es/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#FFF7E6",

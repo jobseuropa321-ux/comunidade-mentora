@@ -1,13 +1,13 @@
 {
   "nav": {
     "home": "inicio",
-    "aoVivo": "en vivo",
+    "aoVivo": "en directo",
     "comunidade": "comunidad",
     "cursos": "cursos",
     "grupo": "grupo",
     "titles": {
       "home": "Inicio",
-      "aoVivo": "En vivo",
+      "aoVivo": "En directo",
       "comunidade": "Comunidad",
       "cursos": "Cursos",
       "grupoWhatsapp": "Grupo de WhatsApp"
@@ -31,7 +31,8 @@
     "enviar": "Enviar",
     "buscar": "Buscar",
     "verMais": "Ver más",
-    "verTodos": "Ver todos"
+    "verTodos": "Ver todos",
+    "marca": "Comunidad Digital"
   },
   "auth": {
     "titulo": "Entrar en la comunidad",
@@ -157,7 +158,8 @@
     "proxima": "Siguiente",
     "atual": "Actual",
     "resumo": "Resumen",
-    "materialComplementar": "Material complementario"
+    "materialComplementar": "Material complementario",
+    "emBreve": "Próximamente"
   },
   "community": {
     "title": "Comunidad",
@@ -198,7 +200,9 @@
     "erroCarregar": "Error al cargar los comentarios",
     "erroEnviar": "Error al enviar el comentario",
     "comentarioExcluido": "Comentario eliminado",
-    "erroExcluir": "Error al eliminar el comentario"
+    "erroExcluir": "Error al eliminar el comentario",
+    "enviando": "Enviando...",
+    "voce": "Tú"
   },
   "reset": {
     "voltarLogin": "Volver al inicio de sesión",
@@ -238,7 +242,7 @@
   },
   "install": {
     "leva30s": "Tarda 30 segundos",
-    "titulo": "Instala Amentora",
+    "titulo": "Instala Comunidad Digital",
     "subtitulo": "Convierte la comunidad en una app de verdad en tu móvil. Sin tienda, sin ocupar espacio, sin complicaciones — solo tres toques.",
     "porQueVale": "Por qué vale la pena instalarla",
     "beneficio1": "Acceso rápido — abre directo desde tu pantalla de inicio, sin buscar el enlace ni escribir la URL.",
@@ -248,7 +252,7 @@
     "iphone": {
       "compartilhar": {
         "titulo": "Toca en Compartir",
-        "descricao": "Abre Amentora en Safari y toca el icono de compartir (el cuadrado con la flecha hacia arriba), en la barra inferior del navegador."
+        "descricao": "Abre Comunidad Digital en Safari y toca el icono de compartir (el cuadrado con la flecha hacia arriba), en la barra inferior del navegador."
       },
       "adicionar": {
         "titulo": "Añadir a pantalla de inicio",
@@ -256,7 +260,7 @@
       },
       "confirmar": {
         "titulo": "Confirma el nombre de la app",
-        "descricao": "Déjalo como «Amentora» (o renómbralo a tu gusto) y toca «Añadir» en la esquina superior derecha."
+        "descricao": "Déjalo como «Comunidad Digital» (o renómbralo a tu gusto) y toca «Añadir» en la esquina superior derecha."
       },
       "pronto": {
         "titulo": "¡Listo! Icono en la pantalla",
@@ -266,7 +270,7 @@
     "android": {
       "menu": {
         "titulo": "Abre el menú de Chrome",
-        "descricao": "Con Amentora abierta en Chrome, toca los tres puntitos en la esquina superior derecha de la pantalla."
+        "descricao": "Con Comunidad Digital abierta en Chrome, toca los tres puntitos en la esquina superior derecha de la pantalla."
       },
       "instalar": {
         "titulo": "Instalar aplicación",
@@ -319,20 +323,20 @@
     }
   },
   "aoVivo": {
-    "title": "Mentoría En Vivo",
-    "subtitle": "¡Clases y encuentros semanales en vivo con los mentores, enseñando y resolviendo dudas en tiempo real!",
-    "badge": "En vivo",
-    "fallback_title": "Clase en vivo",
+    "title": "Mentoría En Directo",
+    "subtitle": "¡Clases y encuentros semanales en directo con los mentores, enseñando y resolviendo dudas en tiempo real!",
+    "badge": "En directo",
+    "fallback_title": "Clase en directo",
     "presenter_prefix": "con",
-    "watch_btn": "Ver en vivo",
+    "watch_btn": "Ver en directo",
     "no_live": "No hay directo ahora mismo",
-    "no_live_desc": "Cuando empiece una clase en vivo, aparece aquí.",
+    "no_live_desc": "Cuando empiece una clase en directo, aparece aquí.",
     "upcoming": "Próximas clases",
     "no_upcoming": "No hay ninguna clase agendada",
-    "no_upcoming_desc": "Cuando se programe una nueva clase en vivo, aparece aquí con fecha y hora.",
+    "no_upcoming_desc": "Cuando se programe una nueva clase en directo, aparece aquí con fecha y hora.",
     "replays": "Repeticiones",
     "no_replays": "Muy pronto, repeticiones aquí",
-    "no_replays_desc": "Las grabaciones de las clases en vivo quedan disponibles en esta zona para que las veas cuando quieras."
+    "no_replays_desc": "Las grabaciones de las clases en directo quedan disponibles en esta zona para que las veas cuando quieras."
   },
   "profile": {
     "erro": "Error",
@@ -362,8 +366,17 @@
       "adminHint": "Gestionar cursos, directos, push, usuarios",
       "privacidadeLabel": "Privacidad",
       "privacidadeHint": "Términos y política",
-      "suporteHint": "Resuelve tus dudas"
-    }
+      "suporteHint": "Resuelve tus dudas",
+      "suporteLabel": "Soporte"
+    },
+    "conta": "Cuenta",
+    "nome": "Nombre",
+    "email": "Correo",
+    "editar": "Editar",
+    "sairConta": "Cerrar sesión",
+    "emBreve": "Próximamente",
+    "preparandoSecao": "Estamos preparando esta sección",
+    "canalSuporte": "Canal de soporte en preparación"
   },
   "chat": {
     "grid_title": "Estudio de Creación",
@@ -417,7 +430,23 @@
     "toast_backend_pending": "Disponible cuando se conecte el backend 🛠️",
     "limit_chats_segment": "Ya usaste tus **{{limit}} chats de \"{{segment}}\"** de hoy. ¡Prueba otro agente o vuelve mañana!",
     "limit_reached_msg": "**Límite alcanzado**\n\n{{detail}}",
-    "limit_messages_msg": "**Límite de mensajes**\n\nYa enviaste el máximo de {{limit}} mensajes en esta conversación. Vuelve al Estudio e inicia una conversación nueva."
+    "limit_messages_msg": "**Límite de mensajes**\n\nYa enviaste el máximo de {{limit}} mensajes en esta conversación. Vuelve al Estudio e inicia una conversación nueva.",
+    "bonusViralizacao": "Bonus · Viralización",
+    "dicaMicrofone": "Toca el micrófono para responder hablando.",
+    "escolhaEsqueleto": "Elige el esqueleto para crear las clases",
+    "semEsqueleto": "Aún no has guardado ningún esqueleto",
+    "semEsqueletoDica1": "Crea y guarda un esqueleto en ",
+    "semEsqueletoDica2": " primero. Después vuelve aquí para escribir las clases.",
+    "irArquiteto": "Ir al Arquitecto",
+    "tituloAula": "{{curso}} — Clase {{n}}",
+    "meuCurso": "Mi curso",
+    "esqueletoMeuCurso": "Esqueleto de mi curso",
+    "proximaEtapa": "✨ Siguiente paso: Clase {{n}} de {{total}}",
+    "aulaDeTotal": "Clase {{n}} de {{total}}",
+    "umaPorVez": "una a la vez",
+    "pedirProxima": "La Clase {{atual}} está terminada. Ahora escribe solamente la Clase {{proxima}} del curso \"{{curso}}\", manteniendo el orden y el contenido definidos en el esqueleto.",
+    "esqueletoValidado": "Esqueleto validado del curso \"{{curso}}\":\n\n{{conteudo}}\n\nEmpieza escribiendo la primera clase (Clase 1) con base en ese esqueleto.",
+    "cursoEscolhido": "📋 Curso elegido: \"{{curso}}\".\n\nVoy a crear una clase cada vez y guardar cada clase automáticamente en la Biblioteca."
   },
   "agentes": {
     "bonus": "BONUS",
@@ -599,7 +628,7 @@
   "referencias": {
     "bancoInspiracao": "Banco de inspiración",
     "titulo": "Referencias virales",
-    "subtitulo": "Vídeos que petaron de verdad, separados por categoría. Estudia el gancho, el corte y el pie de foto",
+    "subtitulo": "Vídeos que petaron de verdad, separados por categoría. Estudia el gancho, el corte y el pie de foto antes de grabar el tuyo.",
     "vazio": "Todavía no hay ninguna referencia aquí",
     "vazioSub": "Cambia de categoría para ver más ejemplos.",
     "dicaComunidade": "Consejo de la comunidad: guarda 3 referencias por semana y recrea el gancho con tu estilo — no copies el vídeo, copia la estructura.",
@@ -723,7 +752,7 @@
     "subtitulo": "Saca la idea de la cabeza al papel, graba y publica. Usa las flechas para mover cada guion",
     "novaIdeia": "Nueva idea",
     "vazio": "Todavía no hay nada aquí",
-    "dica": "Consejo de la comunidad: mantén como máximo 3 guiones en «Grabando» a la vez — el foco es lo que más",
+    "dica": "Consejo de la comunidad: mantén como máximo 3 guiones en «Grabando» a la vez — el foco es lo que más hace que tu constancia se convierta en resultado.",
     "colunas": {
       "ideias": "Ideas",
       "gravando": "Grabando",
@@ -841,7 +870,7 @@
     "cta": "Quiero mi acceso con descuento ahora"
   },
   "pet": {
-    "gamificacao": "Gamificación · Amentora",
+    "gamificacao": "Gamificación · Comunidad Digital",
     "titulo": "Tu Mascota Creadora",
     "subtitulo": "Cuida a {{nome}} todos los días y mantén viva tu racha.",
     "subiuNivel": "¡Subió de nivel!",
@@ -879,7 +908,7 @@
         "hint": "La interacción genera reconocimiento entre los miembros"
       },
       "aula": {
-        "label": "Mira 1 clase del itinerario Amentora",
+        "label": "Mira 1 clase del itinerario Comunidad Digital",
         "hint": "Cada día un poco de técnica nueva"
       },
       "curtidas": {
@@ -1144,7 +1173,27 @@
       "agente-8": "Generar guion",
       "agente-9": "Generar carrusel"
     },
-    "semConteudo": "La IA no devolvió contenido"
+    "semConteudo": "La IA no devolvió contenido",
+    "mercado": "España",
+    "fb": {
+      "traco": "—",
+      "semNome": "(aún sin nombre definido)",
+      "semEstrutura": "No tengo ninguna idea, puedes montarlo desde cero",
+      "naoTem": "(no tengo)",
+      "naoInformado": "(no indicado)",
+      "defineSozinho": "puedes definirlo tú",
+      "semTema": "(no tengo — puedes crearlo desde cero)"
+    },
+    "briefing": {
+      "arquiteto": "Esta es la información de mi producto:\n\n1. Sobre mí y mi técnica: {{sobre}}\n2. Tipo de producto: {{produto}}\n3. Nombre provisional: {{nome}}\n4. Dolor principal que resuelve: {{dor}}\n5. Idea central: {{ideia}}\n6. Lo que mi alumna necesita aprender: {{aprender}}\n7. Transformación final: {{transformacao}}\n8. Ya tengo una idea de estructura: {{estrutura}}\n\nMonta el esqueleto completo de mi curso con base en esto.",
+      "apostila": "Información para el manual (las 5 respuestas ya rellenadas):\n\n1. Nombre de la experta/autora del método: {{expert}}\n2. Nombre de la técnica/curso/profesión: {{tecnica}}\n3. Qué enseñar (detallado): {{conteudo}}\n4. Nivel: {{nivel}}\n5. Estilo deseado: {{estilo}}\n\nUsa estas respuestas y empieza el manual directo por la PARTE 1 DE 4. No hagas preguntas.",
+      "pesquisa": "Soy una persona interesada en crear un producto digital campeón de ventas. Actúa como mi analista de mercado con base en esta información:\n\n- Nicho en el que quiero trabajar: {{nicho}}\n- Público objetivo (ubicación: {{mercado}}): {{publico}}\n- Lo que mejor sé enseñar: {{ensina}}\n- Ya he ayudado a alguien con esto: {{ajudou}}\n- Mi diferencial: {{diferencial}}\n\nHaz la investigación en profundidad y entrégame los 5 puntos (dolores del público, principales búsquedas en Google, productos digitales que ya existen, oportunidades/fallos de la competencia y de 3 a 7 ideas de producto).",
+      "nome": "Información del producto (para crear el nombre):\n\n- Tipo de producto: {{tipo}}\n- Nombre provisional: {{nome_prov}}\n- Tema principal: {{tema}}\n- Público objetivo: {{publico}}\n- Transformación que entrega: {{transformacao}}\n- Diferencial: {{diferencial}}\n- Lenguaje deseado para el nombre: {{linguagem}}\n\nCrea las sugerencias de nombre con base en esto.",
+      "promessa": "Información del producto (para crear la promesa):\n\n- Nombre del producto: {{nome}}\n- Tipo de producto: {{tipo}}\n- Tema central: {{tema}}\n- Público objetivo: {{publico}}\n- Transformación después del producto: {{transformacao}}\n- Resultado esperado en: {{tempo}}\n- Diferencial que acelera: {{diferencial}}\n\nCrea las promesas SMART con base en esto.",
+      "ganchos": "Información para los ganchos:\n\n1. Nicho: {{nicho}}\n2. Qué enseña/vende/entrega: {{ensina}}\n3. Nivel del público: {{nivel}}\n4. Objetivo de los ganchos: {{objetivo}}\n5. Dolor/deseo específico: {{dor}}\n\nAhora genera los 20 ganchos, siguiendo exactamente el formato definido.",
+      "narrado": "Nicho o gancho indicado por la usuaria: {{entrada}}\n\nIdentifica si es un NICHO o un GANCHO ya hecho y crea el guion narrado técnico, en el formato exacto definido.",
+      "carrossel": "Información para el carrusel:\n\n1. Nicho: {{nicho}}\n2. Qué haces en el nicho: {{faz}}\n3. Tema/gancho/idea: {{tema}}\n4. Foco: {{foco}}\n5. CTA final: {{cta}}\n\nAhora monta el carrusel completo en el formato exacto definido, con análisis estratégico y 3 variaciones."
+    }
   },
   "a11y": {
     "colunaAnterior": "Mover a la columna anterior",
@@ -1154,16 +1203,17 @@
     "virarCamera": "Girar cámara",
     "gravarTranscrever": "Grabar audio y transcribir",
     "escolherRoteiro": "Elegir guion para grabar",
-    "voltarEstudio": "Volver al Estudio"
+    "voltarEstudio": "Volver al Estudio",
+    "cancelarGravacao": "Cancelar grabación"
   },
   "notificacoes": {
     "n1": "¡Buenísima pregunta! El gancho ideal depende de tu nicho — te respondí con un ejemplo práctico.",
     "n3": "¡Probé el guion de lista y llegó a 40k visualizaciones! Gracias por el consejo 🔥",
-    "equipe": "Equipo Amentora"
+    "equipe": "Equipo Comunidad Digital"
   },
   "conteudoDb": {
     "instructor": {
-      "Equipe Amentora": "Equipo Amentora"
+      "Equipe Amentora": "Equipo Comunidad Digital"
     },
     "nivel": {
       "Iniciante": "Principiante",
@@ -1180,5 +1230,24 @@
       "Em breve": "Muy pronto",
       "Aula gratuita": "Clase gratuita"
     }
+  },
+  "erroApp": {
+    "titulo": "Algo salió mal",
+    "descricao": "No se pudo cargar la app ahora. Toca el botón de abajo — la mayoría de las veces con eso se arregla.",
+    "recarregar": "Recargar la app",
+    "suporte": "Si sigue así, escribe al soporte y manda esta captura."
+  },
+  "push": {
+    "titulo": "Activa las notificaciones",
+    "subtitulo": "Así no te pierdes lo que pasa en la Comunidad.",
+    "beneficio1": "Aviso cuando entra una clase nueva.",
+    "beneficio2": "Llamada de los directos — antes de empezar, no después.",
+    "beneficio3": "Respuestas a tus comentarios y novedades del grupo.",
+    "permitir": "Permitir notificaciones",
+    "ativando": "Activando…",
+    "agoraNao": "Ahora no",
+    "sucesso": "¡Listo! Vas a recibir los avisos.",
+    "negado": "Sin problema — puedes activarlo luego en los ajustes del móvil.",
+    "erro": "No se pudo activar ahora. Inténtalo más tarde."
   }
 }

@@ -114,7 +114,7 @@ const VoiceField: React.FC<VoiceFieldProps> = ({
 
       {isRecording ? (
         <div className={`absolute ${anchor} flex items-center gap-1.5 bg-white rounded-full border border-[#BE0D3E]/20 pl-2 pr-1 py-1 shadow-sm`}>
-          <button type="button" onClick={cancelRecording} aria-label="Cancelar gravação"
+          <button type="button" onClick={cancelRecording} aria-label={t('a11y.cancelarGravacao')}
             className="w-6 h-6 flex items-center justify-center rounded-full bg-[#1E1B11]/5">
             <X size={12} className="text-[#1E1B11]" />
           </button>

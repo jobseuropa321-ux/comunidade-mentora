@@ -13,7 +13,13 @@
  *  Precisa ser class component: só essa forma tem componentDidCatch.
  * ═══════════════════════════════════════════════════════════════════════ */
 import React from 'react';
+import i18n from '@/i18n';
 import { isStaleBuildError, recoverFromStaleBuild } from '@/lib/appRecovery';
+
+/* Class component não tem hook, então falamos com a instância do i18n direto.
+   O defaultValue é a rede de segurança da rede de segurança: se o erro derrubou
+   o app ANTES do i18n subir, a aluna vê a frase em português em vez da chave. */
+const tt = (chave: string, padrao: string) => i18n.t(chave, { defaultValue: padrao });
 
 type Phase = 'ok' | 'recovering' | 'failed';
 
@@ -71,20 +77,19 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, State
     if (phase === 'failed') {
       return (
         <Shell>
-          <h1 className="text-2xl text-[#1E1B11]">Algo deu errado</h1>
+          <h1 className="text-2xl text-[#1E1B11]">{tt('erroApp.titulo', 'Algo deu errado')}</h1>
           <p className="text-sm text-[#5B4041] max-w-xs leading-relaxed">
-            Não foi possível carregar o app agora. Toque no botão abaixo — na maioria
-            das vezes isso já resolve.
+            {tt('erroApp.descricao', 'Não foi possível carregar o app agora. Toque no botão abaixo — na maioria das vezes isso já resolve.')}
           </p>
           <button
             onClick={this.hardReload}
             className="mt-1 px-7 py-3 rounded-full text-white text-sm font-bold tracking-wide active:scale-95 transition-transform shadow-[0_5px_14px_-4px_rgba(190,13,62,0.45)]"
             style={{ background: 'linear-gradient(180deg, #E63462 0%, #CB1B49 100%)' }}
           >
-            Recarregar o app
+            {tt('erroApp.recarregar', 'Recarregar o app')}
           </button>
           <p className="text-[11px] text-[#5B4041]/60 max-w-xs">
-            Se continuar assim, chame o suporte e mande este print.
+            {tt('erroApp.suporte', 'Se continuar assim, chame o suporte e mande este print.')}
           </p>
           {message && (
             <code className="text-[10px] text-[#5B4041]/45 break-all max-w-xs">{message}</code>

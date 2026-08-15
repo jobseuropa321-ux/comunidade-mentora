@@ -22,7 +22,9 @@ import { useTranslation } from 'react-i18next';
 /* ─────────────────────────────────────────────────────────────
  *  CONFIG — troque pelos dados do app
  * ───────────────────────────────────────────────────────────── */
-const APP_VERSION = 'Amentora · v1.0';
+/* Só o número da versão fica aqui. O nome vem do i18n porque a marca muda
+   por idioma: 'Amentora' em português, 'Comunidad Digital' em espanhol. */
+const APP_VERSION = 'v1.0';
 
 /* Avatar real (Supabase Storage): a foto comprimida sobe pro bucket público
  * `avatars` no caminho `${user.id}/avatar.jpg` (a 1ª pasta = auth.uid(), que é
@@ -256,7 +258,7 @@ const Profile: React.FC = () => {
               <div className="w-7 h-7 rounded-lg bg-[#BE0D3E]/10 flex items-center justify-center">
                 <User size={14} className="text-[#BE0D3E]" />
               </div>
-              <h2 className="font-black text-[11px] text-[#1E1B11] uppercase tracking-widest">Conta</h2>
+              <h2 className="font-black text-[11px] text-[#1E1B11] uppercase tracking-widest">{t('profile.conta')}</h2>
             </div>
             {!isEditing ? (
               <button
@@ -264,7 +266,7 @@ const Profile: React.FC = () => {
                 className="flex items-center gap-1 text-xs font-bold text-[#BE0D3E] hover:text-[#94002D] transition-colors px-2.5 py-1 rounded-lg hover:bg-[#BE0D3E]/8"
               >
                 <Edit2 className="w-3 h-3" />
-                Editar
+                {t('profile.editar')}
               </button>
             ) : (
               <div className="flex gap-1">
@@ -292,7 +294,7 @@ const Profile: React.FC = () => {
                 <User className="w-3.5 h-3.5 text-[#BE0D3E]" strokeWidth={2.5} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-black uppercase tracking-widest text-[#5B4041] mb-0.5">Nome</p>
+                <p className="text-[9px] font-black uppercase tracking-widest text-[#5B4041] mb-0.5">{t('profile.nome')}</p>
                 {isEditing ? (
                   <input
                     value={fullName}
@@ -313,7 +315,7 @@ const Profile: React.FC = () => {
                 <Mail className="w-3.5 h-3.5 text-[#BE0D3E]" strokeWidth={2.5} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-black uppercase tracking-widest text-[#5B4041] mb-0.5">Email</p>
+                <p className="text-[9px] font-black uppercase tracking-widest text-[#5B4041] mb-0.5">{t('profile.email')}</p>
                 <p className="text-sm font-bold text-[#1E1B11] truncate">{user?.email}</p>
               </div>
             </div>
@@ -394,14 +396,14 @@ const Profile: React.FC = () => {
             icon={<Shield className="w-4 h-4 text-[#BE0D3E]" strokeWidth={2.5} />}
             label={t('profile.menu.privacidadeLabel')}
             hint={t('profile.menu.privacidadeHint')}
-            onClick={() => toast({ title: 'Em breve', description: 'Estamos preparando essa seção' })}
+            onClick={() => toast({ title: t('profile.emBreve'), description: t('profile.preparandoSecao') })}
           />
           <div className="h-px bg-[#BE0D3E]/8 mx-4" />
           <ActionRow
             icon={<HelpCircle className="w-4 h-4 text-[#BE0D3E]" strokeWidth={2.5} />}
-            label="Suporte"
+            label={t('profile.menu.suporteLabel')}
             hint={t('profile.menu.suporteHint')}
-            onClick={() => toast({ title: 'Em breve', description: 'Canal de suporte em preparação' })}
+            onClick={() => toast({ title: t('profile.emBreve'), description: t('profile.canalSuporte') })}
           />
         </section>
 
@@ -411,12 +413,12 @@ const Profile: React.FC = () => {
           className="card-glass-liquid-danger w-full flex items-center justify-center gap-2 h-12 text-[#BE0D3E] font-black text-[11px] uppercase tracking-widest rounded-2xl hover:scale-[1.01] active:scale-[0.99] transition-transform"
         >
           <LogOut className="w-4 h-4" strokeWidth={2.5} />
-          Sair da conta
+          {t('profile.sairConta')}
         </button>
 
         {/* Versão */}
         <p className="text-center text-[10px] text-[#5B4041]/50 font-medium pt-2">
-          {APP_VERSION}
+          {t('common.marca')} · {APP_VERSION}
         </p>
       </div>
     </div>

@@ -151,7 +151,7 @@ const AulaDetail: React.FC = () => {
                 >
                   <Play size={24} fill="white" className="text-white ml-1" />
                 </div>
-                <p className="text-[10px] text-white/50 font-semibold">Em breve</p>
+                <p className="text-[10px] text-white/50 font-semibold">{t('aula.emBreve')}</p>
               </button>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">

@@ -102,7 +102,7 @@ const Estudio: React.FC = () => {
           onClick={() => navigate('/home')}
           className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center active:scale-90 transition-transform"
           style={{ WebkitTapHighlightColor: 'transparent' }}
-          aria-label="Voltar"
+          aria-label={t('common.voltar')}
         >
           <ArrowLeft className="w-5 h-5 text-white" strokeWidth={2.5} />
         </button>

@@ -141,7 +141,6 @@ const Referencias: React.FC = () => {
 
       <p className="mt-2 text-[13px] text-[#5B4041] font-medium leading-relaxed">
         {t('referencias.subtitulo')}
-        antes de gravar o seu.
       </p>
 
       {/* Chips de filtro */}

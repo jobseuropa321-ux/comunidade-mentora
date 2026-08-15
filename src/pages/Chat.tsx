@@ -18,6 +18,7 @@ import AnalisarPerfilAgent from '@/components/estudio/AnalisarPerfilAgent';
 import { useLocalizedNavigate, useCurrentLang } from '@/i18n/LanguageProvider';
 import { withAiLangMessages } from '@/i18n/aiLang';
 import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 
 /* ─────────────────────────────────────────────
    TEXTOS DA TELA (toda a "escrita" daqui)
@@ -117,8 +118,8 @@ const newSessionId = () =>
    pessoa continuar criando além da conta. */
 const countLessonsInSkeleton = (content: string) => {
   const ehCabecalho = (l: string) => /^\s*#{1,6}\s*\S/.test(l) || /^\s*\*\*[^*]+\*\*\s*:?\s*$/.test(l);
-  const ehCabecalhoDeAulas = (l: string) => /^\s*(?:#{1,6}\s*)?\*{0,2}\s*aulas?\b[^\n]{0,24}$/i.test(l);
-  const ehTituloDeAula = (l: string) => /^\s*(?:#{1,6}\s*)?\*{0,2}\s*aulas?\s*\d{1,3}\b/i.test(l);
+  const ehCabecalhoDeAulas = (l: string) => /^\s*(?:#{1,6}\s*)?\*{0,2}\s*(?:aulas?|clases?)\b[^\n]{0,24}$/i.test(l);
+  const ehTituloDeAula = (l: string) => /^\s*(?:#{1,6}\s*)?\*{0,2}\s*(?:aulas?|clases?)\s*\d{1,3}\b/i.test(l);
   const ehItemNumerado = (l: string) => /^\s*\d{1,3}[.)]\s+\S/.test(l);
 
   let dentroDaLista = false;
@@ -207,15 +208,18 @@ const Connector: React.FC = () => (
 );
 
 /* ── Divisor da seção BÔNUS (viralização — lime + rosa choque) ── */
-const BonusDivider: React.FC = () => (
+const BonusDivider: React.FC = () => {
+  const { t } = useTranslation();
+  return (
   <motion.div variants={cardVariants} className="flex items-center gap-2 py-4">
     <div className="flex-1 h-px bg-gradient-to-r from-transparent to-[#FF2D7A]/45" />
     <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: '#E8226C' }}>
-      <Zap size={11} className="fill-[#C8F000] text-[#C8F000]" /> Bônus · Viralização
+      <Zap size={11} className="fill-[#C8F000] text-[#C8F000]" /> {t('chat.bonusViralizacao')}
     </span>
     <div className="flex-1 h-px bg-gradient-to-l from-transparent to-[#C8F000]/70" />
   </motion.div>
-);
+  );
+};
 
 const FormatsGrid: React.FC = () => {
   const TXT = useTxt();
@@ -399,21 +403,30 @@ const ARCHITECT_QUESTIONS: {
   { key: 'estrutura', grupo: 'architect', required: false, multiline: true },
 ];
 
-const compileBriefing = (a: Record<string, string>) => {
-  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
-  return `Aqui estão as informações do meu produto:
+/* ── Briefings dos formulários ──────────────────────────────────────────
+   O texto vive no i18n (intake.briefing.*), não aqui: este briefing é a
+   PRIMEIRA MENSAGEM que a aluna manda pra IA e aparece como balão dela na
+   tela. Em português cru, a aluna espanhola via a própria mensagem em outro
+   idioma — e, no caso do Pesquisa de Mercado, a IA ainda pesquisava o
+   mercado BRASILEIRO porque "Brasil" estava fixo no template.
+   Usamos i18n.t (e não o hook) porque isto roda fora de componente. */
+const bt = (chave: string, vars: Record<string, string>) =>
+  i18n.t(`intake.briefing.${chave}`, vars);
+/** Lê a resposta; se vazia, usa o fallback traduzido de intake.fb.* */
+const campo = (a: Record<string, string>, k: string, fb = 'traco') =>
+  a[k]?.trim() ? a[k].trim() : i18n.t(`intake.fb.${fb}`);
 
-1. Sobre mim e minha técnica: ${g('sobre')}
-2. Tipo de produto: ${g('produto')}
-3. Nome provisório: ${g('nome', '(ainda sem nome definido)')}
-4. Dor principal que resolve: ${g('dor')}
-5. Ideia central: ${g('ideia')}
-6. O que o meu aluno precisa aprender: ${g('aprender')}
-7. Transformação final: ${g('transformacao')}
-8. Já tenho ideia de estrutura: ${g('estrutura', 'Não tenho ideia, pode montar do zero')}
-
-Monte o esqueleto completo do meu curso com base nisso.`;
-};
+const compileBriefing = (a: Record<string, string>) =>
+  bt('arquiteto', {
+    sobre: campo(a, 'sobre'),
+    produto: campo(a, 'produto'),
+    nome: campo(a, 'nome', 'semNome'),
+    dor: campo(a, 'dor'),
+    ideia: campo(a, 'ideia'),
+    aprender: campo(a, 'aprender'),
+    transformacao: campo(a, 'transformacao'),
+    estrutura: campo(a, 'estrutura', 'semEstrutura'),
+  });
 
 /* ═════════════════════════════════════════════
    FORMULÁRIO DA APOSTILA (agente-3) — 5 perguntas próprias.
@@ -427,18 +440,14 @@ const APOSTILA_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
   { key: 'estilo', grupo: 'apostila', required: true, multiline: false },
 ];
 
-const compileApostila = (a: Record<string, string>) => {
-  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
-  return `Informações para a apostila (as 5 respostas já preenchidas):
-
-1. Nome da expert/autora do método: ${g('expert')}
-2. Nome da técnica/curso/profissão: ${g('tecnica')}
-3. O que ensinar (detalhado): ${g('conteudo')}
-4. Nível: ${g('nivel')}
-5. Estilo desejado: ${g('estilo')}
-
-Use essas respostas e comece a apostila direto pela PARTE 1 DE 4. Não faça perguntas.`;
-};
+const compileApostila = (a: Record<string, string>) =>
+  bt('apostila', {
+    expert: campo(a, 'expert'),
+    tecnica: campo(a, 'tecnica'),
+    conteudo: campo(a, 'conteudo'),
+    nivel: campo(a, 'nivel'),
+    estilo: campo(a, 'estilo'),
+  });
 
 /* ── Formulário do PESQUISA DE MERCADO (agente-4) — também independente ── */
 const PESQUISA_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
@@ -449,18 +458,16 @@ const PESQUISA_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
   { key: 'diferencial', grupo: 'pesquisa', required: false, multiline: true },
 ];
 
-const compilePesquisa = (a: Record<string, string>) => {
-  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
-  return `Sou uma pessoa interessada em criar um produto digital campeão de vendas. Atue como meu analista de mercado com base nestas informações:
-
-- Nicho que desejo atuar: ${g('nicho')}
-- Público-alvo (localização: Brasil): ${g('publico')}
-- O que eu sei ensinar de melhor: ${g('ensina')}
-- Já ajudei alguém com isso: ${g('ajudou')}
-- Meu diferencial: ${g('diferencial')}
-
-Faça a pesquisa aprofundada e me entregue os 5 pontos (dores do público, principais buscas no Google, produtos digitais já existentes, oportunidades/falhas dos concorrentes e de 3 a 7 ideias de produto).`;
-};
+const compilePesquisa = (a: Record<string, string>) =>
+  bt('pesquisa', {
+    // o mercado acompanha o idioma: Brasil no PT, España no ES
+    mercado: i18n.t('intake.mercado'),
+    nicho: campo(a, 'nicho'),
+    publico: campo(a, 'publico'),
+    ensina: campo(a, 'ensina'),
+    ajudou: campo(a, 'ajudou'),
+    diferencial: campo(a, 'diferencial'),
+  });
 
 /* ── Nome Potente (agente-5) ── */
 const NOME_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
@@ -472,20 +479,16 @@ const NOME_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
   { key: 'diferencial', grupo: 'nome', required: false, multiline: true },
   { key: 'linguagem', grupo: 'nome', required: true, multiline: false },
 ];
-const compileNome = (a: Record<string, string>) => {
-  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
-  return `Informações do produto (para criar o nome):
-
-- Tipo de produto: ${g('tipo')}
-- Nome provisório: ${g('nome_prov', '(não tem)')}
-- Tema principal: ${g('tema')}
-- Público-alvo: ${g('publico')}
-- Transformação que entrega: ${g('transformacao')}
-- Diferencial: ${g('diferencial', '(não informado)')}
-- Linguagem desejada pro nome: ${g('linguagem')}
-
-Crie as sugestões de nome com base nisso.`;
-};
+const compileNome = (a: Record<string, string>) =>
+  bt('nome', {
+    tipo: campo(a, 'tipo'),
+    nome_prov: campo(a, 'nome_prov', 'naoTem'),
+    tema: campo(a, 'tema'),
+    publico: campo(a, 'publico'),
+    transformacao: campo(a, 'transformacao'),
+    diferencial: campo(a, 'diferencial', 'naoInformado'),
+    linguagem: campo(a, 'linguagem'),
+  });
 
 /* ── Promessa Irresistível (agente-6) ── */
 const PROMESSA_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
@@ -497,20 +500,16 @@ const PROMESSA_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
   { key: 'tempo', grupo: 'promessa', required: true, multiline: false },
   { key: 'diferencial', grupo: 'promessa', required: false, multiline: true },
 ];
-const compilePromessa = (a: Record<string, string>) => {
-  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
-  return `Informações do produto (para criar a promessa):
-
-- Nome do produto: ${g('nome')}
-- Tipo de produto: ${g('tipo')}
-- Tema central: ${g('tema')}
-- Público-alvo: ${g('publico')}
-- Transformação após o produto: ${g('transformacao')}
-- Resultado esperado em: ${g('tempo')}
-- Diferencial que acelera: ${g('diferencial', '(não informado)')}
-
-Crie as promessas SMART com base nisso.`;
-};
+const compilePromessa = (a: Record<string, string>) =>
+  bt('promessa', {
+    nome: campo(a, 'nome'),
+    tipo: campo(a, 'tipo'),
+    tema: campo(a, 'tema'),
+    publico: campo(a, 'publico'),
+    transformacao: campo(a, 'transformacao'),
+    tempo: campo(a, 'tempo'),
+    diferencial: campo(a, 'diferencial', 'naoInformado'),
+  });
 
 /* ── Ganchos Virais (agente-7 · bônus) ── */
 const GANCHOS_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
@@ -520,29 +519,21 @@ const GANCHOS_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
   { key: 'objetivo', grupo: 'ganchos', required: true, multiline: false },
   { key: 'dor', grupo: 'ganchos', required: false, multiline: true },
 ];
-const compileGanchos = (a: Record<string, string>) => {
-  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
-  return `Informações para os ganchos:
-
-1. Nicho: ${g('nicho')}
-2. O que ensina/vende/entrega: ${g('ensina')}
-3. Nível do público: ${g('nivel')}
-4. Objetivo dos ganchos: ${g('objetivo')}
-5. Dor/desejo específico: ${g('dor', 'pode definir sozinho')}
-
-Agora gere os 20 ganchos, seguindo exatamente o formato definido.`;
-};
+const compileGanchos = (a: Record<string, string>) =>
+  bt('ganchos', {
+    nicho: campo(a, 'nicho'),
+    ensina: campo(a, 'ensina'),
+    nivel: campo(a, 'nivel'),
+    objetivo: campo(a, 'objetivo'),
+    dor: campo(a, 'dor', 'defineSozinho'),
+  });
 
 /* ── Narrado Técnico (agente-8 · bônus) ── */
 const NARRADO_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
   { key: 'entrada', grupo: 'narrado', required: true, multiline: true },
 ];
-const compileNarrado = (a: Record<string, string>) => {
-  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
-  return `Nicho ou gancho informado pelo usuário: ${g('entrada')}
-
-Identifique se é um NICHO ou um GANCHO pronto e crie o roteiro narrado técnico, no formato exato definido.`;
-};
+const compileNarrado = (a: Record<string, string>) =>
+  bt('narrado', { entrada: campo(a, 'entrada') });
 
 /* ── Carrossel Viral (agente-9 · bônus) ── */
 const CARROSSEL_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
@@ -552,18 +543,14 @@ const CARROSSEL_QUESTIONS: typeof ARCHITECT_QUESTIONS = [
   { key: 'foco', grupo: 'carrossel', required: true, multiline: false },
   { key: 'cta', grupo: 'carrossel', required: true, multiline: false },
 ];
-const compileCarrossel = (a: Record<string, string>) => {
-  const g = (k: string, fb = '—') => (a[k]?.trim() ? a[k].trim() : fb);
-  return `Informações para o carrossel:
-
-1. Nicho: ${g('nicho')}
-2. O que faz no nicho: ${g('faz')}
-3. Tema/gancho/ideia: ${g('tema', '(não tem — pode criar do zero)')}
-4. Foco: ${g('foco')}
-5. CTA final: ${g('cta')}
-
-Agora monte o carrossel completo no formato exato definido, com análise estratégica e 3 variações.`;
-};
+const compileCarrossel = (a: Record<string, string>) =>
+  bt('carrossel', {
+    nicho: campo(a, 'nicho'),
+    faz: campo(a, 'faz'),
+    tema: campo(a, 'tema', 'semTema'),
+    foco: campo(a, 'foco'),
+    cta: campo(a, 'cta'),
+  });
 
 /* Configuração de cada "entrevista" (formulário) por agente. */
 interface IntakeConfig {
@@ -673,7 +660,7 @@ const AgentIntakeForm: React.FC<{
           rows={5}
         />
         <p className="text-[10px] text-[#5B4041]/45 mt-2 flex items-center gap-1">
-          <Mic size={11} className="text-[#BE0D3E]" /> Toque no microfone pra responder falando.
+          <Mic size={11} className="text-[#BE0D3E]" /> {t('chat.dicaMicrofone')}
         </p>
       </div>
 
@@ -708,6 +695,7 @@ const SkeletonPicker: React.FC<{
   onBack: () => void; onPick: (it: SkeletonItem, retomar: boolean) => void; onCreate: () => void;
 }> = ({ agent, userId, reduce, onBack, onPick, onCreate }) => {
   const TXT = useTxt();
+  const { t } = useTranslation();
   const kind = agent.category as RobotKind;
   const [items, setItems] = useState<SkeletonItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -756,7 +744,7 @@ const SkeletonPicker: React.FC<{
         <div className="relative px-4 pt-3 pb-4 flex flex-col items-center">
           <Robot kind={kind} reduce={reduce} />
           <p className="text-white text-[15px] font-black mt-1">{agent.name}</p>
-          <p className="text-white/80 text-[11px]">Escolha o esqueleto pra criar as aulas</p>
+          <p className="text-white/80 text-[11px]">{t('chat.escolhaEsqueleto')}</p>
         </div>
       </div>
 
@@ -766,10 +754,10 @@ const SkeletonPicker: React.FC<{
         ) : items.length === 0 ? (
           <div className="text-center pt-10 px-6">
             <div className="w-14 h-14 rounded-2xl bg-[#F6D6DC] flex items-center justify-center mx-auto mb-4"><Layers className="text-[#BE0D3E]" size={24} /></div>
-            <h3 className="text-[16px] font-black text-[#1E1B11]">Nenhum esqueleto salvo ainda</h3>
-            <p className="text-[12px] text-[#5B4041]/70 mt-1.5 mb-5">Crie e salve um esqueleto no <b>Arquiteto do Curso</b> primeiro. Depois volte aqui pra escrever as aulas.</p>
+            <h3 className="text-[16px] font-black text-[#1E1B11]">{t('chat.semEsqueleto')}</h3>
+            <p className="text-[12px] text-[#5B4041]/70 mt-1.5 mb-5">{t('chat.semEsqueletoDica1')}<b>{t('agentes.agente-1.nome')}</b>{t('chat.semEsqueletoDica2')}</p>
             <button onClick={onCreate} className="inline-flex items-center gap-1.5 px-5 py-3 rounded-2xl text-[12px] font-black uppercase tracking-widest text-white" style={{ background: 'linear-gradient(135deg, #BE0D3E, #E06B85)', WebkitTapHighlightColor: 'transparent' }}>
-              <Blocks size={14} /> Ir pro Arquiteto
+              <Blocks size={14} /> {t('chat.irArquiteto')}
             </button>
           </div>
         ) : (
@@ -980,7 +968,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
           replyIdx,
           userMsg.content,
           reply,
-          `${lessonToSave.courseTitle} — Aula ${lessonToSave.lessonNumber}`,
+          t('chat.tituloAula', { curso: lessonToSave.courseTitle, n: lessonToSave.lessonNumber }),
           { skeletonId: lessonToSave.skeletonId, lessonNumber: lessonToSave.lessonNumber },
         );
       }
@@ -1003,12 +991,14 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     setLessonProgress(prev => prev
       ? { current: nextLesson, total: Math.max(prev.total, nextLesson) }
       : prev);
-    const content = `A Aula ${lessonProgress.current} foi concluída. Agora escreva somente a Aula ${nextLesson} do curso "${courseName}", mantendo a ordem e o conteúdo definidos no esqueleto.`;
-    const display = `✨ Próxima etapa: Aula ${nextLesson} de ${lessonProgress.total}`;
+    const content = t('chat.pedirProxima', {
+      atual: lessonProgress.current, proxima: nextLesson, curso: courseName,
+    });
+    const display = t('chat.proximaEtapa', { n: nextLesson, total: lessonProgress.total });
     runGeneration(
       { role: 'user', content, display },
       messages,
-      { courseTitle: courseName || 'Meu curso', lessonNumber: nextLesson, skeletonId },
+      { courseTitle: courseName || t('chat.meuCurso'), lessonNumber: nextLesson, skeletonId },
     );
   };
 
@@ -1049,7 +1039,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     if (!iaMsg || !userMsg) return;
     // Título default: nome do curso (esteira) ou primeiros 60 caracteres do briefing
     const defaultTitle =
-      agent?.slug === 'agente-2' && courseName ? `${courseName} — Aula ${lessonProgress?.current ?? 1}`
+      agent?.slug === 'agente-2' && courseName ? t('chat.tituloAula', { curso: courseName, n: lessonProgress?.current ?? 1 })
       : courseName && INTAKE[agent?.slug ?? ''] ? courseName
       : userMsg.content.replace(/\s+/g, ' ').trim().slice(0, 60);
     setSaveTitle(defaultTitle);
@@ -1169,8 +1159,8 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     }
 
     setLessonProgress({ current: 1, total: totalLessons });
-    const injected = `Esqueleto validado do curso "${it.title}":\n\n${it.ai_response}\n\nComece escrevendo a primeira aula (Aula 1) com base nesse esqueleto.`;
-    const display = `📋 Curso escolhido: "${it.title}".\n\nVou criar uma aula por vez e salvar cada aula automaticamente na Biblioteca.`;
+    const injected = t('chat.esqueletoValidado', { curso: it.title, conteudo: it.ai_response });
+    const display = t('chat.cursoEscolhido', { curso: it.title });
     runGeneration(
       { role: 'user', content: injected, display },
       [],
@@ -1188,8 +1178,8 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       if (idx !== -1) {
         setSaveTitle(
           agent.slug === 'agente-2'
-            ? `${courseName || 'Meu curso'} — Aula ${lessonProgress?.current ?? 1}`
-            : courseName || 'Esqueleto do meu curso',
+            ? t('chat.tituloAula', { curso: courseName || t('chat.meuCurso'), n: lessonProgress?.current ?? 1 })
+            : courseName || t('chat.esqueletoMeuCurso'),
         );
         setExitMode(true);
         setSaveModalIdx(idx);
@@ -1338,9 +1328,9 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-[11px] font-black text-[#1E1B11]">
-                  Aula {lessonProgress.current} de {lessonProgress.total}
+                  {t('chat.aulaDeTotal', { n: lessonProgress.current, total: lessonProgress.total })}
                 </p>
-                <span className="text-[9px] font-bold uppercase tracking-widest text-[#BE0D3E]">uma por vez</span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-[#BE0D3E]">{t('chat.umaPorVez')}</span>
               </div>
               <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#F6D6DC]">
                 <div

@@ -31,7 +31,8 @@
     "enviar": "Enviar",
     "buscar": "Buscar",
     "verMais": "Ver mais",
-    "verTodos": "Ver todos"
+    "verTodos": "Ver todos",
+    "marca": "Amentora"
   },
   "auth": {
     "titulo": "Entrar na comunidade",
@@ -157,7 +158,8 @@
     "proxima": "Próxima",
     "atual": "Atual",
     "resumo": "Resumo",
-    "materialComplementar": "Material complementar"
+    "materialComplementar": "Material complementar",
+    "emBreve": "Em breve"
   },
   "community": {
     "title": "Comunidade",
@@ -198,7 +200,9 @@
     "erroCarregar": "Erro ao carregar comentários",
     "erroEnviar": "Erro ao enviar comentário",
     "comentarioExcluido": "Comentário excluído",
-    "erroExcluir": "Erro ao excluir comentário"
+    "erroExcluir": "Erro ao excluir comentário",
+    "enviando": "Enviando...",
+    "voce": "Você"
   },
   "reset": {
     "voltarLogin": "Voltar ao login",
@@ -362,8 +366,17 @@
       "adminHint": "Gerenciar cursos, lives, push, usuários",
       "privacidadeLabel": "Privacidade",
       "privacidadeHint": "Termos e política",
-      "suporteHint": "Tire suas dúvidas"
-    }
+      "suporteHint": "Tire suas dúvidas",
+      "suporteLabel": "Suporte"
+    },
+    "conta": "Conta",
+    "nome": "Nome",
+    "email": "Email",
+    "editar": "Editar",
+    "sairConta": "Sair da conta",
+    "emBreve": "Em breve",
+    "preparandoSecao": "Estamos preparando essa seção",
+    "canalSuporte": "Canal de suporte em preparação"
   },
   "chat": {
     "grid_title": "Estúdio de Criação",
@@ -417,7 +430,23 @@
     "toast_backend_pending": "Disponível quando o backend for conectado 🛠️",
     "limit_chats_segment": "Você já usou seus **{{limit}} chats de \"{{segment}}\"** hoje. Tenta outro agente ou volta amanhã!",
     "limit_reached_msg": "**Limite atingido**\n\n{{detail}}",
-    "limit_messages_msg": "**Limite de mensagens**\n\nVocê já enviou o máximo de {{limit}} mensagens nessa conversa. Volte ao Estúdio e inicie uma nova conversa."
+    "limit_messages_msg": "**Limite de mensagens**\n\nVocê já enviou o máximo de {{limit}} mensagens nessa conversa. Volte ao Estúdio e inicie uma nova conversa.",
+    "bonusViralizacao": "Bônus · Viralização",
+    "dicaMicrofone": "Toque no microfone pra responder falando.",
+    "escolhaEsqueleto": "Escolha o esqueleto pra criar as aulas",
+    "semEsqueleto": "Nenhum esqueleto salvo ainda",
+    "semEsqueletoDica1": "Crie e salve um esqueleto no ",
+    "semEsqueletoDica2": " primeiro. Depois volte aqui pra escrever as aulas.",
+    "irArquiteto": "Ir pro Arquiteto",
+    "tituloAula": "{{curso}} — Aula {{n}}",
+    "meuCurso": "Meu curso",
+    "esqueletoMeuCurso": "Esqueleto do meu curso",
+    "proximaEtapa": "✨ Próxima etapa: Aula {{n}} de {{total}}",
+    "aulaDeTotal": "Aula {{n}} de {{total}}",
+    "umaPorVez": "uma por vez",
+    "pedirProxima": "A Aula {{atual}} foi concluída. Agora escreva somente a Aula {{proxima}} do curso \"{{curso}}\", mantendo a ordem e o conteúdo definidos no esqueleto.",
+    "esqueletoValidado": "Esqueleto validado do curso \"{{curso}}\":\n\n{{conteudo}}\n\nComece escrevendo a primeira aula (Aula 1) com base nesse esqueleto.",
+    "cursoEscolhido": "📋 Curso escolhido: \"{{curso}}\".\n\nVou criar uma aula por vez e salvar cada aula automaticamente na Biblioteca."
   },
   "agentes": {
     "bonus": "BÔNUS",
@@ -599,7 +628,7 @@
   "referencias": {
     "bancoInspiracao": "Banco de inspiração",
     "titulo": "Referências virais",
-    "subtitulo": "Vídeos que bombaram de verdade, separados por categoria. Estuda o gancho, o corte e a legenda",
+    "subtitulo": "Vídeos que bombaram de verdade, separados por categoria. Estuda o gancho, o corte e a legenda antes de gravar o seu.",
     "vazio": "Nenhuma referência aqui ainda",
     "vazioSub": "Troca de categoria pra ver mais exemplos.",
     "dicaComunidade": "Dica da comunidade: salva 3 referências por semana e recria o gancho com a tua cara — não copia o vídeo, copia a estrutura.",
@@ -723,7 +752,7 @@
     "subtitulo": "Arrasta a ideia da cabeça pro papel, grava e publica. Usa as setas pra mover cada roteiro",
     "novaIdeia": "Nova ideia",
     "vazio": "Nada por aqui ainda",
-    "dica": "Dica da comunidade: mantém no máximo 3 roteiros em \"Gravando\" por vez — foco é o que mais",
+    "dica": "Dica da comunidade: mantém no máximo 3 roteiros em \"Gravando\" por vez — foco é o que mais faz sua constância virar resultado.",
     "colunas": {
       "ideias": "Ideias",
       "gravando": "Gravando",
@@ -1144,7 +1173,27 @@
       "agente-8": "Gerar roteiro",
       "agente-9": "Gerar carrossel"
     },
-    "semConteudo": "A IA não retornou conteúdo"
+    "semConteudo": "A IA não retornou conteúdo",
+    "mercado": "Brasil",
+    "fb": {
+      "traco": "—",
+      "semNome": "(ainda sem nome definido)",
+      "semEstrutura": "Não tenho ideia, pode montar do zero",
+      "naoTem": "(não tem)",
+      "naoInformado": "(não informado)",
+      "defineSozinho": "pode definir sozinho",
+      "semTema": "(não tem — pode criar do zero)"
+    },
+    "briefing": {
+      "arquiteto": "Aqui estão as informações do meu produto:\n\n1. Sobre mim e minha técnica: {{sobre}}\n2. Tipo de produto: {{produto}}\n3. Nome provisório: {{nome}}\n4. Dor principal que resolve: {{dor}}\n5. Ideia central: {{ideia}}\n6. O que o meu aluno precisa aprender: {{aprender}}\n7. Transformação final: {{transformacao}}\n8. Já tenho ideia de estrutura: {{estrutura}}\n\nMonte o esqueleto completo do meu curso com base nisso.",
+      "apostila": "Informações para a apostila (as 5 respostas já preenchidas):\n\n1. Nome da expert/autora do método: {{expert}}\n2. Nome da técnica/curso/profissão: {{tecnica}}\n3. O que ensinar (detalhado): {{conteudo}}\n4. Nível: {{nivel}}\n5. Estilo desejado: {{estilo}}\n\nUse essas respostas e comece a apostila direto pela PARTE 1 DE 4. Não faça perguntas.",
+      "pesquisa": "Sou uma pessoa interessada em criar um produto digital campeão de vendas. Atue como meu analista de mercado com base nestas informações:\n\n- Nicho que desejo atuar: {{nicho}}\n- Público-alvo (localização: {{mercado}}): {{publico}}\n- O que eu sei ensinar de melhor: {{ensina}}\n- Já ajudei alguém com isso: {{ajudou}}\n- Meu diferencial: {{diferencial}}\n\nFaça a pesquisa aprofundada e me entregue os 5 pontos (dores do público, principais buscas no Google, produtos digitais já existentes, oportunidades/falhas dos concorrentes e de 3 a 7 ideias de produto).",
+      "nome": "Informações do produto (para criar o nome):\n\n- Tipo de produto: {{tipo}}\n- Nome provisório: {{nome_prov}}\n- Tema principal: {{tema}}\n- Público-alvo: {{publico}}\n- Transformação que entrega: {{transformacao}}\n- Diferencial: {{diferencial}}\n- Linguagem desejada pro nome: {{linguagem}}\n\nCrie as sugestões de nome com base nisso.",
+      "promessa": "Informações do produto (para criar a promessa):\n\n- Nome do produto: {{nome}}\n- Tipo de produto: {{tipo}}\n- Tema central: {{tema}}\n- Público-alvo: {{publico}}\n- Transformação após o produto: {{transformacao}}\n- Resultado esperado em: {{tempo}}\n- Diferencial que acelera: {{diferencial}}\n\nCrie as promessas SMART com base nisso.",
+      "ganchos": "Informações para os ganchos:\n\n1. Nicho: {{nicho}}\n2. O que ensina/vende/entrega: {{ensina}}\n3. Nível do público: {{nivel}}\n4. Objetivo dos ganchos: {{objetivo}}\n5. Dor/desejo específico: {{dor}}\n\nAgora gere os 20 ganchos, seguindo exatamente o formato definido.",
+      "narrado": "Nicho ou gancho informado pelo usuário: {{entrada}}\n\nIdentifique se é um NICHO ou um GANCHO pronto e crie o roteiro narrado técnico, no formato exato definido.",
+      "carrossel": "Informações para o carrossel:\n\n1. Nicho: {{nicho}}\n2. O que faz no nicho: {{faz}}\n3. Tema/gancho/ideia: {{tema}}\n4. Foco: {{foco}}\n5. CTA final: {{cta}}\n\nAgora monte o carrossel completo no formato exato definido, com análise estratégica e 3 variações."
+    }
   },
   "a11y": {
     "colunaAnterior": "Mover para coluna anterior",
@@ -1154,7 +1203,8 @@
     "virarCamera": "Virar câmera",
     "gravarTranscrever": "Gravar áudio e transcrever",
     "escolherRoteiro": "Escolher roteiro para gravar",
-    "voltarEstudio": "Voltar pro Estúdio"
+    "voltarEstudio": "Voltar pro Estúdio",
+    "cancelarGravacao": "Cancelar gravação"
   },
   "notificacoes": {
     "n1": "Ótima pergunta! O gancho ideal depende do seu nicho — te respondi com um exemplo prático.",
@@ -1180,5 +1230,24 @@
       "Em breve": "Em breve",
       "Aula gratuita": "Aula gratuita"
     }
+  },
+  "erroApp": {
+    "titulo": "Algo deu errado",
+    "descricao": "Não foi possível carregar o app agora. Toque no botão abaixo — na maioria das vezes isso já resolve.",
+    "recarregar": "Recarregar o app",
+    "suporte": "Se continuar assim, chame o suporte e mande este print."
+  },
+  "push": {
+    "titulo": "Ative as notificações",
+    "subtitulo": "Assim você não perde o que acontece na Comunidade.",
+    "beneficio1": "Aviso quando uma aula nova entra no ar.",
+    "beneficio2": "Chamada das lives — antes de começar, não depois.",
+    "beneficio3": "Resposta no seu comentário e novidades da turma.",
+    "permitir": "Permitir notificações",
+    "ativando": "Ativando…",
+    "agoraNao": "Agora não",
+    "sucesso": "Pronto! Você vai receber os avisos.",
+    "negado": "Sem problema — dá pra ativar depois nos ajustes do aparelho.",
+    "erro": "Não deu pra ativar agora. Tente de novo mais tarde."
   }
 }
