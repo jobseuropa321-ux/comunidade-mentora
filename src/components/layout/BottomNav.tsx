@@ -113,12 +113,13 @@ const BottomNav: React.FC = () => {
 
   const chatLocked = !hasFullAccess && !canUseChatTrial;
 
-  // Rotas mantidas — só o visual mudou (design "A Mentora")
+  // Rotas mantidas — o que mudou foram os rótulos: /home aparece como
+  // "cursos" e /chat como "agentes" (as chaves do i18n seguem esses nomes).
   const navItems = [
-    { path: '/home',      kind: 'home'  as const, label: t('nav.home'),       title: t('nav.titles.home'),       locked: false },
+    { path: '/home',      kind: 'home'  as const, label: t('nav.cursos'),     title: t('nav.titles.cursos'),     locked: false },
     { path: '/ao-vivo',   kind: 'video' as const, label: t('nav.aoVivo'),     title: t('nav.titles.aoVivo'),     locked: false },
     { path: '/community', kind: 'users' as const, label: t('nav.comunidade'), title: t('nav.titles.comunidade'), locked: !hasFullAccess },
-    { path: '/chat',      kind: 'stars' as const, label: t('nav.cursos'),     title: t('nav.titles.cursos'),     locked: chatLocked },
+    { path: '/chat',      kind: 'stars' as const, label: t('nav.agentes'),    title: t('nav.titles.agentes'),    locked: chatLocked },
   ];
 
   const isItemActive = (path: string) =>
