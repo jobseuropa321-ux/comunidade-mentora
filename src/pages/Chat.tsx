@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { readFnError } from '@/lib/functionsError';
+import { loadChatDraft, saveChatDraft, clearChatDraft, type ChatDraft } from '@/lib/chatDraft';
 import { useAgents, CATEGORIES, categoryLabel, defaultOpening, type Agent } from '@/data/agents';
 import VoiceField from '@/components/VoiceField';
 import { Robot, SceneFX, ACCENT, type RobotKind } from '@/components/estudio/AgentRobot';
@@ -416,6 +417,15 @@ const bt = (chave: string, vars: Record<string, string>) =>
 const campo = (a: Record<string, string>, k: string, fb = 'traco') =>
   a[k]?.trim() ? a[k].trim() : i18n.t(`intake.fb.${fb}`);
 
+/* Nome que já vem preenchido no modal "Salvar na Biblioteca". Também tem que
+   acompanhar o idioma: a aluna espanhola via "Pesquisa — Fisioterapeuta" no
+   campo (reportado em 2026-08-15). */
+const nomeSalvo = (chave: string, valor?: string) => {
+  const prefixo = i18n.t(`intake.nomeSalvo.${chave}`);
+  const v = (valor ?? '').trim();
+  return v ? `${prefixo} — ${v}` : prefixo;
+};
+
 const compileBriefing = (a: Record<string, string>) =>
   bt('arquiteto', {
     sobre: campo(a, 'sobre'),
@@ -568,7 +578,7 @@ const INTAKE: Record<string, IntakeConfig> = {
   },
   'agente-4': {
     questions: PESQUISA_QUESTIONS,
-    compile: a => ({ briefing: compilePesquisa(a), courseName: `Pesquisa — ${(a['nicho'] ?? '').trim()}`.trim() }),
+    compile: a => ({ briefing: compilePesquisa(a), courseName: nomeSalvo('pesquisa', a['nicho']) }),
   },
   'agente-5': {
     questions: NOME_QUESTIONS,
@@ -580,33 +590,44 @@ const INTAKE: Record<string, IntakeConfig> = {
   },
   'agente-7': {
     questions: GANCHOS_QUESTIONS,
-    compile: a => ({ briefing: compileGanchos(a), courseName: `Ganchos — ${(a['nicho'] ?? '').trim()}`.trim() }),
+    compile: a => ({ briefing: compileGanchos(a), courseName: nomeSalvo('ganchos', a['nicho']) }),
   },
   'agente-8': {
     questions: NARRADO_QUESTIONS,
-    compile: a => ({ briefing: compileNarrado(a), courseName: `Roteiro — ${(a['entrada'] ?? '').trim().slice(0, 40)}`.trim() }),
+    compile: a => ({ briefing: compileNarrado(a), courseName: nomeSalvo('roteiro', (a['entrada'] ?? '').trim().slice(0, 40)) }),
   },
   'agente-9': {
     questions: CARROSSEL_QUESTIONS,
-    compile: a => ({ briefing: compileCarrossel(a), courseName: `Carrossel — ${(a['nicho'] ?? '').trim()}`.trim() }),
+    compile: a => ({ briefing: compileCarrossel(a), courseName: nomeSalvo('carrossel', a['nicho']) }),
   },
 };
+
+type FormDraft = { step: number; answers: Record<string, string> };
 
 const AgentIntakeForm: React.FC<{
   agent: Agent; config: IntakeConfig; reduce: boolean; onBack: () => void;
   onSubmit: (briefing: string, courseName: string) => void;
-}> = ({ agent, config, reduce, onBack, onSubmit }) => {
+  /* O formulário tem 5 perguntas longas e era perdido inteiro ao trocar de
+     tela. Quem guarda é o pai (Chat), que já persiste o resto da sessão. */
+  draft: FormDraft | null;
+  onDraftChange: (d: FormDraft) => void;
+}> = ({ agent, config, reduce, onBack, onSubmit, draft, onDraftChange }) => {
   const TXT = useTxt();
   const { t } = useTranslation();
   const kind = agent.category as RobotKind;
   const acc = ACCENT[kind];
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  // clamp no passo: se o formulário encolheu desde o rascunho, não trava numa
+  // pergunta que não existe mais.
+  const [step, setStep] = useState(() => Math.min(draft?.step ?? 0, config.questions.length - 1));
+  const [answers, setAnswers] = useState<Record<string, string>>(draft?.answers ?? {});
   const q = config.questions[step];
   const total = config.questions.length;
   const val = answers[q.key] ?? '';
   const canNext = !q.required || val.trim().length > 0;
   const isLast = step === total - 1;
+
+  // Espelha o progresso pro pai a cada resposta — é ele que grava.
+  useEffect(() => { onDraftChange({ step, answers }); }, [step, answers, onDraftChange]);
 
   const goNext = () => {
     if (!canNext) return;
@@ -823,35 +844,51 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   const agent = AGENTS.find(f => f.slug === formatSlug);
   const cat = CATEGORIES.find(c => c.id === agent?.category);
 
+  /* Rascunho da visita anterior. Lido uma única vez, ANTES dos useState, pra
+     servir de valor inicial. A rota vive dentro de ProtectedRoute, então
+     `user` já existe no primeiro render. */
+  const draftRef = useRef<ChatDraft | null | undefined>(undefined);
+  if (draftRef.current === undefined) {
+    draftRef.current = agent && user ? loadChatDraft(user.id, agent.slug) : null;
+  }
+  const draft = draftRef.current;
+
   // Lazy + defensivo: nunca desreferencia `agent` indefinido no 1º render
   const [messages, setMessages] = useState<Message[]>(() =>
-    agent ? [{ role: 'ia', content: INITIAL_MSG(agent, t) }] : []
+    draft ? draft.messages : agent ? [{ role: 'ia', content: INITIAL_MSG(agent, t) }] : []
   );
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(draft?.input ?? '');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const sessionIdRef = useRef<string | null>(null);
-  if (sessionIdRef.current === null) sessionIdRef.current = newSessionId();
+  // Retoma o MESMO sessionId: ele é a chave de cota da function `chat-viral`,
+  // e um id novo faria o backend cobrar a conversa retomada como um chat novo.
+  if (sessionIdRef.current === null) sessionIdRef.current = draft?.sessionId ?? newSessionId();
 
   // Biblioteca: IDs dos bubbles de IA já salvos na sessão + modal de salvar
-  const [savedIdx, setSavedIdx] = useState<Set<number>>(new Set());
+  const [savedIdx, setSavedIdx] = useState<Set<number>>(() => new Set(draft?.savedIdx ?? []));
   const [saveModalIdx, setSaveModalIdx] = useState<number | null>(null);
   const [saveTitle, setSaveTitle] = useState('');
   const [saving, setSaving] = useState(false);
-  const [saveStatuses, setSaveStatuses] = useState<Record<number, SaveStatus>>({});
+  const [saveStatuses, setSaveStatuses] = useState<Record<number, SaveStatus>>(
+    () => (draft?.saveStatuses ?? {}) as Record<number, SaveStatus>,
+  );
 
   // Esteira Arquiteto→Roteirista: etapa da tela, nome do curso e modo "salvar ao sair"
   const reduce = !!useReducedMotion();
-  const [stage, setStage] = useState<'form' | 'picker' | 'chat'>(
-    agent?.slug === 'agente-2' ? 'picker' : (agent && INTAKE[agent.slug]) ? 'form' : 'chat'
+  const [stage, setStage] = useState<'form' | 'picker' | 'chat'>(() =>
+    draft?.stage ?? (agent?.slug === 'agente-2' ? 'picker' : (agent && INTAKE[agent.slug]) ? 'form' : 'chat')
   );
-  const [courseName, setCourseName] = useState('');
+  const [courseName, setCourseName] = useState(draft?.courseName ?? '');
+  const [formDraft, setFormDraft] = useState<FormDraft | null>(draft?.form ?? null);
   // Esqueleto que está sendo roteirizado: é ele que amarra cada aula ao
   // curso certo no banco (e faz o "continuar de onde parou" existir).
-  const [skeletonId, setSkeletonId] = useState<string | null>(null);
+  const [skeletonId, setSkeletonId] = useState<string | null>(draft?.skeletonId ?? null);
   const [exitMode, setExitMode] = useState(false);
-  const [lessonProgress, setLessonProgress] = useState<{ current: number; total: number } | null>(null);
+  const [lessonProgress, setLessonProgress] = useState<{ current: number; total: number } | null>(
+    draft?.lessonProgress ?? null,
+  );
 
   const { isRecording, recordingTime, error: recorderError, startRecording, stopRecording, cancelRecording } = useAudioRecorder();
   const [transcribing, setTranscribing] = useState(false);
@@ -864,6 +901,50 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
+
+  /* ═══ Rascunho da sessão ═══
+     Trocar de tela desmonta este componente. Sem gravar nada, some a conversa
+     inteira — inclusive a resposta que a IA já tinha terminado de escrever. */
+  const skipPersistRef = useRef(false);
+  const snapshotRef = useRef<Omit<ChatDraft, 'updatedAt'> | null>(null);
+  snapshotRef.current = {
+    sessionId: sessionIdRef.current as string,
+    stage,
+    messages,
+    input,
+    courseName,
+    skeletonId,
+    lessonProgress,
+    savedIdx: [...savedIdx],
+    saveStatuses: saveStatuses as Record<string, SaveStatus>,
+    form: formDraft,
+  };
+
+  const persist = () => {
+    if (skipPersistRef.current || !agent || !user || !snapshotRef.current) return;
+    saveChatDraft(user.id, agent.slug, snapshotRef.current);
+  };
+  // Ref pra que a gravação de saída use sempre a versão mais nova, e não a
+  // closure do primeiro render.
+  const persistRef = useRef(persist);
+  persistRef.current = persist;
+
+  // Grava com folga: sem o debounce seria uma escrita por tecla digitada.
+  useEffect(() => {
+    const id = setTimeout(() => persistRef.current(), 400);
+    return () => clearTimeout(id);
+  }, [stage, messages, input, courseName, skeletonId, lessonProgress, savedIdx, saveStatuses, formDraft]);
+
+  // E garante a gravação no caminho que motivou tudo isso: sair da tela antes
+  // do debounce disparar.
+  useEffect(() => () => persistRef.current(), []);
+
+  /* Saída deliberada (salvou e saiu, ou descartou): aí o rascunho NÃO deve
+     ressuscitar a conversa na próxima visita. */
+  const dropDraft = () => {
+    skipPersistRef.current = true;
+    if (user && agent) clearChatDraft(user.id, agent.slug);
+  };
 
   const saveLessonAutomatically = async (
     replyIdx: number,
@@ -1023,6 +1104,8 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
 
   const reset = () => {
     if (!agent) return;
+    if (user) clearChatDraft(user.id, agent.slug);
+    setFormDraft(null);
     setInput('');
     setSavedIdx(new Set());
     setSaveStatuses({});
@@ -1092,13 +1175,14 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     setSaveModalIdx(null);
     setExitMode(false);
     toast({ title: TXT.toast_saved });
-    if (wasExit) navigate('/chat');
+    if (wasExit) { dropDraft(); navigate('/chat'); }
   };
 
   const closeSaveModal = () => { setSaveModalIdx(null); setExitMode(false); };
 
   // Formulário do Arquiteto concluído → gera o esqueleto a partir do briefing.
   const handleFormSubmit = (briefing: string, name: string) => {
+    setFormDraft(null);
     setCourseName(name);
     setStage('chat');
     runGeneration({ role: 'user', content: briefing }, []);
@@ -1259,7 +1343,17 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
 
   // Etapa 1 dos agentes com entrevista própria (Arquiteto, Apostila): formulário-wizard
   if (stage === 'form' && INTAKE[agent.slug]) {
-    return <AgentIntakeForm agent={agent} config={INTAKE[agent.slug]} reduce={reduce} onBack={() => navigate('/chat')} onSubmit={handleFormSubmit} />;
+    return (
+      <AgentIntakeForm
+        agent={agent}
+        config={INTAKE[agent.slug]}
+        reduce={reduce}
+        onBack={() => navigate('/chat')}
+        onSubmit={handleFormSubmit}
+        draft={formDraft}
+        onDraftChange={setFormDraft}
+      />
+    );
   }
   // Etapa 1 do Roteirista: escolher o esqueleto salvo
   if (stage === 'picker') {
@@ -1487,7 +1581,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
 
             <div className="flex gap-2">
               <button
-                onClick={exitMode ? () => { closeSaveModal(); navigate('/chat'); } : closeSaveModal}
+                onClick={exitMode ? () => { closeSaveModal(); dropDraft(); navigate('/chat'); } : closeSaveModal}
                 className="flex-1 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest bg-[#F6D6DC] text-[#5B4041]"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >

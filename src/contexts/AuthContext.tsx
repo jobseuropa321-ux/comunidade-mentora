@@ -21,6 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { checkSubscription, AccessDeniedError, type SubStatus } from '@/lib/subscription';
 import { getLangFromPath, localizedPath } from '@/i18n/LanguageProvider';
 import i18n from '@/i18n';
+import { clearAllChatDrafts } from '@/lib/chatDraft';
 
 export interface Profile {
   id: string;
@@ -182,6 +183,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     authCheckVersion.current += 1;
     setAccessDeniedStatus(null);
+    // Rascunho de conversa é conteúdo da aluna: não pode sobrar no aparelho
+    // pra próxima pessoa que logar.
+    clearAllChatDrafts();
     await supabase.auth.signOut();
     clearAuthState();
     setLoading(false);
