@@ -11,6 +11,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { readFnError } from '@/lib/functionsError';
+import { useKeyboardViewport } from '@/hooks/useKeyboardViewport';
+import { rolarConversa } from '@/lib/chatScroll';
 import { loadChatDraft, saveChatDraft, clearChatDraft, type ChatDraft } from '@/lib/chatDraft';
 import { useAgents, CATEGORIES, categoryLabel, defaultOpening, type Agent } from '@/data/agents';
 import VoiceField from '@/components/VoiceField';
@@ -612,6 +614,7 @@ const AgentIntakeForm: React.FC<{
   draft: FormDraft | null;
   onDraftChange: (d: FormDraft) => void;
 }> = ({ agent, config, reduce, onBack, onSubmit, draft, onDraftChange }) => {
+  const shellRef = useKeyboardViewport<HTMLDivElement>();
   const TXT = useTxt();
   const { t } = useTranslation();
   const kind = agent.category as RobotKind;
@@ -637,7 +640,7 @@ const AgentIntakeForm: React.FC<{
   const goBack = () => (step === 0 ? onBack() : setStep(s => s - 1));
 
   return (
-    <div className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div ref={shellRef} className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       {/* Palco do robô */}
       <div className="shrink-0 relative overflow-hidden" style={{ background: agent.gradient }}>
         <button onClick={goBack} className="absolute top-3 left-3 z-10 w-8 h-8 flex items-center justify-center text-white/90" style={{ WebkitTapHighlightColor: 'transparent' }}>
@@ -715,6 +718,7 @@ const SkeletonPicker: React.FC<{
   agent: Agent; userId?: string; reduce: boolean;
   onBack: () => void; onPick: (it: SkeletonItem, retomar: boolean) => void; onCreate: () => void;
 }> = ({ agent, userId, reduce, onBack, onPick, onCreate }) => {
+  const shellRef = useKeyboardViewport<HTMLDivElement>();
   const TXT = useTxt();
   const { t } = useTranslation();
   const kind = agent.category as RobotKind;
@@ -756,7 +760,7 @@ const SkeletonPicker: React.FC<{
   }, [userId]);
 
   return (
-    <div className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div ref={shellRef} className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       {/* Palco do robô */}
       <div className="shrink-0 relative overflow-hidden" style={{ background: agent.gradient }}>
         <button onClick={onBack} className="absolute top-3 left-3 z-10 w-8 h-8 flex items-center justify-center text-white/90" style={{ WebkitTapHighlightColor: 'transparent' }}>
@@ -834,6 +838,7 @@ const SkeletonPicker: React.FC<{
 };
 
 const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
+  const shellRef = useKeyboardViewport<HTMLDivElement>();
   const navigate = useLocalizedNavigate();
   const lang = useCurrentLang();
   const { t } = useTranslation();
@@ -860,6 +865,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   const [input, setInput] = useState(draft?.input ?? '');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const sessionIdRef = useRef<string | null>(null);
   // Retoma o MESMO sessionId: ele é a chave de cota da function `chat-viral`,
@@ -899,7 +905,13 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   }, [recorderError, toast, t]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    rolarConversa({
+      box: listRef.current,
+      fim: bottomRef.current,
+      indiceUltima: messages.length - 1,
+      ultimaEhDaIA: messages[messages.length - 1]?.role === 'ia',
+      carregando: loading,
+    });
   }, [messages, loading]);
 
   /* ═══ Rascunho da sessão ═══
@@ -1383,7 +1395,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   const passouDoEsqueleto = !!lessonProgress && lessonProgress.current >= lessonProgress.total;
 
   return (
-    <div className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div ref={shellRef} className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
       {/* Header */}
       <div className="shrink-0 border-b border-[#BE0D3E]/10 px-4 pt-3 pb-3 flex items-center gap-3"
@@ -1439,6 +1451,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
 
       {/* Mensagens */}
       <div
+        ref={listRef}
         className="flex-1 overflow-y-auto px-4 py-5 space-y-3"
         style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
       >
