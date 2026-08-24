@@ -269,7 +269,10 @@ const AoVivo: React.FC = () => {
         </motion.div>
       )}
 
-      {/* Próximas aulas */}
+      {/* Próximas aulas — o cronograma (liveSchedule.ts) é das mentorias em
+          português; a versão ES não tem ciclo próprio, então a seção nem
+          aparece lá (os replays já vêm filtrados por idioma do banco). */}
+      {lang !== 'es' && (
       <motion.section
         initial={reduce ? false : { opacity: 0, y: 22 }}
         animate={{ opacity: 1, y: 0 }}
@@ -322,6 +325,7 @@ const AoVivo: React.FC = () => {
           </div>
         )}
       </motion.section>
+      )}
 
       {/* Replays — carrossel com capas portrait */}
       <motion.section
