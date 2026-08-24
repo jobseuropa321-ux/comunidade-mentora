@@ -286,11 +286,14 @@ const ModuleEditor: React.FC<{
     reloadLessons();
   };
 
+  /* Aula criada com o seletor em ES nasce só do espanhol — antes ela ia pros
+     dois idiomas e "subir aula pra Espanha" vazava pro app em português. */
   const createLesson = async () => {
     const maxPos = lessons.length ? Math.max(...lessons.map(x => x.position)) : -1;
     const { data, error } = await supabase.from('lessons')
-      .insert({ module_id: mod.id, titulo: 'Nova aula', duracao: '— min', position: maxPos + 1 }).select('*').single();
+      .insert({ module_id: mod.id, titulo: 'Nova aula', duracao: '— min', position: maxPos + 1, lang: isEs ? 'es' : 'both' }).select('*').single();
     if (error || !data) { toast.error('Erro', { description: error?.message ?? 'Falha ao criar aula' }); return; }
+    if (isEs) toast.success('Aula criada só para o espanhol', { description: 'Dá pra mudar no campo "Onde a aula aparece".' });
     onEditLesson(data as Lesson);
   };
 
@@ -472,8 +475,12 @@ const ModuleEditor: React.FC<{
               <button onClick={() => moveLesson(l, 1)} disabled={i === lessons.length - 1} className="w-6 h-6 rounded bg-white text-[#5B4041] flex items-center justify-center disabled:opacity-30"><ArrowDown size={10} /></button>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-bold text-[#1E1B11] truncate">{i + 1}. {l.titulo}</p>
-              <p className="text-[9px] text-[#5B4041] truncate">{l.duracao}{l.video_url ? ' · vídeo OK' : ' · sem vídeo'}</p>
+              <p className="text-[11px] font-bold text-[#1E1B11] truncate">
+                {i + 1}. {l.titulo}
+                {l.lang === 'es' && <span className="ml-1.5 text-[8px] font-black uppercase tracking-wider text-white bg-[#F6B43A] rounded px-1 py-0.5 align-middle">só ES</span>}
+                {l.lang === 'pt' && <span className="ml-1.5 text-[8px] font-black uppercase tracking-wider text-white bg-[#5B4041] rounded px-1 py-0.5 align-middle">só PT</span>}
+              </p>
+              <p className="text-[9px] text-[#5B4041] truncate">{l.duracao}{(l.video_url || l.video_url_es) ? ' · vídeo OK' : ' · sem vídeo'}</p>
             </div>
             <button onClick={() => onEditLesson(l)} className="w-7 h-7 rounded bg-[#BE0D3E]/10 text-[#BE0D3E] flex items-center justify-center shrink-0"><Pencil size={11} /></button>
             <button onClick={() => setDeleteLessonTarget(l)} className="w-7 h-7 rounded bg-red-50 text-red-500 flex items-center justify-center shrink-0"><Trash2 size={11} /></button>
@@ -517,6 +524,7 @@ const LessonEditor: React.FC<{
     const { data, error } = await supabase.from('lessons').update({
       titulo: draft.titulo, duracao: draft.duracao, descricao: draft.descricao, conteudo: draft.conteudo, video_url: draft.video_url,
       titulo_es: draft.titulo_es ?? null, descricao_es: draft.descricao_es ?? null, conteudo_es: draft.conteudo_es ?? null,
+      video_url_es: draft.video_url_es ?? null, lang: draft.lang ?? 'both',
     }).eq('id', lesson.id).select('*').single();
     setSaving(false);
     if (error) { toast.error('Erro', { description: error.message }); return; }
@@ -574,24 +582,51 @@ const LessonEditor: React.FC<{
         )}
         <Field label="Duração" value={draft.duracao} onChange={v => setDraft({ ...draft, duracao: v })} hint="ex: 6 min · vale para os dois idiomas" />
 
+        {/* Onde a aula aparece. Aula criada com o seletor em ES nasce "Só ES";
+            este campo deixa mudar depois (ex.: liberar pros dois idiomas). */}
         <div>
-          <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">URL do vídeo (embed)</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">Onde a aula aparece</label>
+          <div className="grid grid-cols-3 gap-1 mt-1.5">
+            {([{ value: 'both', label: 'PT e ES' }, { value: 'pt', label: 'Só PT' }, { value: 'es', label: 'Só ES' }] as const).map(opt => (
+              <button key={opt.value} type="button" onClick={() => setDraft({ ...draft, lang: opt.value })}
+                className={`text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-colors ${(draft.lang ?? 'both') === opt.value ? 'bg-[#BE0D3E] text-white' : 'bg-[#F6D6DC] text-[#5B4041]'}`}>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <p className="text-[9px] text-[#5B4041]/60 mt-0.5">"Só ES" some do app em português (e vice-versa). Lembre de salvar.</p>
+        </div>
+
+        {/* URL do vídeo do idioma selecionado no topo: em ES grava video_url_es
+            — antes era um campo só e trocar o vídeo em ES trocava o PT junto. */}
+        <div>
+          <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">
+            URL do vídeo (embed){isEs && <span className="text-[#5B4041]/50"> · versão ES</span>}
+          </label>
           <div className="mt-1 flex gap-2">
-            <input value={draft.video_url ?? ''} onChange={e => setDraft({ ...draft, video_url: e.target.value || null })}
+            <input
+              value={(isEs ? draft.video_url_es : draft.video_url) ?? ''}
+              onChange={e => setDraft(d => (isEs ? { ...d, video_url_es: e.target.value || null } : { ...d, video_url: e.target.value || null }))}
               placeholder="cole a URL ou clique 'Escolher da Panda'"
               className="flex-1 min-w-0 bg-[#FFF7E6] border border-[#BE0D3E]/15 text-[#1E1B11] text-[12px] rounded-xl px-3 py-2 focus:border-[#BE0D3E]/50 focus:outline-none" />
             <button type="button" onClick={() => setPickerOpen(true)} className={`${accentBtn} shrink-0`}>
               <Film size={12} /> Escolher da Panda
             </button>
           </div>
-          <p className="text-[9px] text-[#5B4041]/60 mt-0.5">É a URL de player que vai tocar no iframe da aula (não é upload de arquivo).</p>
+          <p className="text-[9px] text-[#5B4041]/60 mt-0.5">
+            {isEs
+              ? 'Vídeo que toca na versão espanhola. Em branco, o app usa o vídeo em português.'
+              : 'É a URL de player que vai tocar no iframe da aula (não é upload de arquivo).'}
+          </p>
         </div>
 
-        {draft.video_url && (
+        {(isEs ? (draft.video_url_es ?? draft.video_url) : draft.video_url) && (
           <div className="bg-[#FFF7E6] rounded-xl p-2 flex items-center gap-2">
             <Video className="w-3.5 h-3.5 text-[#BE0D3E] shrink-0" />
-            <span className="text-[10px] text-[#5B4041] truncate flex-1">Vídeo definido · aparece no player da aula</span>
-            <a href={draft.video_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#BE0D3E] font-bold flex items-center gap-1 shrink-0">Abrir <ExternalLink size={10} /></a>
+            <span className="text-[10px] text-[#5B4041] truncate flex-1">
+              {isEs && !draft.video_url_es ? 'Sem vídeo ES · vai tocar o vídeo em português' : 'Vídeo definido · aparece no player da aula'}
+            </span>
+            <a href={(isEs ? (draft.video_url_es ?? draft.video_url) : draft.video_url)!} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#BE0D3E] font-bold flex items-center gap-1 shrink-0">Abrir <ExternalLink size={10} /></a>
           </div>
         )}
 
@@ -636,7 +671,8 @@ const LessonEditor: React.FC<{
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
         onPick={(url) => {
-          setDraft(d => ({ ...d, video_url: url }));
+          // Com o admin em ES, o vídeo escolhido vai pro campo espanhol.
+          setDraft(d => (isEs ? { ...d, video_url_es: url } : { ...d, video_url: url }));
           setPickerOpen(false);
         }}
       />

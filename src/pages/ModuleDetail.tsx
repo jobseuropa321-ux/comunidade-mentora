@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ArrowLeft, Play, Clock, ChevronDown, ChevronUp, Loader2, CheckCircle2, FolderOpen, ExternalLink, Download, Sparkles, ChevronRight, NotebookPen } from 'lucide-react';
-import { useModuleBySlug, useLessonProgress, type Lesson } from '@/hooks/useCourses';
+import { useModuleBySlug, useLessonProgress, lessonVideoUrl, type Lesson } from '@/hooks/useCourses';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 import { dbNivel, dbTag, dbInstructor, dbDuracao, dbText } from '@/lib/dbText';
@@ -25,7 +25,8 @@ const AulaRow: React.FC<{
   // Aula que abre uma PÁGINA do app em vez do player: `video_url` guarda um
   // caminho interno (começa com "/"), ex.: a oferta do Viral 1 Min.
   // Sem isso o AulaDetail tentaria tocar o caminho num iframe.
-  const paginaInterna = aula.video_url?.startsWith('/') ? aula.video_url : null;
+  const videoUrl = lessonVideoUrl(aula, lang);
+  const paginaInterna = videoUrl?.startsWith('/') ? videoUrl : null;
   const abrirAula = () => navigate(paginaInterna ?? `/modulo/${moduleSlug}/aula/${index + 1}`);
 
   return (

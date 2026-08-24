@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { ArrowLeft, Play, ChevronLeft, ChevronRight, CheckCircle2, Clock, List, Download, FileText, BookOpen, X, Loader2 } from 'lucide-react';
-import { useLesson, useLessonProgress } from '@/hooks/useCourses';
+import { useLesson, useLessonProgress, lessonVideoUrl } from '@/hooks/useCourses';
 import LessonForum from '@/components/LessonForum';
 import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
@@ -66,8 +66,9 @@ const AulaDetail: React.FC = () => {
   // Aula que é uma PÁGINA do app (video_url = caminho interno, ex. a oferta do
   // Viral 1 Min): quem chega por link direto vai pra página em vez de ver o
   // caminho virar src de iframe. O ModuleDetail já navega direto pra lá.
-  if (data.lesson.video_url?.startsWith('/')) {
-    return <Navigate to={localizedPath(data.lesson.video_url, lang)} replace />;
+  const videoUrl = lessonVideoUrl(data.lesson, lang);
+  if (videoUrl?.startsWith('/')) {
+    return <Navigate to={localizedPath(videoUrl, lang)} replace />;
   }
 
   const { module: modulo, lessons, lesson: aula } = data;
@@ -114,9 +115,9 @@ const AulaDetail: React.FC = () => {
         className="mx-4 rounded-2xl overflow-hidden relative bg-[#1E1B11]"
         style={{ aspectRatio: '16/9' }}
       >
-        {embedSrc(aula.video_url) ? (
+        {embedSrc(videoUrl) ? (
           <iframe
-            src={embedSrc(aula.video_url)!}
+            src={embedSrc(videoUrl)!}
             title={aula.titulo}
             className="absolute inset-0 w-full h-full border-0"
             allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
