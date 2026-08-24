@@ -24,8 +24,8 @@ const VTURB_PLAYER_ID = '6a690216565ffb31f360a35b';
 const VTURB_VIDEO_ID = '6a6901b622215083f60b5679';
 /* Os textos da faixa e do botão vêm do dicionário — resolvidos dentro do
    componente, não aqui, porque t() é hook. */
-/** Checkout da Hubla (vai direto pro pagamento, sem passar pela página de vendas). */
-const CTA_HREF = 'https://pay.hub.la/soO8SrabzW3POhfXgl16';
+/** Página da oferta na Hubla. */
+const CTA_HREF = 'https://hub.la/r/comunidade-digital';
 /* ───────────────────────────────────────────────────────────────────── */
 
 const VTURB_SCRIPT_SRC = `https://scripts.converteai.net/${VTURB_ACCOUNT_ID}/players/${VTURB_PLAYER_ID}/v4/player.js`;
