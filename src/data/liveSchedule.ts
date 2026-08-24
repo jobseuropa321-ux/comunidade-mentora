@@ -3,23 +3,28 @@
 // itens antigos manualmente — basta adicionar novos no fim quando renovar o ciclo.
 // Datas em ISO (YYYY-MM-DD).
 //
-// ⚠️ SUBSTITUA os itens abaixo pela agenda real (nomes/datas/horários).
 
 export interface ScheduledLive {
   /** Data da aula em ISO (YYYY-MM-DD) */
   date: string;
   /** Horário exibido (já formatado), ex.: "19h" */
   time: string;
-  /** Responsável / mentor(a) da aula */
-  presenter: string;
+  /** Responsável / mentor(a) da aula (opcional — sem isso o card não mostra a linha "com ...") */
+  presenter?: string;
 }
 
 export const LIVE_SCHEDULE: ScheduledLive[] = [
-  { date: '2026-07-14', time: '19h', presenter: 'Equipe Amentora' },
-  { date: '2026-07-16', time: '19h', presenter: 'Equipe Amentora' },
-  { date: '2026-07-21', time: '19h', presenter: 'Equipe Amentora' },
-  { date: '2026-07-23', time: '19h', presenter: 'Equipe Amentora' },
-  // ...adicione o resto da agenda aqui
+  // Ciclo ago–out/2026: toda segunda-feira às 19h.
+  { date: '2026-08-24', time: '19h' },
+  { date: '2026-08-31', time: '19h' },
+  { date: '2026-09-07', time: '19h' },
+  { date: '2026-09-14', time: '19h' },
+  { date: '2026-09-21', time: '19h' },
+  { date: '2026-09-28', time: '19h' },
+  { date: '2026-10-05', time: '19h' },
+  { date: '2026-10-12', time: '19h' },
+  { date: '2026-10-19', time: '19h' },
+  { date: '2026-10-26', time: '19h' },
 ];
 
 /** Retorna as próximas aulas a partir de hoje (inclui a de hoje), em ordem. */

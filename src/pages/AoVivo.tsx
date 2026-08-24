@@ -47,30 +47,34 @@ const formatShortDate = (iso: string | null, lang: SupportedLang): string => {
   return formatDateShort(iso + 'T00:00:00', lang).replace('.', '').toUpperCase();
 };
 
-/** Detecta YouTube e retorna URL de embed. Se não for YouTube, retorna null (cai no fluxo "abrir nova aba"). */
-const buildYouTubeEmbedUrl = (rawUrl: string | null): string | null => {
+/** Extrai o ID do vídeo de um link do YouTube (watch, live, embed, shorts, youtu.be). */
+const getYouTubeVideoId = (rawUrl: string | null): string | null => {
   if (!rawUrl) return null;
   try {
     const u = new URL(rawUrl.trim());
     const host = u.hostname.replace(/^www\./, '');
-    let videoId: string | null = null;
     if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'music.youtube.com') {
       // /watch?v=ID
-      videoId = u.searchParams.get('v');
+      const v = u.searchParams.get('v');
+      if (v) return v;
       // /live/ID  /embed/ID  /shorts/ID
-      if (!videoId) {
-        const m = u.pathname.match(/^\/(?:live|embed|shorts)\/([^/?]+)/);
-        if (m) videoId = m[1];
-      }
-    } else if (host === 'youtu.be') {
-      const m = u.pathname.match(/^\/([^/?]+)/);
-      if (m) videoId = m[1];
+      const m = u.pathname.match(/^\/(?:live|embed|shorts)\/([^/?]+)/);
+      return m ? m[1] : null;
     }
-    if (!videoId) return null;
-    return `https://www.youtube.com/embed/${videoId}?autoplay=1&playsinline=1&rel=0`;
+    if (host === 'youtu.be') {
+      const m = u.pathname.match(/^\/([^/?]+)/);
+      return m ? m[1] : null;
+    }
+    return null;
   } catch {
     return null;
   }
+};
+
+/** Detecta YouTube e retorna URL de embed. Se não for YouTube, retorna null (cai no fluxo "abrir nova aba"). */
+const buildYouTubeEmbedUrl = (rawUrl: string | null): string | null => {
+  const videoId = getYouTubeVideoId(rawUrl);
+  return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&playsinline=1&rel=0` : null;
 };
 
 /* ── Indicador pulsante "AO VIVO" ── */
@@ -91,7 +95,7 @@ const LiveCover: React.FC<{
   month: string;
   weekday: string;
   time: string;
-  presenterLabel: string;
+  presenterLabel?: string;
 }> = ({ title, day, month, weekday, time, presenterLabel }) => (
   <div className="absolute inset-0 bg-gradient-to-br from-[#94002D] via-[#BE0D3E] to-[#E06B85] overflow-hidden">
     {/* brilhos decorativos */}
@@ -121,7 +125,7 @@ const LiveCover: React.FC<{
       {/* base: horário + responsável */}
       <div className="flex flex-col items-center gap-0.5">
         <span className="text-[9px] font-black text-white">{time}</span>
-        <span className="text-[8px] font-semibold text-white/85">{presenterLabel}</span>
+        {presenterLabel && <span className="text-[8px] font-semibold text-white/85">{presenterLabel}</span>}
       </div>
     </div>
   </div>
@@ -309,7 +313,7 @@ const AoVivo: React.FC = () => {
                     month={month}
                     weekday={weekday}
                     time={l.time}
-                    presenterLabel={`${TXT.presenter_prefix} ${l.presenter}`}
+                    presenterLabel={l.presenter ? `${TXT.presenter_prefix} ${l.presenter}` : undefined}
                   />
                 </div>
               );
@@ -346,7 +350,13 @@ const AoVivo: React.FC = () => {
             className="flex gap-3 overflow-x-auto pb-2 px-4 snap-x snap-mandatory"
             style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
           >
-            {replays.map(r => (
+            {replays.map(r => {
+              // Sem capa própria? Replay do YouTube usa a thumbnail do vídeo
+              // automaticamente (sddefault 4:3 corta menos no card portrait;
+              // se não existir, o onError troca pra hqdefault, que sempre existe).
+              const ytId = getYouTubeVideoId(r.video_url);
+              const coverUrl = r.cover_url ?? (ytId ? `https://i.ytimg.com/vi/${ytId}/sddefault.jpg` : null);
+              return (
               <button
                 key={r.id}
                 onClick={() => setPlayingReplay(r)}
@@ -354,14 +364,20 @@ const AoVivo: React.FC = () => {
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 {/* Capa (ou fallback) */}
-                {r.cover_url ? (
+                {coverUrl ? (
                   <img
-                    src={r.cover_url}
+                    src={coverUrl}
                     alt={r.title}
                     className="absolute inset-0 w-full h-full object-cover"
                     loading="lazy"
                     decoding="async"
                     draggable={false}
+                    onError={(e) => {
+                      const img = e.currentTarget;
+                      if (ytId && !img.src.includes('/hqdefault.jpg')) {
+                        img.src = `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
+                      }
+                    }}
                   />
                 ) : (
                   <div className="absolute inset-0 bg-gradient-to-br from-[#BE0D3E]/30 to-[#E06B85]/30" />
@@ -392,7 +408,8 @@ const AoVivo: React.FC = () => {
                   )}
                 </div>
               </button>
-            ))}
+              );
+            })}
             <div className="w-1 shrink-0" />
           </div>
         )}
