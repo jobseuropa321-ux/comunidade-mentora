@@ -55,6 +55,8 @@ const LessonForum: React.FC<Props> = ({ lessonId }) => {
   const [sending, setSending] = useState(false);
 
   // Carrega os comentários da aula + perfil (nome/avatar) de quem escreveu.
+  // Filtrado pelo idioma da URL: PT e ES têm fóruns separados na mesma aula
+  // (mesmo padrão do community_posts.locale).
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -63,6 +65,7 @@ const LessonForum: React.FC<Props> = ({ lessonId }) => {
           .from('lesson_comments')
           .select('id, user_id, content, created_at')
           .eq('lesson_id', lessonId)
+          .eq('locale', lang)
           .order('created_at', { ascending: false });
         if (error) throw error;
         const cRows = (rows ?? []) as Array<Omit<Comment, 'profile'>>;
@@ -85,7 +88,8 @@ const LessonForum: React.FC<Props> = ({ lessonId }) => {
       }
     })();
     return () => { cancelled = true; };
-  }, [lessonId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lessonId, lang]);
 
   const handleSend = async () => {
     const text = draft.trim();
@@ -95,7 +99,7 @@ const LessonForum: React.FC<Props> = ({ lessonId }) => {
     try {
       const { data: inserted, error } = await supabase
         .from('lesson_comments')
-        .insert({ lesson_id: lessonId, user_id: user.id, content: text })
+        .insert({ lesson_id: lessonId, user_id: user.id, content: text, locale: lang })
         .select('id, user_id, content, created_at')
         .single();
       if (error) throw error;
