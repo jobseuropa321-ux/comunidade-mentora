@@ -40,7 +40,22 @@ export function rolarConversa({
 
   // Alinha o COMEÇO da resposta com o topo da área de leitura. Resposta curta
   // não muda nada na prática: o scrollTo satura no fim da lista.
-  const topo = el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
-  box.scrollTo({ top: Math.max(0, topo - 8), behavior });
+  const alinhaNoTopo = () => {
+    const topo = el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
+    // `auto`, não `smooth`: o destino é calculado a partir da posição atual, e
+    // animar daqui reabre a corrida com a rolagem que vinha do "digitando".
+    box.scrollTo({ top: Math.max(0, topo - 8), behavior: 'auto' });
+  };
+
+  /* Enquanto a IA digitava, cada trecho novo disparou um `scrollIntoView`
+     suave. Essa animação continua rodando depois que a resposta fecha e, no
+     Safari do iPhone, ela ATROPELA o scrollTo seguinte — foi o que a equipe
+     filmou em 2026-08-16: a correção existia e a tela abria no rodapé mesmo
+     assim. Um scrollTo pra posição atual encerra a animação pendente. */
+  box.scrollTo({ top: box.scrollTop, behavior: 'auto' });
+  alinhaNoTopo();
+  // A bolha ainda pode crescer neste frame (texto longo reflui); reposiciona
+  // quando o layout assentou.
+  requestAnimationFrame(alinhaNoTopo);
   return 'topo-da-resposta';
 }

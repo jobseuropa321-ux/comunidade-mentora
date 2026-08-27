@@ -1060,9 +1060,9 @@
           "placeholder": "Ex.: A pessoa aprende em pouco tempo"
         },
         "linguagem": {
-          "label": "Linguagem desejada pro nome",
-          "hint": "O tom do nome.",
-          "placeholder": "Ex.: Informal"
+          "label": "Que estilo você quer no nome?",
+          "hint": "Mais sério e profissional, ou mais leve e informal?",
+          "placeholder": "Ex.: informal e fácil de lembrar"
         }
       },
       "promessa": {
@@ -1164,6 +1164,8 @@
         }
       }
     },
+    "perguntaDeTotal": "Pergunta {{n}} de {{total}}",
+    "opcional": "opcional",
     "proxima": "Próxima",
     "subtitles": {
       "agente-1": "Vamos montar o esqueleto do seu curso",

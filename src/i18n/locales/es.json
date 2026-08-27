@@ -395,7 +395,7 @@
     "save": "Guardar",
     "saving_lesson": "Guardando la clase...",
     "retry_save": "Intentar guardar",
-    "answer_required": "Hace falta tu respuesta",
+    "answer_required": "Respuesta obligatoria",
     "answer_below": "Responde en el campo de abajo",
     "next_lesson": "Crear la siguiente clase",
     "next_lesson_hint": "O escribe «siguiente» en el campo de mensaje.",
@@ -1060,9 +1060,9 @@
           "placeholder": "Ej.: La persona aprende en poco tiempo"
         },
         "linguagem": {
-          "label": "Lenguaje deseado para el nombre",
-          "hint": "El tono del nombre.",
-          "placeholder": "Ej.: Informal"
+          "label": "¿Qué estilo quieres para el nombre?",
+          "hint": "¿Más serio y profesional, o más ligero e informal?",
+          "placeholder": "Ej.: informal y fácil de recordar"
         }
       },
       "promessa": {
@@ -1164,6 +1164,8 @@
         }
       }
     },
+    "perguntaDeTotal": "Pregunta {{n}} de {{total}}",
+    "opcional": "opcional",
     "proxima": "Siguiente",
     "subtitles": {
       "agente-1": "Vamos a montar el esqueleto de tu curso",

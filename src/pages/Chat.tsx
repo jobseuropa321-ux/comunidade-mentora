@@ -311,6 +311,39 @@ const renderBold = (text: string) =>
       : <span key={i}>{p}</span>
   );
 
+/* A IA responde em markdown e só o **negrito** era interpretado — títulos e
+   separadores chegavam crus na tela ("### 1. Nome", "---"), como no vídeo que
+   a equipe da Espanha mandou em 2026-08-26. Aqui só entra o que ela realmente
+   usa: cabeçalho, linha divisória e negrito. */
+const HEADING = /^(#{1,6})\s+(.*)$/;
+const DIVISORIA = /^\s*([-*_])\1{2,}\s*$/;
+
+const renderResposta = (text: string) =>
+  text.split('\n').map((linha, i) => {
+    if (DIVISORIA.test(linha)) return <hr key={i} className="my-3 border-t border-[#BE0D3E]/15" />;
+
+    const h = HEADING.exec(linha.trim());
+    if (h) {
+      const nivel = h[1].length;
+      return (
+        <p
+          key={i}
+          className={nivel <= 2
+            ? 'mt-3 first:mt-0 mb-1 text-[14px] font-black text-[#1E1B11]'
+            : 'mt-2.5 first:mt-0 mb-0.5 text-[13px] font-black text-[#BE0D3E]'}
+        >
+          {renderBold(h[2])}
+        </p>
+      );
+    }
+
+    // Linha em branco vira respiro — sem isso os parágrafos colam. (renderBold
+    // devolve um span vazio, então o `empty:` do Tailwind não pegaria aqui.)
+    if (!linha.trim()) return <div key={i} className="h-2" />;
+
+    return <p key={i}>{renderBold(linha)}</p>;
+  });
+
 const Bubble: React.FC<{
   msg: Message;
   onSave?: () => void;
@@ -337,7 +370,7 @@ const Bubble: React.FC<{
             background: 'linear-gradient(135deg, #BE0D3E 0%, #BE0D3E 100%)',
           } : {}}
         >
-          {isIA ? renderBold(msg.content) : (msg.display ?? msg.content)}
+          {isIA ? renderResposta(msg.content) : (msg.display ?? msg.content)}
         </div>
         {asksForReply && (
           <div className="self-start mt-1.5 flex items-center gap-1.5 rounded-xl border border-[#F6B43A]/45 bg-[#FFF2CF] px-2.5 py-1.5 text-[10px] font-bold text-[#7A4C00]">
@@ -614,7 +647,7 @@ const AgentIntakeForm: React.FC<{
   draft: FormDraft | null;
   onDraftChange: (d: FormDraft) => void;
 }> = ({ agent, config, reduce, onBack, onSubmit, draft, onDraftChange }) => {
-  const shellRef = useKeyboardViewport<HTMLDivElement>();
+  const { ref: shellRef, tecladoAberto } = useKeyboardViewport<HTMLDivElement>();
   const TXT = useTxt();
   const { t } = useTranslation();
   const kind = agent.category as RobotKind;
@@ -632,6 +665,17 @@ const AgentIntakeForm: React.FC<{
   // Espelha o progresso pro pai a cada resposta — é ele que grava.
   useEffect(() => { onDraftChange({ step, answers }); }, [step, answers, onDraftChange]);
 
+  /* Com o teclado aberto a área de leitura fica baixa e o campo pode nascer
+     fora dela — o enunciado sozinho já a preenche. Recolher o palco devolve
+     altura; isto garante que o que sobrou mostre o campo, não o título. */
+  const campoRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!tecladoAberto) return;
+    const id = requestAnimationFrame(() =>
+      campoRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }));
+    return () => cancelAnimationFrame(id);
+  }, [tecladoAberto, step]);
+
   const goNext = () => {
     if (!canNext) return;
     if (isLast) { const { briefing, courseName } = config.compile(answers); onSubmit(briefing, courseName); }
@@ -641,16 +685,23 @@ const AgentIntakeForm: React.FC<{
 
   return (
     <div ref={shellRef} className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-      {/* Palco do robô */}
+      {/* Palco do robô — com o teclado aberto vira uma faixa fina: o robô é
+          decoração e sozinho comia a altura que o campo de texto precisa. */}
       <div className="shrink-0 relative overflow-hidden" style={{ background: agent.gradient }}>
         <button onClick={goBack} className="absolute top-3 left-3 z-10 w-8 h-8 flex items-center justify-center text-white/90" style={{ WebkitTapHighlightColor: 'transparent' }}>
           <ArrowLeft size={18} />
         </button>
-        <div className="relative px-4 pt-3 pb-4 flex flex-col items-center">
-          <Robot kind={kind} reduce={reduce} />
-          <p className="text-white text-[15px] font-black mt-1">{agent.name}</p>
-          <p className="text-white/80 text-[11px]">{t(`intake.subtitles.${agent.slug}`)}</p>
-        </div>
+        {tecladoAberto ? (
+          <div className="relative pl-12 pr-4 py-3">
+            <p className="text-white text-[13px] font-black truncate">{agent.name}</p>
+          </div>
+        ) : (
+          <div className="relative px-4 pt-3 pb-4 flex flex-col items-center">
+            <Robot kind={kind} reduce={reduce} />
+            <p className="text-white text-[15px] font-black mt-1">{agent.name}</p>
+            <p className="text-white/80 text-[11px]">{t(`intake.subtitles.${agent.slug}`)}</p>
+          </div>
+        )}
       </div>
 
       {/* Progresso */}
@@ -660,7 +711,7 @@ const AgentIntakeForm: React.FC<{
             <div key={i} className="h-1.5 flex-1 rounded-full transition-colors" style={{ background: i <= step ? acc.main : '#F6D6DC' }} />
           ))}
         </div>
-        <p className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50 mt-2">Pergunta {step + 1} de {total}</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50 mt-2">{t('intake.perguntaDeTotal', { n: step + 1, total })}</p>
       </div>
 
       {/* Pergunta atual */}
@@ -671,18 +722,20 @@ const AgentIntakeForm: React.FC<{
         </div>
         <h2 className="text-[20px] font-black text-[#1E1B11] leading-tight">
           {t(`intake.perguntas.${q.grupo}.${q.key}.label`)}
-          {!q.required && <span className="text-[#5B4041]/40 text-[12px] font-medium"> · opcional</span>}
+          {!q.required && <span className="text-[#5B4041]/40 text-[12px] font-medium"> · {t('intake.opcional')}</span>}
         </h2>
         <p className="text-[12px] text-[#5B4041]/70 mt-1.5 mb-4">{t(`intake.perguntas.${q.grupo}.${q.key}.hint`)}</p>
-        <VoiceField
-          key={q.key}
-          multiline={q.multiline}
-          value={val}
-          onChange={v => setAnswers(p => ({ ...p, [q.key]: v }))}
-          placeholder={t(`intake.perguntas.${q.grupo}.${q.key}.placeholder`)}
-          autoFocus
-          rows={5}
-        />
+        <div ref={campoRef}>
+          <VoiceField
+            key={q.key}
+            multiline={q.multiline}
+            value={val}
+            onChange={v => setAnswers(p => ({ ...p, [q.key]: v }))}
+            placeholder={t(`intake.perguntas.${q.grupo}.${q.key}.placeholder`)}
+            autoFocus
+            rows={tecladoAberto ? 3 : 5}
+          />
+        </div>
         <p className="text-[10px] text-[#5B4041]/45 mt-2 flex items-center gap-1">
           <Mic size={11} className="text-[#BE0D3E]" /> {t('chat.dicaMicrofone')}
         </p>
@@ -718,7 +771,7 @@ const SkeletonPicker: React.FC<{
   agent: Agent; userId?: string; reduce: boolean;
   onBack: () => void; onPick: (it: SkeletonItem, retomar: boolean) => void; onCreate: () => void;
 }> = ({ agent, userId, reduce, onBack, onPick, onCreate }) => {
-  const shellRef = useKeyboardViewport<HTMLDivElement>();
+  const { ref: shellRef } = useKeyboardViewport<HTMLDivElement>();
   const TXT = useTxt();
   const { t } = useTranslation();
   const kind = agent.category as RobotKind;
@@ -838,7 +891,7 @@ const SkeletonPicker: React.FC<{
 };
 
 const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
-  const shellRef = useKeyboardViewport<HTMLDivElement>();
+  const { ref: shellRef } = useKeyboardViewport<HTMLDivElement>();
   const navigate = useLocalizedNavigate();
   const lang = useCurrentLang();
   const { t } = useTranslation();

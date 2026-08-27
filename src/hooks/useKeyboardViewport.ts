@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * Faz uma moldura `position: fixed; inset: 0` acompanhar o teclado do celular.
@@ -19,9 +19,20 @@ import { useEffect, useRef } from 'react';
  * referência dos filhos com `position: fixed` — na prática, o modal de salvar
  * passa a medir a área visível em vez da tela inteira, e deixa de nascer meio
  * escondido atrás do teclado.
+ *
+ * Encolher a moldura resolve o recorte, mas não devolve espaço: numa tela com
+ * cabeçalho alto (o palco do robô do formulário) sobra tão pouco que o campo
+ * de texto sai da área visível — a queixa de 2026-08-26, "o campo fica sobre o
+ * chat, não dá pra ver o que está escrevendo". Por isso o hook também informa
+ * se o teclado está aberto, pra quem desenha a tela poder recolher o que é
+ * decorativo enquanto a pessoa digita.
  */
+/* Abaixo disto a diferença é barra de endereço indo e vindo, não teclado. */
+const ALTURA_MINIMA_DO_TECLADO = 140;
+
 export function useKeyboardViewport<T extends HTMLElement>() {
   const ref = useRef<T>(null);
+  const [tecladoAberto, setTecladoAberto] = useState(false);
 
   useEffect(() => {
     const vv = window.visualViewport;
@@ -34,6 +45,7 @@ export function useKeyboardViewport<T extends HTMLElement>() {
       // offsetTop compensa a rolagem que o próprio iOS aplica na página pra
       // trazer o campo focado à vista — sem isso a moldura fica deslocada.
       el.style.transform = `translate3d(0, ${vv.offsetTop}px, 0)`;
+      setTecladoAberto(window.innerHeight - vv.height > ALTURA_MINIMA_DO_TECLADO);
     };
 
     apply();
@@ -47,5 +59,5 @@ export function useKeyboardViewport<T extends HTMLElement>() {
     };
   }, []);
 
-  return ref;
+  return { ref, tecladoAberto };
 }
