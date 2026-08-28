@@ -30,6 +30,7 @@ import type { Agent } from '@/data/agents';
 import { useLocalizedNavigate, useCurrentLang } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 import { formatDateNumeric } from '@/lib/formatLocale';
+import { prepareImageUpload, ImageProcessingError } from '@/lib/imageCompression';
 
 /* ── Textos da tela ────────────────────────────────────────────── */
 /* Textos vindos do dicionário, mantendo a forma do objeto TXT que o
@@ -179,11 +180,23 @@ const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
 
   /* Lê a print, manda pra IA e guarda o parecer. Analisa direto ao escolher
      o arquivo (sem botão "enviar" — menos um passo pra aluna). */
-  const handleFile = async (file: File | null | undefined) => {
-    if (!file) return;
-    if (!file.type.startsWith('image/')) { setError(TXT.invalid_file); return; }
-    if (file.size > MAX_BYTES) { setError(TXT.too_large); return; }
+  const handleFile = async (picked: File | null | undefined) => {
+    if (!picked) return;
+    if (picked.size > MAX_BYTES) { setError(TXT.too_large); return; }
     if (!SUPABASE_READY) { setError(TXT.backend_pending); return; }
+
+    /* O input aceita `image/*` (senão a galeria some do seletor do Android),
+       então o arquivo pode vir em qualquer formato — inclusive HEIC do iPhone
+       ou com file.type vazio. prepareImageUpload SEMPRE devolve um JPEG, que
+       é um dos mimes que a function aceita. */
+    let file: File;
+    try {
+      file = await prepareImageUpload(picked, { maxWidth: 1280, quality: 0.9, maxBytes: 6 * 1024 * 1024 });
+    } catch (e) {
+      const reason = e instanceof ImageProcessingError ? e.reason : 'decode';
+      setError(reason === 'too_large' ? TXT.too_large : reason === 'encode' ? TXT.read_image : TXT.invalid_file);
+      return;
+    }
 
     setError(null);
     setResult(null);
@@ -309,7 +322,7 @@ const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
           <ArrowLeft size={18} />
         </button>
         <span className="absolute top-3.5 right-3 z-10 inline-flex items-center gap-1 rounded-full bg-white/15 px-2 py-1 text-[8px] font-black uppercase tracking-[0.18em] text-white backdrop-blur-sm">
-          <Sparkles size={9} className="fill-[#C8F000] text-[#C8F000]" /> Bônus
+          <Sparkles size={9} className="fill-[#C8F000] text-[#C8F000]" /> {t('agentes.bonus')}
         </span>
         <div className="relative px-4 pt-3 pb-4 flex flex-col items-center">
           <Robot kind={kind} reduce={reduce} />
@@ -323,9 +336,9 @@ const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/png,image/jpeg,image/webp"
+          accept="image/*"
           className="hidden"
-          onChange={e => handleFile(e.target.files?.[0])}
+          onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; handleFile(f); }}
         />
 
         {/* Estado 1: instruções + upload */}
