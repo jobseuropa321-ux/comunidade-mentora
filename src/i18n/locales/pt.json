@@ -540,6 +540,7 @@
     "step4": "Eu analiso e te dou as dicas de ouro ✨",
     "upload": "Enviar print do perfil",
     "upload_hint": "Aceita PNG, JPG ou WEBP — até 10MB · 5 análises por dia",
+    "android_hint": "No Android o seletor às vezes não mostra a Galeria: toque em \"Meus arquivos\" → Imagens (ou DCIM › Screenshots).",
     "analyzing": "Tô analisando seu perfil 👀",
     "analyzing_hint": "Isso leva uns segundinhos...",
     "retry": "Tentar de novo",

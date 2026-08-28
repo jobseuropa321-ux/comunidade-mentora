@@ -46,6 +46,7 @@ const makeTxt = (t: (k: string, o?: Record<string, unknown>) => string) => ({
   step4: t('perfilIA.step4'),
   upload: t('perfilIA.upload'),
   upload_hint: t('perfilIA.upload_hint'),
+  android_hint: t('perfilIA.android_hint'),
   analyzing: t('perfilIA.analyzing'),
   analyzing_hint: t('perfilIA.analyzing_hint'),
   retry: t('perfilIA.retry'),
@@ -90,6 +91,11 @@ export interface ProfileAnalysis {
   bio: { feedback: string; sugestao: string };
   fechamento: string;
 }
+
+/* O seletor de arquivos da Samsung (Samsung Internet / PWA instalada por
+   ela) não lista a Galeria — só Câmera, "Meus arquivos" e Arquivos. Não dá
+   pra consertar isso pelo `accept`; o jeito é dizer onde a print está. */
+const IS_ANDROID = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10MB
 const TIMEOUT_MS = 90_000;          // visão + reasoning é lento; 90s é folgado
@@ -369,6 +375,9 @@ const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
               <Camera size={16} strokeWidth={2.5} /> {TXT.upload}
             </button>
             <p className="text-[10px] text-[#5B4041]/60 text-center mt-3 leading-snug">{TXT.upload_hint}</p>
+            {IS_ANDROID && (
+              <p className="text-[10px] text-[#5B4041]/60 text-center mt-1.5 leading-snug">{TXT.android_hint}</p>
+            )}
           </>
         )}
 
