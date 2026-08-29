@@ -147,6 +147,10 @@ const ModuleList: React.FC<{ onEdit: (m: Module) => void }> = ({ onEdit }) => {
       duracao: 'A definir', nivel: 'Iniciante',
       cor_acento: '#BE0D3E', cor_fundo: 'from-[#BE0D3E] to-[#E06B85]',
       position: maxPos + 1, is_published: false,
+      /* Sem isto o módulo nasce com home_section NULL ("Não exibir"): a
+         admin publicava, a lista mostrava "Publicado" e mesmo assim ele
+         não aparecia pra ninguém na Home. */
+      home_section: 'modulos',
     }).select('*').single();
     setCreating(false);
     if (error || !data) { toast.error('Erro', { description: error?.message ?? 'Falha ao criar módulo' }); return; }
@@ -188,6 +192,11 @@ const ModuleList: React.FC<{ onEdit: (m: Module) => void }> = ({ onEdit }) => {
               /{m.slug} · {m.is_published ? 'Publicado' : 'Em breve'}
               {isEs && !m.title1_es && !m.title2_es && ' · sem tradução'}
             </p>
+            {m.is_published && m.home_section === null && (
+              <p className="text-[10px] font-bold text-[#B45309] truncate">
+                Não aparece na Home — seção "Não exibir"
+              </p>
+            )}
           </div>
           <button onClick={() => togglePublished(m)} className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${m.is_published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
             {m.is_published ? <Eye size={13} /> : <EyeOff size={13} />}
