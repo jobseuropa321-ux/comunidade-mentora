@@ -59,10 +59,17 @@ export interface Lesson {
    *  Diferente dos campos _es (que só traduzem texto), isto decide se a aula
    *  APARECE — aula criada no painel em modo ES nasce 'es' e não vaza pro PT. */
   lang?: 'both' | 'pt' | 'es';
+  /** Data em que a aula foi ao vivo (só as do módulo de lives usam). */
+  recorded_at?: string | null;
   position: number;
   created_at?: string;
   updated_at?: string;
 }
+
+/** Módulo que guarda as gravações das lives. Fica fora da Home
+ *  (home_section NULL) e é listado na tela Ao Vivo; abrir uma gravação cai
+ *  na tela de aula normal, então "voltar" de lá leva pro Ao Vivo. */
+export const LIVE_MODULE_SLUG = 'aulas-ao-vivo';
 
 /** A aula entra na versão deste idioma? (aula antiga sem `lang` = 'both') */
 export const lessonVisible = (l: Pick<Lesson, 'lang'>, lang: string): boolean =>

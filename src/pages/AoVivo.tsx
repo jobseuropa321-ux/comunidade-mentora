@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Play, Clock, MonitorPlay, X } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Play, Clock, MonitorPlay, CheckCircle2 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useLiveStatus } from '@/hooks/useLiveStatus';
 import { getUpcomingLives } from '@/data/liveSchedule';
-import { supabase } from '@/integrations/supabase/client';
+import { useModuleBySlug, useLessonProgress, LIVE_MODULE_SLUG } from '@/hooks/useCourses';
+import { dbText } from '@/lib/dbText';
 import { formatDateShort, localeTag } from '@/lib/formatLocale';
-import { useCurrentLang, type SupportedLang } from '@/i18n/LanguageProvider';
+import { useCurrentLang, useLocalizedNavigate, type SupportedLang } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 
 const cardSpring = { type: 'spring', stiffness: 220, damping: 24 } as const;
@@ -29,16 +30,6 @@ const makeTxt = (t: (k: string) => string) => ({
   no_replays: t('aoVivo.no_replays'),
   no_replays_desc: t('aoVivo.no_replays_desc'),
 });
-
-interface Replay {
-  id: string;
-  title: string;
-  description: string | null;
-  video_url: string;
-  cover_url: string | null;
-  duration_label: string | null;
-  recorded_at: string | null;
-}
 
 // Antes cravado em pt-BR: a data do card da live saía "12 AGO" para a aluna
 // espanhola no meio de uma tela em espanhol.
@@ -140,24 +131,18 @@ const AoVivo: React.FC = () => {
   const isLive = status.is_active && !!status.stream_url;
   const youtubeEmbedUrl = isLive ? buildYouTubeEmbedUrl(status.stream_url) : null;
 
-  // Replays publicados (Supabase). Admin gerencia em /admin → aba Ao Vivo.
-  const [replays, setReplays] = useState<Replay[]>([]);
-  const [playingReplay, setPlayingReplay] = useState<Replay | null>(null);
-
-  useEffect(() => {
-    let cancel = false;
-    (async () => {
-      const { data } = await supabase
-        .from('live_replays')
-        .select('id, title, description, video_url, cover_url, duration_label, recorded_at')
-        .eq('is_published', true)
-        .eq('lang', lang)
-        .order('position', { ascending: false })
-        .order('recorded_at', { ascending: false, nullsFirst: false });
-      if (!cancel && data) setReplays(data as Replay[]);
-    })();
-    return () => { cancel = true; };
-  }, [lang]);
+  // Gravações = aulas do módulo de lives (admin gerencia em /admin → aba Ao
+  // Vivo). Abrir uma cai na tela de aula normal, com a URL sendo o índice na
+  // lista em ordem de position — por isso o carrossel inverte só na exibição.
+  const navigate = useLocalizedNavigate();
+  const { data: liveModule } = useModuleBySlug(LIVE_MODULE_SLUG);
+  const lessons = useMemo(() => liveModule?.lessons ?? [], [liveModule]);
+  const lessonIds = useMemo(() => lessons.map(l => l.id), [lessons]);
+  const { completed } = useLessonProgress(lessonIds);
+  const replays = useMemo(
+    () => lessons.map((lesson, index) => ({ lesson, index })).reverse(),
+    [lessons],
+  );
 
   const upcoming = getUpcomingLives();
 
@@ -354,16 +339,18 @@ const AoVivo: React.FC = () => {
             className="flex gap-3 overflow-x-auto pb-2 px-4 snap-x snap-mandatory"
             style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
           >
-            {replays.map(r => {
-              // Sem capa própria? Replay do YouTube usa a thumbnail do vídeo
-              // automaticamente (sddefault 4:3 corta menos no card portrait;
-              // se não existir, o onError troca pra hqdefault, que sempre existe).
+            {replays.map(({ lesson: r, index }) => {
+              // Sem capa própria: gravação do YouTube usa a thumbnail do vídeo
+              // (sddefault 4:3 corta menos no card portrait; se não existir,
+              // o onError troca pra hqdefault, que sempre existe).
               const ytId = getYouTubeVideoId(r.video_url);
-              const coverUrl = r.cover_url ?? (ytId ? `https://i.ytimg.com/vi/${ytId}/sddefault.jpg` : null);
+              const coverUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/sddefault.jpg` : null;
+              const titulo = dbText(r.titulo, r.titulo_es, lang);
+              const done = completed.has(r.id);
               return (
               <button
                 key={r.id}
-                onClick={() => setPlayingReplay(r)}
+                onClick={() => navigate(`/modulo/${LIVE_MODULE_SLUG}/aula/${index + 1}`)}
                 className="shrink-0 w-[148px] h-[200px] rounded-[1rem] border border-[#BE0D3E]/20 relative overflow-hidden shadow-[0_8px_20px_rgba(190,13,62,0.12)] bg-[#FFF7E6] active:scale-[0.97] transition-transform snap-start"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
@@ -371,7 +358,7 @@ const AoVivo: React.FC = () => {
                 {coverUrl ? (
                   <img
                     src={coverUrl}
-                    alt={r.title}
+                    alt={titulo}
                     className="absolute inset-0 w-full h-full object-cover"
                     loading="lazy"
                     decoding="async"
@@ -396,17 +383,24 @@ const AoVivo: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Concluída (mesmo progresso das aulas normais) */}
+                {done && (
+                  <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-[#C8F000] flex items-center justify-center shadow">
+                    <CheckCircle2 size={14} strokeWidth={2.75} className="text-[#1E1B11]" />
+                  </div>
+                )}
+
                 {/* Badge de duração */}
-                {r.duration_label && (
+                {r.duracao && (
                   <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-2 py-0.5">
                     <Clock size={9} className="text-white" />
-                    <span className="text-[9px] font-black text-white">{r.duration_label}</span>
+                    <span className="text-[9px] font-black text-white">{r.duracao}</span>
                   </div>
                 )}
 
                 {/* Título + data */}
                 <div className="absolute inset-x-0 bottom-0 p-3 text-left">
-                  <p className="text-[11px] font-black text-white leading-tight mb-0.5 line-clamp-2 drop-shadow">{r.title}</p>
+                  <p className="text-[11px] font-black text-white leading-tight mb-0.5 line-clamp-2 drop-shadow">{titulo}</p>
                   {r.recorded_at && (
                     <p className="text-[9px] text-white/75 font-semibold">{formatShortDate(r.recorded_at, lang)}</p>
                   )}
@@ -419,41 +413,6 @@ const AoVivo: React.FC = () => {
         )}
       </motion.section>
 
-      {/* Modal de player do replay */}
-      {playingReplay && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
-          onClick={() => setPlayingReplay(null)}
-        >
-          <div
-            className="relative w-full max-w-3xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setPlayingReplay(null)}
-              className="absolute -top-10 right-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white"
-            >
-              <X size={18} />
-            </button>
-            <div className="aspect-video w-full bg-black rounded-xl overflow-hidden">
-              <iframe
-                src={buildYouTubeEmbedUrl(playingReplay.video_url) ?? playingReplay.video_url}
-                title={playingReplay.title}
-                className="w-full h-full"
-                allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture"
-                allowFullScreen
-                loading="lazy"
-              />
-            </div>
-            <div className="mt-3 text-white">
-              <h3 className="text-[16px] font-black leading-tight">{playingReplay.title}</h3>
-              {playingReplay.description && (
-                <p className="text-[12px] text-white/70 mt-1 leading-relaxed">{playingReplay.description}</p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

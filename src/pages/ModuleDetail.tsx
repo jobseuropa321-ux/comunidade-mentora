@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ArrowLeft, Play, Clock, ChevronDown, ChevronUp, Loader2, CheckCircle2, FolderOpen, ExternalLink, Download, Sparkles, ChevronRight, NotebookPen } from 'lucide-react';
-import { useModuleBySlug, useLessonProgress, lessonVideoUrl, type Lesson } from '@/hooks/useCourses';
+import { useModuleBySlug, useLessonProgress, lessonVideoUrl, LIVE_MODULE_SLUG, type Lesson } from '@/hooks/useCourses';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 import { dbNivel, dbTag, dbInstructor, dbDuracao, dbText } from '@/lib/dbText';
@@ -139,7 +139,7 @@ const ModuleDetail: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/20 to-transparent" />
 
         <button
-          onClick={() => navigate('/home')}
+          onClick={() => navigate(modulo.slug === LIVE_MODULE_SLUG ? '/ao-vivo' : '/home')}
           className="absolute top-4 left-4 z-20 w-9 h-9 rounded-full flex items-center justify-center bg-white/15 backdrop-blur-md border border-white/25 hover:bg-white/25 transition-colors"
         >
           <ArrowLeft size={16} className="text-white" />

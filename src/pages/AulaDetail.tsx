@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { ArrowLeft, Play, ChevronLeft, ChevronRight, CheckCircle2, Clock, List, Download, FileText, BookOpen, X, Loader2 } from 'lucide-react';
-import { useLesson, useLessonProgress, lessonVideoUrl } from '@/hooks/useCourses';
+import { useLesson, useLessonProgress, lessonVideoUrl, LIVE_MODULE_SLUG } from '@/hooks/useCourses';
 import LessonForum from '@/components/LessonForum';
 import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
@@ -87,7 +87,7 @@ const AulaDetail: React.FC = () => {
       {/* TOP BAR */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <button
-          onClick={() => navigate(`/modulo/${moduleId}`)}
+          onClick={() => navigate(moduleId === LIVE_MODULE_SLUG ? '/ao-vivo' : `/modulo/${moduleId}`)}
           className="glass-btn-pink shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-transform"
           title={t('common.voltar')}
         >
