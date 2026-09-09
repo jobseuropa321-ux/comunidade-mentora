@@ -5,6 +5,7 @@ import { useLiveStatus } from '@/hooks/useLiveStatus';
 import { getUpcomingLives } from '@/data/liveSchedule';
 import { useModuleBySlug, useLessonProgress, LIVE_MODULE_SLUG } from '@/hooks/useCourses';
 import { dbText } from '@/lib/dbText';
+import { getYouTubeVideoId, buildYouTubeEmbedUrl } from '@/lib/youtube';
 import { formatDateShort, localeTag } from '@/lib/formatLocale';
 import { useCurrentLang, useLocalizedNavigate, type SupportedLang } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
@@ -36,36 +37,6 @@ const makeTxt = (t: (k: string) => string) => ({
 const formatShortDate = (iso: string | null, lang: SupportedLang): string => {
   if (!iso) return '';
   return formatDateShort(iso + 'T00:00:00', lang).replace('.', '').toUpperCase();
-};
-
-/** Extrai o ID do vídeo de um link do YouTube (watch, live, embed, shorts, youtu.be). */
-const getYouTubeVideoId = (rawUrl: string | null): string | null => {
-  if (!rawUrl) return null;
-  try {
-    const u = new URL(rawUrl.trim());
-    const host = u.hostname.replace(/^www\./, '');
-    if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'music.youtube.com') {
-      // /watch?v=ID
-      const v = u.searchParams.get('v');
-      if (v) return v;
-      // /live/ID  /embed/ID  /shorts/ID
-      const m = u.pathname.match(/^\/(?:live|embed|shorts)\/([^/?]+)/);
-      return m ? m[1] : null;
-    }
-    if (host === 'youtu.be') {
-      const m = u.pathname.match(/^\/([^/?]+)/);
-      return m ? m[1] : null;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-};
-
-/** Detecta YouTube e retorna URL de embed. Se não for YouTube, retorna null (cai no fluxo "abrir nova aba"). */
-const buildYouTubeEmbedUrl = (rawUrl: string | null): string | null => {
-  const videoId = getYouTubeVideoId(rawUrl);
-  return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&playsinline=1&rel=0` : null;
 };
 
 /* ── Indicador pulsante "AO VIVO" ── */
@@ -129,7 +100,7 @@ const AoVivo: React.FC = () => {
   const reduce = useReducedMotion() ?? false;
   const { status, loading } = useLiveStatus();
   const isLive = status.is_active && !!status.stream_url;
-  const youtubeEmbedUrl = isLive ? buildYouTubeEmbedUrl(status.stream_url) : null;
+  const youtubeEmbedUrl = isLive ? buildYouTubeEmbedUrl(status.stream_url, { autoplay: true }) : null;
 
   // Gravações = aulas do módulo de lives (admin gerencia em /admin → aba Ao
   // Vivo). Abrir uma cai na tela de aula normal, com a URL sendo o índice na

@@ -6,6 +6,7 @@ import LessonForum from '@/components/LessonForum';
 import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 import { dbText } from '@/lib/dbText';
+import { toEmbedSrc } from '@/lib/youtube';
 
 const TIPO_ICON: Record<string, React.ReactNode> = {
   pdf:       <FileText size={14} />,
@@ -22,12 +23,14 @@ const TIPO_COLOR: Record<string, string> = {
 };
 
 /** O admin aceita URL colada — mas é comum colar o código <iframe> inteiro do
- *  Panda/YouTube. Nesse caso extraímos o src, senão o player não carrega. */
+ *  Panda/YouTube. Nesse caso extraímos o src, senão o player não carrega.
+ *  Link de YouTube (watch/live/youtu.be) vira /embed: a página normal do
+ *  YouTube se recusa a abrir em iframe ("Este conteúdo está bloqueado"). */
 const embedSrc = (raw: string | null): string | null => {
   if (!raw) return null;
   const v = raw.trim();
-  if (v.startsWith('<')) return v.match(/src=["']([^"']+)["']/i)?.[1] ?? null;
-  return v;
+  if (v.startsWith('<')) return toEmbedSrc(v.match(/src=["']([^"']+)["']/i)?.[1] ?? null);
+  return toEmbedSrc(v);
 };
 
 const AulaDetail: React.FC = () => {
