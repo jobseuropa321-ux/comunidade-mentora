@@ -22,6 +22,9 @@ import { isInEsCatalog } from '@/i18n/esCatalog';
 type BannerDef = { src: string; srcTablet?: string; srcDesktop?: string; altKey: string; href?: string };
 
 const BANNERS_PT: BannerDef[] = [
+  // Azendy (app de agendamento) — o link de download entra em `href` quando
+  // a admin passar; sem ele o banner é só arte.
+  { src: '/covers/banner-3.webp', altKey: 'home.bannerAlt4' },
   { src: '/covers/banner-1.webp', altKey: 'home.bannerAlt1' },
   { src: '/covers/banner-2.webp', altKey: 'home.bannerAlt2' },
 ];
