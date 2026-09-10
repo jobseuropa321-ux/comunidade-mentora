@@ -7,6 +7,7 @@ import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/Lang
 import { useTranslation } from 'react-i18next';
 import { dbText } from '@/lib/dbText';
 import { toEmbedSrc } from '@/lib/youtube';
+import MatriculaCta from '@/components/MatriculaCta';
 
 const TIPO_ICON: Record<string, React.ReactNode> = {
   pdf:       <FileText size={14} />,
@@ -208,6 +209,12 @@ const AulaDetail: React.FC = () => {
           </span>
         </button>
       </div>
+
+      {/* FICHA DE MATRÍCULA — só na 1ª aula de "Comece por aqui", em PT
+          (campanha do ingresso do evento é em português). */}
+      {lang !== 'es' && modulo.slug === 'comece-por-aqui' && aulaIndex === 0 && (
+        <div className="px-4 mt-3"><MatriculaCta /></div>
+      )}
 
       {/* NAVEGAÇÃO */}
       <div className="flex items-center gap-3 px-4 mt-3">

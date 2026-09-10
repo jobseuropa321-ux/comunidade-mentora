@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 
-import { ArrowLeft, ShieldCheck, BookOpen, Radio, KeyRound, TrendingUp, BellRing, Loader2 } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, BookOpen, Radio, KeyRound, TrendingUp, BellRing, Loader2, ClipboardList } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminCourses from '@/components/admin/AdminCourses';
 import AdminLive from '@/components/admin/AdminLive';
 import AdminAccess from '@/components/admin/AdminAccess';
 import AdminAscensao from '@/components/admin/AdminAscensao';
 import AdminPush from '@/components/admin/AdminPush';
+import AdminMatriculas from '@/components/admin/AdminMatriculas';
 import { AdminLangProvider, AdminLangSwitch } from '@/components/admin/AdminLang';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
-type Tab = 'cursos' | 'aovivo' | 'avisos' | 'acessos' | 'ascensao';
+type Tab = 'cursos' | 'aovivo' | 'avisos' | 'acessos' | 'ascensao' | 'matriculas';
 
 const Admin: React.FC = () => {
   const navigate = useLocalizedNavigate();
@@ -37,6 +38,7 @@ const Admin: React.FC = () => {
     { id: 'avisos', label: 'Avisos', icon: BellRing },
     { id: 'acessos', label: 'Acessos', icon: KeyRound },
     { id: 'ascensao', label: 'Ascensão', icon: TrendingUp },
+    { id: 'matriculas', label: 'Matrículas', icon: ClipboardList },
   ];
 
   return (
@@ -61,7 +63,7 @@ const Admin: React.FC = () => {
       </div>
 
       {/* Abas */}
-      <div className="grid grid-cols-5 gap-1 bg-[#F6D6DC]/50 p-1 rounded-xl mb-5">
+      <div className="grid grid-cols-3 gap-1 bg-[#F6D6DC]/50 p-1 rounded-xl mb-5">
         {TABS.map(t => {
           const active = tab === t.id;
           return (
@@ -89,6 +91,7 @@ const Admin: React.FC = () => {
       </AdminLangProvider>
       {tab === 'acessos' && <AdminAccess />}
       {tab === 'ascensao' && <AdminAscensao />}
+      {tab === 'matriculas' && <AdminMatriculas />}
     </div>
   );
 };

@@ -36,6 +36,7 @@ const ModuleDetail  = lazy(() => import("@/pages/ModuleDetail"));
 const AulaDetail    = lazy(() => import("@/pages/AulaDetail"));
 const Estudio       = lazy(() => import("@/pages/Estudio"));
 const OfertaViral1Min = lazy(() => import("@/pages/OfertaViral1Min"));
+const Matricula     = lazy(() => import("@/pages/Matricula"));
 const NotFound      = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -118,6 +119,9 @@ const fullscreenRoutes = (prefix: "" | "/es") => (
     {/* Oferta do Viral 1 Min — aberta pela "aula" do módulo viral-em-1-minuto.
         Fora do AppLayout: é uma VSL, ocupa a tela toda (tem botão de voltar). */}
     <Route path={`${prefix}/oferta/viral-1-min`} element={<ProtectedRoute><OfertaViral1Min /></ProtectedRoute>} />
+    {/* Ficha de matrícula — aberta pelo botão na 1ª aula de "Comece por aqui".
+        Tela cheia: é um wizard imersivo com confete no fim. */}
+    <Route path={`${prefix}/matricula`} element={<ProtectedRoute><Matricula /></ProtectedRoute>} />
   </>
 );
 
