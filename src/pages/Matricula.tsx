@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Ticket, Sparkles, Check, Loader2, MessageCircle, PartyPopper, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -145,9 +145,14 @@ const Ingresso: React.FC<{ nome?: string; confirmado?: boolean }> = ({ nome, con
 );
 
 /* ══════════════════════════════════════════════════════════════ */
-const Matricula: React.FC = () => {
+/* `publico` = rota /ficha, sem login: lead de fora do app. Sem conta não
+   tem user_id nem edição depois — a ficha entra como origem 'link'. Aluna
+   logada que abrir /ficha segue o fluxo normal (uma ficha, editável). */
+const Matricula: React.FC<{ publico?: boolean }> = ({ publico = false }) => {
   const navigate = useLocalizedNavigate();
   const { user, profile } = useAuth();
+  const anonimo = publico && !user;
+  const [email, setEmail] = useState('');
   const { matricula, loading, reload } = useMinhaMatricula();
 
   const [etapa, setEtapa] = useState<Etapa>('capa');
@@ -174,27 +179,36 @@ const Matricula: React.FC = () => {
   }, [loading, matricula, profile]);
 
   useEffect(() => { window.scrollTo({ top: 0 }); }, [etapa]);
+  useEffect(() => {
+    if (!publico) return;
+    const antes = document.title;
+    document.title = 'Ficha de matrícula · Comunidade Amentora';
+    return () => { document.title = antes; };
+  }, [publico]);
+
+  const emailOk = !anonimo || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
 
   const set = <K extends keyof Matricula>(k: K) => (v: Matricula[K]) => setForm(f => ({ ...f, [k]: v }));
 
   const areaFinal = form.area_atuacao === 'Outra' ? areaOutra.trim() : form.area_atuacao;
 
   const valida = useMemo<Record<number, boolean>>(() => ({
-    0: form.nome.trim().length >= 2 && limparWhatsapp(form.whatsapp).length >= 10 && limparInstagram(form.instagram).length >= 2,
+    0: form.nome.trim().length >= 2 && emailOk && limparWhatsapp(form.whatsapp).length >= 10 && limparInstagram(form.instagram).length >= 2,
     1: !!areaFinal && !!form.tempo_atuacao,
     2: !!form.faturamento && !!form.meta_faturamento,
     3: form.sobre_voce.trim().length >= 10 && !!form.maior_dificuldade,
     4: form.motivo_compra.trim().length >= 10 && form.expectativa.trim().length >= 10 && !!form.como_conheceu,
-  }), [form, areaFinal]);
+  }), [form, areaFinal, emailOk]);
 
   const ir = (para: Etapa, dir: 1 | -1) => { setDirecao(dir); setEtapa(para); };
 
   const enviar = async () => {
-    if (!user) return;
+    if (!user && !anonimo) return;
     setSalvando(true);
     const linha = {
-      user_id: user.id,
-      email: user.email ?? null,
+      user_id: user?.id ?? null,
+      email: user?.email ?? email.trim().toLowerCase() ?? null,
+      origem: publico ? 'link' : 'app',
       nome: form.nome.trim(),
       whatsapp: limparWhatsapp(form.whatsapp),
       instagram: limparInstagram(form.instagram),
@@ -211,7 +225,9 @@ const Matricula: React.FC = () => {
       expectativa: form.expectativa.trim() || null,
       como_conheceu: form.como_conheceu || null,
     };
-    const { error } = await supabase.from('matriculas').upsert(linha, { onConflict: 'user_id' });
+    const { error } = anonimo
+      ? await supabase.from('matriculas').insert(linha)
+      : await supabase.from('matriculas').upsert(linha, { onConflict: 'user_id' });
     setSalvando(false);
     if (error) { toast.error('Não deu pra enviar', { description: error.message }); return; }
     setConfete(true);
@@ -220,7 +236,7 @@ const Matricula: React.FC = () => {
   };
 
   const voltar = () => {
-    if (etapa === 'capa' || etapa === 'fim') { navigate('/modulo/comece-por-aqui/aula/1'); return; }
+    if (etapa === 'capa' || etapa === 'fim') { navigate(anonimo ? '/auth' : '/modulo/comece-por-aqui/aula/1'); return; }
     if (etapa === 0) { ir('capa', -1); return; }
     ir((etapa - 1) as Etapa, -1);
   };
@@ -234,11 +250,9 @@ const Matricula: React.FC = () => {
   }
 
   const numero = typeof etapa === 'number' ? etapa : null;
-  const slide = {
-    initial: (d: number) => ({ x: d * 40, opacity: 0 }),
-    animate: { x: 0, opacity: 1 },
-    exit: (d: number) => ({ x: d * -40, opacity: 0 }),
-  };
+  // Só animação de ENTRADA (a chave muda por etapa). Saída via AnimatePresence
+  // travava no meio e a etapa seguinte nunca aparecia.
+  const entrada = { initial: { x: direcao * 40, opacity: 0 }, animate: { x: 0, opacity: 1 } };
 
   return (
     <div className="min-h-[100dvh] bg-[#FFF9EE] relative overflow-x-hidden">
@@ -254,10 +268,12 @@ const Matricula: React.FC = () => {
       <div className="relative max-w-lg mx-auto px-4 pt-4 pb-32">
         {/* topo */}
         <div className="flex items-center gap-3">
-          <button onClick={voltar} aria-label="Voltar"
-            className="glass-btn-pink shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white active:scale-95 transition-transform">
-            <ArrowLeft size={17} strokeWidth={2.5} />
-          </button>
+          {!(anonimo && typeof etapa !== 'number') && (
+            <button onClick={voltar} aria-label="Voltar"
+              className="glass-btn-pink shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white active:scale-95 transition-transform">
+              <ArrowLeft size={17} strokeWidth={2.5} />
+            </button>
+          )}
           <div className="flex-1 min-w-0">
             <p className="text-[9px] font-black uppercase tracking-widest text-[#BE0D3E]">Ficha de matrícula</p>
             <p className="text-[11px] font-bold text-[#1E1B11] truncate">
@@ -280,10 +296,10 @@ const Matricula: React.FC = () => {
           </div>
         )}
 
-        <AnimatePresence mode="wait" custom={direcao}>
+        <>
           {/* ── CAPA ── */}
           {etapa === 'capa' && (
-            <motion.div key="capa" custom={direcao} variants={slide} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.28 }} className="mt-8">
+            <motion.div key="capa" {...entrada} transition={{ duration: 0.28 }} className="mt-8">
               <motion.div initial={{ y: 16, opacity: 0, rotate: -3 }} animate={{ y: 0, opacity: 1, rotate: -2 }} transition={{ delay: 0.1, type: 'spring', stiffness: 160 }}>
                 <Ingresso nome={form.nome} />
               </motion.div>
@@ -310,7 +326,7 @@ const Matricula: React.FC = () => {
 
           {/* ── ETAPAS ── */}
           {numero !== null && (
-            <motion.div key={`etapa-${numero}`} custom={direcao} variants={slide} initial="initial" animate="animate" exit="exit" transition={{ duration: 0.28 }} className="mt-6">
+            <motion.div key={`etapa-${numero}`} {...entrada} transition={{ duration: 0.28 }} className="mt-6">
               <h2 className="text-[24px] font-black leading-tight text-[#1E1B11]">{ETAPAS[numero].titulo}</h2>
               <p className="mt-1 text-[12px] text-[#5B4041]/70">{ETAPAS[numero].sub}</p>
 
@@ -318,6 +334,9 @@ const Matricula: React.FC = () => {
                 {numero === 0 && (
                   <>
                     <Campo rotulo="Seu nome completo" valor={form.nome} onChange={set('nome')} placeholder="Como você quer ser chamada" autoFocus={!form.nome} />
+                    {anonimo && (
+                      <Campo rotulo="Seu melhor e-mail" valor={email} onChange={setEmail} placeholder="voce@email.com" tipo="email" inputMode="email" />
+                    )}
                     <Campo rotulo="WhatsApp" valor={form.whatsapp} onChange={v => set('whatsapp')(mascararWhatsapp(v))} placeholder="(11) 99999-9999" tipo="tel" inputMode="tel" />
                     <Campo rotulo="Instagram" valor={form.instagram} onChange={set('instagram')} placeholder="seu.perfil" prefixo="@" />
                     <Campo rotulo="Cidade e estado" valor={form.cidade} onChange={set('cidade')} placeholder="Ex.: Campinas, SP" opcional />
@@ -395,14 +414,21 @@ const Matricula: React.FC = () => {
                     <p className="text-[11px] text-[#5B4041]/70 mt-1">Seu ingresso já está reservado no seu nome. Volte aqui pela aula "Comece por aqui".</p>
                   </div>
                 )}
-                <button onClick={() => { setConfete(false); ir(0, -1); }}
-                  className="mt-3 w-full py-3 rounded-2xl text-[12px] font-bold text-[#5B4041] bg-white/70 border border-[#BE0D3E]/12 flex items-center justify-center gap-1.5">
-                  <Pencil size={13} /> Editar minhas respostas
-                </button>
+                {anonimo ? (
+                  <button onClick={() => navigate('/auth')}
+                    className="mt-3 w-full py-3 rounded-2xl text-[12px] font-bold text-[#5B4041] bg-white/70 border border-[#BE0D3E]/12">
+                    Já sou aluna · entrar na comunidade
+                  </button>
+                ) : (
+                  <button onClick={() => { setConfete(false); ir(0, -1); }}
+                    className="mt-3 w-full py-3 rounded-2xl text-[12px] font-bold text-[#5B4041] bg-white/70 border border-[#BE0D3E]/12 flex items-center justify-center gap-1.5">
+                    <Pencil size={13} /> Editar minhas respostas
+                  </button>
+                )}
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
+        </>
       </div>
 
       {/* ação fixa embaixo (não usa inset-0: o teclado do iPhone empurra normal) */}

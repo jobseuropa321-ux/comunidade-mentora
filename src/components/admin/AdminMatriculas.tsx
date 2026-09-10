@@ -31,6 +31,7 @@ const COLUNAS: { chave: keyof Linha; rotulo: string }[] = [
   { chave: 'motivo_compra', rotulo: 'O que fez comprar' },
   { chave: 'expectativa', rotulo: 'Expectativa' },
   { chave: 'como_conheceu', rotulo: 'Como conheceu' },
+  { chave: 'origem', rotulo: 'Origem' },
 ];
 
 const formatarData = (iso: string) => {
@@ -45,7 +46,7 @@ const csvCelula = (v: unknown) => {
 
 const exportarCsv = (linhas: Linha[]) => {
   const cab = COLUNAS.map(c => c.rotulo).join(';');
-  const corpo = linhas.map(l => COLUNAS.map(c => csvCelula(c.chave === 'created_at' ? formatarData(l.created_at) : l[c.chave])).join(';'));
+  const corpo = linhas.map(l => COLUNAS.map(c => csvCelula(c.chave === 'created_at' ? formatarData(l.created_at) : c.chave === 'origem' ? (l.origem === 'link' ? 'Link público' : 'App') : l[c.chave])).join(';'));
   const blob = new Blob(['﻿' + [cab, ...corpo].join('\r\n')], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -77,7 +78,12 @@ const Ficha: React.FC<{ l: Linha }> = ({ l }) => {
         <div className="flex-1 min-w-0">
           <p className="text-[13px] font-black text-[#1E1B11] truncate">{l.nome}</p>
           <p className="text-[10px] text-[#5B4041]/70 truncate mt-0.5">{l.area_atuacao} · {l.faturamento}</p>
-          <p className="text-[9px] text-[#5B4041]/45 mt-0.5">{formatarData(l.created_at)}</p>
+          <p className="text-[9px] text-[#5B4041]/45 mt-0.5 flex items-center gap-1.5">
+            {formatarData(l.created_at)}
+            <span className={`rounded-md px-1.5 py-0.5 font-black uppercase tracking-wider ${l.origem === 'link' ? 'bg-[#F6B43A]/25 text-[#8A5A00]' : 'bg-[#BE0D3E]/10 text-[#BE0D3E]'}`}>
+              {l.origem === 'link' ? 'pelo link' : 'pelo app'}
+            </span>
+          </p>
         </div>
         {aberta ? <ChevronUp size={15} className="text-[#5B4041]/50 mt-1" /> : <ChevronDown size={15} className="text-[#5B4041]/50 mt-1" />}
       </button>
@@ -122,6 +128,7 @@ const AdminMatriculas: React.FC = () => {
   const [linhas, setLinhas] = useState<Linha[]>([]);
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState('');
+  const [origem, setOrigem] = useState<'todas' | 'app' | 'link'>('todas');
 
   const carregar = useCallback(async (silencioso = false) => {
     if (!silencioso) setLoading(true);
@@ -134,9 +141,11 @@ const AdminMatriculas: React.FC = () => {
 
   const filtradas = useMemo(() => {
     const q = busca.trim().toLowerCase();
-    if (!q) return linhas;
-    return linhas.filter(l => [l.nome, l.email, l.instagram, l.whatsapp, l.cidade, l.area_atuacao].some(v => (v ?? '').toLowerCase().includes(q)));
-  }, [linhas, busca]);
+    const base = origem === 'todas' ? linhas : linhas.filter(l => (l.origem ?? 'app') === origem);
+    if (!q) return base;
+    return base.filter(l => [l.nome, l.email, l.instagram, l.whatsapp, l.cidade, l.area_atuacao].some(v => (v ?? '').toLowerCase().includes(q)));
+  }, [linhas, busca, origem]);
+  const totalLink = linhas.filter(l => l.origem === 'link').length;
 
   return (
     <div className="space-y-4">
@@ -146,10 +155,28 @@ const AdminMatriculas: React.FC = () => {
           <div>
             <p className="text-[9px] font-black uppercase tracking-widest text-[#F6B43A]">Fichas de matrícula</p>
             <p className="text-[30px] font-black leading-none mt-1 tabular-nums">{linhas.length}</p>
-            <p className="text-[10px] text-white/70 mt-1">aluna{linhas.length === 1 ? '' : 's'} com ingresso reservado</p>
+            <p className="text-[10px] text-white/70 mt-1">ficha{linhas.length === 1 ? '' : 's'} · {linhas.length - totalLink} pelo app · {totalLink} pelo link</p>
           </div>
           <Ticket size={34} className="text-white/60" />
         </div>
+      </div>
+
+      <div className="rounded-xl bg-white border border-[#BE0D3E]/15 px-3 py-2.5">
+        <p className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50">Link público da ficha</p>
+        <div className="flex items-center gap-2 mt-1">
+          <code className="flex-1 text-[11px] text-[#1E1B11] truncate">{`${window.location.origin}/ficha`}</code>
+          <button onClick={() => { navigator.clipboard?.writeText(`${window.location.origin}/ficha`); toast.success('Link copiado'); }}
+            className="text-[9px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-lg bg-[#BE0D3E] text-white shrink-0">Copiar</button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-1 bg-[#F6D6DC]/50 p-1 rounded-xl">
+        {([['todas', 'Todas'], ['app', 'Pelo app'], ['link', 'Pelo link']] as const).map(([id, rotulo]) => (
+          <button key={id} onClick={() => setOrigem(id)}
+            className={`py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ${origem === id ? 'bg-white text-[#BE0D3E] shadow-sm' : 'text-[#5B4041]/70'}`}>
+            {rotulo}
+          </button>
+        ))}
       </div>
 
       <div className="flex gap-2">

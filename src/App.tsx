@@ -122,6 +122,9 @@ const fullscreenRoutes = (prefix: "" | "/es") => (
     {/* Ficha de matrícula — aberta pelo botão na 1ª aula de "Comece por aqui".
         Tela cheia: é um wizard imersivo com confete no fim. */}
     <Route path={`${prefix}/matricula`} element={<ProtectedRoute><Matricula /></ProtectedRoute>} />
+    {/* Versão pública da ficha, pra divulgar fora do app (lead cai na aba
+        Matrículas com origem "link"). Sem guard de propósito. */}
+    <Route path={`${prefix}/ficha`} element={<Matricula publico />} />
   </>
 );
 

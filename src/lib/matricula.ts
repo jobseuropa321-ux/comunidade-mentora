@@ -33,6 +33,8 @@ export interface Matricula {
   motivo_compra: string;
   expectativa: string;
   como_conheceu: string;
+  /** 'app' = pela aula; 'link' = pela ficha pública /ficha. */
+  origem?: 'app' | 'link';
   created_at?: string;
   updated_at?: string;
 }
