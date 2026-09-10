@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Ticket, Sparkles, Check, Loader2, MessageCircle, PartyPopper, Pencil } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Ticket, Sparkles, Check, Loader2, MessageCircle, PartyPopper, Pencil, Mic, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 import Confetti from '@/components/Confetti';
+import VoiceField from '@/components/VoiceField';
 import {
   GRUPO_INGRESSO_URL, MATRICULA_VAZIA, OPCOES, type Matricula,
   limparInstagram, limparWhatsapp, mascararWhatsapp, useMinhaMatricula,
@@ -14,85 +15,132 @@ import {
 /* ══════════════════════════════════════════════════════════════
    FICHA DE MATRÍCULA — /matricula (tela cheia, fora do AppLayout)
 
-   Wizard em 5 etapas + capa + tela final com confete. Quem preenche tudo
-   ganha o ingresso do evento exclusivo: a tela final manda pro grupo
-   (GRUPO_INGRESSO_URL). Já preencheu? Cai direto na tela final, com a
-   opção de editar as respostas (mesma linha, upsert por user_id).
+   UMA pergunta por tela, sem mostrar "x de y": barra que vai enchendo,
+   balão de incentivo que muda conforme avança, opção escolhida já pula
+   pra próxima. Quem preenche tudo ganha o ingresso do evento: a tela
+   final manda pro grupo (GRUPO_INGRESSO_URL). Já preencheu? Cai direto
+   na tela final, com a opção de editar (mesma linha, upsert por user_id).
+
+   Perguntas abertas aceitam ÁUDIO (VoiceField → transcribe-audio). A
+   function exige sessão, então o microfone só aparece pra quem está
+   logada — na ficha pública (/ficha, sem conta) fica só o texto.
 
    Campanha em português — textos direto no código, de propósito.
    ══════════════════════════════════════════════════════════════ */
 
-type Etapa = 'capa' | 0 | 1 | 2 | 3 | 4 | 'fim';
-const TOTAL = 5;
+type Etapa = 'capa' | number | 'fim';
+type Tipo = 'texto' | 'email' | 'tel' | 'insta' | 'longo' | 'chips';
 
-const ETAPAS: { rotulo: string; titulo: string; sub: string }[] = [
-  { rotulo: 'Quem é você',   titulo: 'Prazer em te conhecer',       sub: 'O básico pra gente te chamar pelo nome.' },
-  { rotulo: 'Seu trabalho',  titulo: 'Conta do seu trabalho',       sub: 'Pra gente entender de onde você está partindo.' },
-  { rotulo: 'Seus números',  titulo: 'Vamos falar de dinheiro',     sub: 'Sem julgamento: é daqui que a gente traça o plano.' },
-  { rotulo: 'Sobre você',    titulo: 'Agora, sobre você',           sub: 'Sua história e o que mais te trava hoje.' },
-  { rotulo: 'A comunidade',  titulo: 'O que você espera daqui',     sub: 'A última etapa. Depois dela, seu ingresso.' },
+interface Pergunta {
+  id: string;
+  /** campo do form; 'email' e 'areaOutra' são estados à parte */
+  campo: keyof Matricula | 'email' | 'areaOutra';
+  tipo: Tipo;
+  titulo: string;
+  sub?: string;
+  placeholder?: string;
+  opcoes?: readonly string[];
+  opcional?: boolean;
+  linhas?: number;
+  /** só entra na sequência quando devolve true */
+  quando?: (ctx: { anonimo: boolean; form: Matricula }) => boolean;
+}
+
+const PERGUNTAS: Pergunta[] = [
+  { id: 'nome', campo: 'nome', tipo: 'texto', titulo: 'Como você quer ser chamada?', sub: 'Seu nome completo, do jeito que você gosta.', placeholder: 'Seu nome completo' },
+  { id: 'email', campo: 'email', tipo: 'email', titulo: 'Qual o seu melhor e-mail?', sub: 'É por ele que a gente te avisa do evento.', placeholder: 'voce@email.com', quando: c => c.anonimo },
+  { id: 'whatsapp', campo: 'whatsapp', tipo: 'tel', titulo: 'Qual o seu WhatsApp?', sub: 'Com DDD. É por aqui que o ingresso chega.', placeholder: '(11) 99999-9999' },
+  { id: 'instagram', campo: 'instagram', tipo: 'insta', titulo: 'Qual o seu Instagram?', sub: 'A gente vai te seguir de volta.', placeholder: 'seu.perfil' },
+  { id: 'cidade', campo: 'cidade', tipo: 'texto', titulo: 'De onde você fala?', sub: 'Cidade e estado.', placeholder: 'Ex.: Campinas, SP', opcional: true },
+  { id: 'idade', campo: 'idade', tipo: 'chips', titulo: 'Qual a sua idade?', opcoes: OPCOES.idade, opcional: true },
+  { id: 'area', campo: 'area_atuacao', tipo: 'chips', titulo: 'Em qual área você atua?', opcoes: OPCOES.area },
+  { id: 'areaOutra', campo: 'areaOutra', tipo: 'texto', titulo: 'Qual é a sua área?', placeholder: 'Escreva sua área', quando: c => c.form.area_atuacao === 'Outra' },
+  { id: 'tempo', campo: 'tempo_atuacao', tipo: 'chips', titulo: 'Há quanto tempo você atua?', opcoes: OPCOES.tempo },
+  { id: 'onde', campo: 'onde_atende', tipo: 'chips', titulo: 'Onde você atende?', opcoes: OPCOES.onde, opcional: true },
+  { id: 'faturamento', campo: 'faturamento', tipo: 'chips', titulo: 'Quanto você fatura por mês hoje?', sub: 'Sem julgamento: é daqui que a gente traça o plano.', opcoes: OPCOES.faturamento },
+  { id: 'meta', campo: 'meta_faturamento', tipo: 'chips', titulo: 'Qual a sua meta mensal pros próximos 6 meses?', opcoes: OPCOES.meta },
+  { id: 'sobre', campo: 'sobre_voce', tipo: 'longo', titulo: 'Conta um pouco da sua história', sub: 'Como você chegou até aqui, o que faz no dia a dia, o que te move.', placeholder: 'Escreve aqui...', linhas: 5 },
+  { id: 'dificuldade', campo: 'maior_dificuldade', tipo: 'chips', titulo: 'O que mais te trava hoje?', opcoes: OPCOES.dificuldade },
+  { id: 'motivo', campo: 'motivo_compra', tipo: 'longo', titulo: 'O que te fez entrar na comunidade?', sub: 'O que pesou na decisão?', placeholder: 'Escreve aqui...' },
+  { id: 'expectativa', campo: 'expectativa', tipo: 'longo', titulo: 'O que você espera da comunidade?', sub: 'Onde você quer estar daqui a 6 meses com a ajuda da gente?', placeholder: 'Escreve aqui...' },
+  { id: 'conheceu', campo: 'como_conheceu', tipo: 'chips', titulo: 'Como você conheceu a gente?', opcoes: OPCOES.conheceu },
 ];
 
-/* ── Peças de UI ── */
-const Rotulo: React.FC<{ children: React.ReactNode; opcional?: boolean }> = ({ children, opcional }) => (
-  <label className="flex items-baseline justify-between mb-1.5">
-    <span className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">{children}</span>
-    {opcional && <span className="text-[9px] font-bold text-[#5B4041]/40">opcional</span>}
-  </label>
-);
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-const campoCls = 'w-full rounded-2xl bg-white border border-[#BE0D3E]/15 px-4 py-3.5 text-[14px] text-[#1E1B11] placeholder:text-[#5B4041]/35 outline-none focus:border-[#BE0D3E] focus:ring-4 focus:ring-[#BE0D3E]/10 transition-shadow';
+const respostaOk = (p: Pergunta, v: string) => {
+  if (p.opcional) return true;
+  switch (p.tipo) {
+    case 'email': return EMAIL_RE.test(v.trim());
+    case 'tel': return limparWhatsapp(v).length >= 10;
+    case 'insta': return limparInstagram(v).length >= 2;
+    case 'longo': return v.trim().length >= 10;
+    case 'chips': return !!v;
+    default: return v.trim().length >= 2;
+  }
+};
+
+/* Balão de incentivo. Nunca fala número: só a sensação de estar avançando. */
+const mensagemBalao = (i: number, n: number, nome: string) => {
+  const primeiro = nome.trim().split(' ')[0];
+  if (i === 0) return 'Oi! Vamos começar? Uma pergunta de cada vez, no seu ritmo ✨';
+  if (i === n - 1) return 'Última pergunta! Depois dessa o ingresso é seu 🎟️';
+  const f = i / (n - 1);
+  if (f < 0.3) return `Boa${primeiro ? `, ${primeiro}` : ''}! Tá indo super bem 🔥`;
+  if (f < 0.55) return 'Metade do caminho já foi 💪';
+  if (f < 0.8) return 'Estamos quase finalizando! 🎉';
+  return 'Falta pouquinho, seu ingresso tá quase no seu nome ✨';
+};
+
+/* ── Peças de UI ── */
+const campoCls = 'w-full rounded-2xl bg-white border-2 border-[#BE0D3E]/20 px-4 py-3.5 text-[15px] text-[#1E1B11] placeholder:text-[#5B4041]/35 outline-none focus:border-[#BE0D3E] focus:ring-4 focus:ring-[#BE0D3E]/10 transition-shadow';
 
 const Campo: React.FC<{
-  rotulo: string; valor: string; onChange: (v: string) => void;
-  placeholder?: string; tipo?: string; opcional?: boolean; prefixo?: string; autoFocus?: boolean; inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode'];
-}> = ({ rotulo, valor, onChange, placeholder, tipo = 'text', opcional, prefixo, autoFocus, inputMode }) => (
-  <div>
-    <Rotulo opcional={opcional}>{rotulo}</Rotulo>
-    <div className="relative">
-      {prefixo && <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[14px] font-bold text-[#BE0D3E]">{prefixo}</span>}
-      <input
-        type={tipo} inputMode={inputMode} value={valor} autoFocus={autoFocus}
-        onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className={`${campoCls} ${prefixo ? 'pl-9' : ''}`}
-      />
-    </div>
+  valor: string; onChange: (v: string) => void;
+  placeholder?: string; tipo?: string; prefixo?: string; autoFocus?: boolean; inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode'];
+}> = ({ valor, onChange, placeholder, tipo = 'text', prefixo, autoFocus, inputMode }) => (
+  <div className="relative">
+    {prefixo && <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[15px] font-bold text-[#BE0D3E]">{prefixo}</span>}
+    <input
+      type={tipo} inputMode={inputMode} value={valor} autoFocus={autoFocus}
+      onChange={e => onChange(e.target.value)} placeholder={placeholder}
+      className={`${campoCls} ${prefixo ? 'pl-9' : ''}`}
+    />
   </div>
 );
 
-const Area: React.FC<{ rotulo: string; valor: string; onChange: (v: string) => void; placeholder?: string; opcional?: boolean; linhas?: number }> =
-  ({ rotulo, valor, onChange, placeholder, opcional, linhas = 4 }) => (
-  <div>
-    <Rotulo opcional={opcional}>{rotulo}</Rotulo>
-    <textarea value={valor} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={linhas}
-      className={`${campoCls} resize-none leading-relaxed`} />
-    <p className="text-right text-[9px] text-[#5B4041]/35 mt-1 tabular-nums">{valor.trim().length} caracteres</p>
+const Chips: React.FC<{ opcoes: readonly string[]; valor: string; onChange: (v: string) => void }> = ({ opcoes, valor, onChange }) => (
+  <div className="flex flex-wrap gap-2.5">
+    {opcoes.map((o, i) => {
+      const ativo = valor === o;
+      return (
+        <motion.button key={o} type="button" onClick={() => onChange(ativo ? '' : o)}
+          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04 * i, duration: 0.2 }}
+          className="rounded-full px-4 py-2.5 text-[13px] font-bold transition-all active:scale-95"
+          style={{
+            background: ativo ? 'linear-gradient(135deg, #BE0D3E, #94002D)' : 'white',
+            color: ativo ? 'white' : '#5B4041',
+            border: ativo ? '1px solid transparent' : '1px solid rgba(190,13,62,0.18)',
+            boxShadow: ativo ? '0 6px 16px -6px rgba(190,13,62,0.6)' : 'none',
+            WebkitTapHighlightColor: 'transparent',
+          }}>
+          {o}
+        </motion.button>
+      );
+    })}
   </div>
 );
 
-const Chips: React.FC<{ rotulo: string; opcoes: readonly string[]; valor: string; onChange: (v: string) => void; opcional?: boolean }> =
-  ({ rotulo, opcoes, valor, onChange, opcional }) => (
-  <div>
-    <Rotulo opcional={opcional}>{rotulo}</Rotulo>
-    <div className="flex flex-wrap gap-2">
-      {opcoes.map(o => {
-        const ativo = valor === o;
-        return (
-          <button key={o} type="button" onClick={() => onChange(ativo ? '' : o)}
-            className="rounded-full px-3.5 py-2 text-[12px] font-bold transition-all active:scale-95"
-            style={{
-              background: ativo ? 'linear-gradient(135deg, #BE0D3E, #94002D)' : 'white',
-              color: ativo ? 'white' : '#5B4041',
-              border: ativo ? '1px solid transparent' : '1px solid rgba(190,13,62,0.18)',
-              boxShadow: ativo ? '0 6px 16px -6px rgba(190,13,62,0.6)' : 'none',
-              WebkitTapHighlightColor: 'transparent',
-            }}>
-            {o}
-          </button>
-        );
-      })}
+/* Balãozinho da "mentora" acima da pergunta. A chave é o texto: quando a
+   mensagem muda, ele entra de novo com o pulinho. */
+const Balao: React.FC<{ texto: string }> = ({ texto }) => (
+  <motion.div key={texto} initial={{ y: 10, opacity: 0, scale: 0.94 }} animate={{ y: 0, opacity: 1, scale: 1 }}
+    transition={{ type: 'spring', stiffness: 280, damping: 18 }} className="flex items-end gap-2">
+    <img src="/logo-icon.png" alt="" className="w-9 h-9 rounded-full shrink-0 object-cover shadow-sm" />
+    <div className="relative bg-white border border-[#BE0D3E]/12 rounded-2xl rounded-bl-md px-3.5 py-2.5 text-[12.5px] font-bold text-[#1E1B11] shadow-[0_6px_18px_-10px_rgba(190,13,62,0.5)]">
+      {texto}
     </div>
-  </div>
+  </motion.div>
 );
 
 /* Ingresso — o "prêmio" que aparece na capa e no fim. */
@@ -152,6 +200,7 @@ const Matricula: React.FC<{ publico?: boolean }> = ({ publico = false }) => {
   const navigate = useLocalizedNavigate();
   const { user, profile } = useAuth();
   const anonimo = publico && !user;
+  const podeAudio = !!user;
   const [email, setEmail] = useState('');
   const { matricula, loading, reload } = useMinhaMatricula();
 
@@ -186,19 +235,21 @@ const Matricula: React.FC<{ publico?: boolean }> = ({ publico = false }) => {
     return () => { document.title = antes; };
   }, [publico]);
 
-  const emailOk = !anonimo || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
-
   const set = <K extends keyof Matricula>(k: K) => (v: Matricula[K]) => setForm(f => ({ ...f, [k]: v }));
 
-  const areaFinal = form.area_atuacao === 'Outra' ? areaOutra.trim() : form.area_atuacao;
+  const perguntas = useMemo(() => PERGUNTAS.filter(p => !p.quando || p.quando({ anonimo, form })), [anonimo, form]);
+  const total = perguntas.length;
 
-  const valida = useMemo<Record<number, boolean>>(() => ({
-    0: form.nome.trim().length >= 2 && emailOk && limparWhatsapp(form.whatsapp).length >= 10 && limparInstagram(form.instagram).length >= 2,
-    1: !!areaFinal && !!form.tempo_atuacao,
-    2: !!form.faturamento && !!form.meta_faturamento,
-    3: form.sobre_voce.trim().length >= 10 && !!form.maior_dificuldade,
-    4: form.motivo_compra.trim().length >= 10 && form.expectativa.trim().length >= 10 && !!form.como_conheceu,
-  }), [form, areaFinal, emailOk]);
+  const valorDe = (p: Pergunta): string =>
+    p.campo === 'email' ? email : p.campo === 'areaOutra' ? areaOutra : String(form[p.campo] ?? '');
+  const mudar = (p: Pergunta, v: string) => {
+    if (p.campo === 'email') setEmail(v);
+    else if (p.campo === 'areaOutra') setAreaOutra(v);
+    else if (p.campo === 'whatsapp') set('whatsapp')(mascararWhatsapp(v));
+    else set(p.campo as keyof Matricula)(v as never);
+  };
+
+  const areaFinal = form.area_atuacao === 'Outra' ? areaOutra.trim() : form.area_atuacao;
 
   const ir = (para: Etapa, dir: 1 | -1) => { setDirecao(dir); setEtapa(para); };
 
@@ -238,7 +289,7 @@ const Matricula: React.FC<{ publico?: boolean }> = ({ publico = false }) => {
   const voltar = () => {
     if (etapa === 'capa' || etapa === 'fim') { navigate(anonimo ? '/auth' : '/modulo/boas-vindas-a-comunidade/aula/1'); return; }
     if (etapa === 0) { ir('capa', -1); return; }
-    ir((etapa - 1) as Etapa, -1);
+    ir(etapa - 1, -1);
   };
 
   if (loading) {
@@ -249,10 +300,30 @@ const Matricula: React.FC<{ publico?: boolean }> = ({ publico = false }) => {
     );
   }
 
-  const numero = typeof etapa === 'number' ? etapa : null;
-  // Só animação de ENTRADA (a chave muda por etapa). Saída via AnimatePresence
-  // travava no meio e a etapa seguinte nunca aparecia.
+  const numero = typeof etapa === 'number' ? Math.min(etapa, total - 1) : null;
+  const atual = numero !== null ? perguntas[numero] : null;
+  const valorAtual = atual ? valorDe(atual) : '';
+  const ok = atual ? respostaOk(atual, valorAtual) : false;
+  const ultima = numero !== null && numero === total - 1;
+  const pular = !!atual?.opcional && !valorAtual;
+
+  /* Continuar: última pergunta envia; senão vai pra próxima. O índice vem
+     do clique (não do estado) pra funcionar dentro do setTimeout dos chips. */
+  const avancar = (de: number) => {
+    if (de >= total - 1) { enviar(); return; }
+    ir(de + 1, 1);
+  };
+  const escolher = (p: Pergunta, v: string, de: number) => {
+    mudar(p, v);
+    // escolheu uma opção → já pula pra próxima (menos na última, que envia)
+    if (v && de < total - 1) window.setTimeout(() => avancar(de), 260);
+  };
+
+  // Só animação de ENTRADA (a chave muda por pergunta). Saída via AnimatePresence
+  // travava no meio e a pergunta seguinte nunca aparecia.
   const entrada = { initial: { x: direcao * 40, opacity: 0 }, animate: { x: 0, opacity: 1 } };
+  const progresso = numero !== null ? ((numero + 1) / total) * 100 : 0;
+  const dicaAudio = podeAudio && (atual?.tipo === 'longo' || atual?.tipo === 'texto');
 
   return (
     <div className="min-h-[100dvh] bg-[#FFF9EE] relative overflow-x-hidden">
@@ -265,7 +336,7 @@ const Matricula: React.FC<{ publico?: boolean }> = ({ publico = false }) => {
         <div className="absolute -bottom-20 right-[-10%] w-80 h-80 rounded-full" style={{ background: 'radial-gradient(circle, rgba(190,13,62,0.16), transparent 65%)' }} />
       </div>
 
-      <div className="relative max-w-lg mx-auto px-4 pt-4 pb-32">
+      <div className="relative max-w-lg mx-auto px-4 pt-4 pb-36">
         {/* topo */}
         <div className="flex items-center gap-3">
           {!(anonimo && typeof etapa !== 'number') && (
@@ -277,22 +348,26 @@ const Matricula: React.FC<{ publico?: boolean }> = ({ publico = false }) => {
           <div className="flex-1 min-w-0">
             <p className="text-[9px] font-black uppercase tracking-widest text-[#BE0D3E]">Ficha de matrícula</p>
             <p className="text-[11px] font-bold text-[#1E1B11] truncate">
-              {numero !== null ? `Etapa ${numero + 1} de ${TOTAL} · ${ETAPAS[numero].rotulo}` : etapa === 'fim' ? 'Ingresso garantido' : 'Comunidade Amentora'}
+              {numero !== null ? 'Seu ingresso está sendo preparado' : etapa === 'fim' ? 'Ingresso garantido' : 'Comunidade Amentora'}
             </p>
           </div>
         </div>
 
-        {/* progresso */}
+        {/* progresso: barra que enche + ingresso na ponta. Sem número. */}
         {numero !== null && (
-          <div className="flex gap-1.5 mt-4">
-            {ETAPAS.map((_, i) => (
-              <div key={i} className="h-1.5 flex-1 rounded-full bg-[#F6D6DC]/70 overflow-hidden">
-                <motion.div className="h-full rounded-full"
-                  style={{ background: 'linear-gradient(90deg, #E63462, #BE0D3E)' }}
-                  initial={false} animate={{ width: i < numero ? '100%' : i === numero ? '100%' : '0%' }}
-                  transition={{ duration: 0.45, ease: 'easeOut' }} />
-              </div>
-            ))}
+          <div className="flex items-center gap-2.5 mt-4">
+            <div className="h-2 flex-1 rounded-full bg-[#F6D6DC]/70 overflow-hidden">
+              <motion.div className="h-full rounded-full"
+                style={{ background: 'linear-gradient(90deg, #E63462, #BE0D3E 60%, #F6B43A)' }}
+                initial={false} animate={{ width: `${progresso}%` }}
+                transition={{ duration: 0.5, ease: 'easeOut' }} />
+            </div>
+            <motion.span key={numero} initial={{ scale: 0.6, rotate: -12 }} animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 14 }}
+              className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+              style={{ background: 'linear-gradient(135deg, #F6B43A, #E09A1F)', boxShadow: '0 6px 14px -6px rgba(246,180,58,0.9)' }}>
+              <Ticket size={14} className="text-[#1E1B11]" strokeWidth={2.5} />
+            </motion.span>
           </div>
         )}
 
@@ -308,78 +383,75 @@ const Matricula: React.FC<{ publico?: boolean }> = ({ publico = false }) => {
                 Sua matrícula vale<br /><span className="text-[#BE0D3E]">um ingresso.</span>
               </h1>
               <p className="mt-3 text-[14px] leading-relaxed text-[#5B4041]/80">
-                Responda a ficha completa e você garante <strong className="text-[#1E1B11]">1 ingresso para o evento exclusivo</strong> da comunidade.
-                São 5 etapas rápidas, e as respostas ajudam a gente a montar o caminho certo pra você.
+                Responda a ficha e você garante <strong className="text-[#1E1B11]">1 ingresso para o evento exclusivo</strong> da comunidade.
+                É uma pergunta de cada vez, rapidinho{podeAudio ? ', e você pode responder por áudio' : ''}.
               </p>
 
               <ul className="mt-5 space-y-2.5">
-                {ETAPAS.map((e, i) => (
-                  <li key={e.rotulo} className="flex items-center gap-3 bg-white/70 border border-[#BE0D3E]/10 rounded-2xl px-4 py-3">
-                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black text-white shrink-0"
-                      style={{ background: 'linear-gradient(135deg, #BE0D3E, #94002D)' }}>{i + 1}</span>
-                    <span className="text-[12px] font-bold text-[#1E1B11]">{e.rotulo}</span>
-                  </li>
+                {[
+                  { icone: <Zap size={14} strokeWidth={2.5} />, texto: 'Uma pergunta por vez, no seu ritmo' },
+                  ...(podeAudio ? [{ icone: <Mic size={14} strokeWidth={2.5} />, texto: 'Pode escrever ou responder por áudio' }] : []),
+                  { icone: <Ticket size={14} strokeWidth={2.5} />, texto: 'No final, o ingresso sai no seu nome' },
+                ].map((item, i) => (
+                  <motion.li key={item.texto} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 + i * 0.08 }}
+                    className="flex items-center gap-3 bg-white/70 border border-[#BE0D3E]/10 rounded-2xl px-4 py-3">
+                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-white shrink-0"
+                      style={{ background: 'linear-gradient(135deg, #BE0D3E, #94002D)' }}>{item.icone}</span>
+                    <span className="text-[12px] font-bold text-[#1E1B11]">{item.texto}</span>
+                  </motion.li>
                 ))}
               </ul>
             </motion.div>
           )}
 
-          {/* ── ETAPAS ── */}
-          {numero !== null && (
-            <motion.div key={`etapa-${numero}`} {...entrada} transition={{ duration: 0.28 }} className="mt-6">
-              <h2 className="text-[24px] font-black leading-tight text-[#1E1B11]">{ETAPAS[numero].titulo}</h2>
-              <p className="mt-1 text-[12px] text-[#5B4041]/70">{ETAPAS[numero].sub}</p>
+          {/* ── PERGUNTA (uma por tela) ── */}
+          {atual && numero !== null && (
+            <motion.div key={`p-${atual.id}`} {...entrada} transition={{ duration: 0.28 }} className="mt-6">
+              <Balao texto={mensagemBalao(numero, total, form.nome)} />
 
-              <div className="mt-6 space-y-5">
-                {numero === 0 && (
-                  <>
-                    <Campo rotulo="Seu nome completo" valor={form.nome} onChange={set('nome')} placeholder="Como você quer ser chamada" autoFocus={!form.nome} />
-                    {anonimo && (
-                      <Campo rotulo="Seu melhor e-mail" valor={email} onChange={setEmail} placeholder="voce@email.com" tipo="email" inputMode="email" />
-                    )}
-                    <Campo rotulo="WhatsApp" valor={form.whatsapp} onChange={v => set('whatsapp')(mascararWhatsapp(v))} placeholder="(11) 99999-9999" tipo="tel" inputMode="tel" />
-                    <Campo rotulo="Instagram" valor={form.instagram} onChange={set('instagram')} placeholder="seu.perfil" prefixo="@" />
-                    <Campo rotulo="Cidade e estado" valor={form.cidade} onChange={set('cidade')} placeholder="Ex.: Campinas, SP" opcional />
-                    <Chips rotulo="Sua idade" opcoes={OPCOES.idade} valor={form.idade} onChange={set('idade')} opcional />
-                  </>
-                )}
+              <form className="mt-6" onSubmit={e => { e.preventDefault(); if (ok && !salvando) avancar(numero); }}>
+                <h2 className="text-[26px] font-black leading-tight text-[#1E1B11]">{atual.titulo}</h2>
+                {atual.sub && <p className="mt-1.5 text-[12.5px] text-[#5B4041]/70">{atual.sub}</p>}
+                {atual.opcional && <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-[#5B4041]/40">opcional</p>}
 
-                {numero === 1 && (
-                  <>
-                    <Chips rotulo="Em qual área você atua?" opcoes={OPCOES.area} valor={form.area_atuacao} onChange={set('area_atuacao')} />
-                    {form.area_atuacao === 'Outra' && (
-                      <Campo rotulo="Qual área?" valor={areaOutra} onChange={setAreaOutra} placeholder="Escreva sua área" autoFocus />
-                    )}
-                    <Chips rotulo="Há quanto tempo?" opcoes={OPCOES.tempo} valor={form.tempo_atuacao} onChange={set('tempo_atuacao')} />
-                    <Chips rotulo="Onde você atende?" opcoes={OPCOES.onde} valor={form.onde_atende} onChange={set('onde_atende')} opcional />
-                  </>
-                )}
+                <div className="mt-6">
+                  {atual.tipo === 'chips' && (
+                    <Chips opcoes={atual.opcoes!} valor={valorAtual} onChange={v => escolher(atual, v, numero)} />
+                  )}
+                  {atual.tipo === 'longo' && (podeAudio ? (
+                    <VoiceField value={valorAtual} onChange={v => mudar(atual, v)} placeholder={atual.placeholder} rows={atual.linhas ?? 4} autoFocus={!valorAtual} />
+                  ) : (
+                    <textarea value={valorAtual} onChange={e => mudar(atual, e.target.value)} placeholder={atual.placeholder} rows={atual.linhas ?? 4} autoFocus={!valorAtual}
+                      className={`${campoCls} resize-none leading-relaxed`} />
+                  ))}
+                  {atual.tipo === 'texto' && (podeAudio ? (
+                    <VoiceField value={valorAtual} onChange={v => mudar(atual, v)} placeholder={atual.placeholder} multiline={false} autoFocus={!valorAtual} />
+                  ) : (
+                    <Campo valor={valorAtual} onChange={v => mudar(atual, v)} placeholder={atual.placeholder} autoFocus={!valorAtual} />
+                  ))}
+                  {atual.tipo === 'email' && (
+                    <Campo valor={valorAtual} onChange={v => mudar(atual, v)} placeholder={atual.placeholder} tipo="email" inputMode="email" autoFocus={!valorAtual} />
+                  )}
+                  {atual.tipo === 'tel' && (
+                    <Campo valor={valorAtual} onChange={v => mudar(atual, v)} placeholder={atual.placeholder} tipo="tel" inputMode="tel" autoFocus={!valorAtual} />
+                  )}
+                  {atual.tipo === 'insta' && (
+                    <Campo valor={valorAtual} onChange={v => mudar(atual, v)} placeholder={atual.placeholder} prefixo="@" autoFocus={!valorAtual} />
+                  )}
+                </div>
 
-                {numero === 2 && (
-                  <>
-                    <Chips rotulo="Quanto você fatura por mês hoje?" opcoes={OPCOES.faturamento} valor={form.faturamento} onChange={set('faturamento')} />
-                    <Chips rotulo="Qual a sua meta mensal para os próximos 6 meses?" opcoes={OPCOES.meta} valor={form.meta_faturamento} onChange={set('meta_faturamento')} />
-                  </>
+                {dicaAudio && (
+                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+                    className="mt-3 flex items-center gap-1.5 text-[11.5px] font-bold text-[#BE0D3E]">
+                    <Mic size={13} strokeWidth={2.5} /> Prefere falar? Aperta o microfone e responde por áudio.
+                  </motion.p>
                 )}
-
-                {numero === 3 && (
-                  <>
-                    <Area rotulo="Conta um pouco da sua história" valor={form.sobre_voce} onChange={set('sobre_voce')}
-                      placeholder="Como você chegou até aqui, o que faz no dia a dia, o que te move..." linhas={5} />
-                    <Chips rotulo="O que mais te trava hoje?" opcoes={OPCOES.dificuldade} valor={form.maior_dificuldade} onChange={set('maior_dificuldade')} />
-                  </>
+                {atual.tipo === 'chips' && (
+                  <p className="mt-4 text-[11px] text-[#5B4041]/55">Escolheu? A próxima já aparece.</p>
                 )}
-
-                {numero === 4 && (
-                  <>
-                    <Area rotulo="O que te fez entrar na comunidade?" valor={form.motivo_compra} onChange={set('motivo_compra')}
-                      placeholder="O que pesou na decisão de comprar?" />
-                    <Area rotulo="O que você espera da comunidade?" valor={form.expectativa} onChange={set('expectativa')}
-                      placeholder="Onde você quer estar daqui a 6 meses com a ajuda da comunidade?" />
-                    <Chips rotulo="Como você conheceu a gente?" opcoes={OPCOES.conheceu} valor={form.como_conheceu} onChange={set('como_conheceu')} />
-                  </>
-                )}
-              </div>
+                {/* Enter no teclado avança (o botão de baixo faz o mesmo) */}
+                <button type="submit" className="hidden" aria-hidden tabIndex={-1} />
+              </form>
             </motion.div>
           )}
 
@@ -441,20 +513,27 @@ const Matricula: React.FC<{ publico?: boolean }> = ({ publico = false }) => {
                 className="glass-btn-pink w-full rounded-2xl py-4 text-[14px] font-black text-white flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
                 Começar minha ficha <ArrowRight size={17} strokeWidth={2.5} />
               </button>
-            ) : numero === TOTAL - 1 ? (
-              <button onClick={enviar} disabled={!valida[numero!] || salvando}
+            ) : ultima ? (
+              <button onClick={() => avancar(numero!)} disabled={!ok || salvando}
                 className="card-glass-liquid-lime w-full rounded-2xl py-4 text-[14px] font-black text-[#1E1B11] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-45">
                 {salvando ? <Loader2 size={17} className="animate-spin" /> : <Ticket size={17} strokeWidth={2.5} />}
                 Enviar ficha e garantir ingresso
               </button>
+            ) : pular ? (
+              <button onClick={() => avancar(numero!)}
+                className="w-full rounded-2xl py-4 text-[14px] font-black text-[#5B4041] bg-white/80 border border-[#BE0D3E]/15 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+                Pular essa <ArrowRight size={17} strokeWidth={2.5} />
+              </button>
             ) : (
-              <button onClick={() => ir((numero! + 1) as Etapa, 1)} disabled={!valida[numero!]}
+              <button onClick={() => avancar(numero!)} disabled={!ok}
                 className="glass-btn-pink w-full rounded-2xl py-4 text-[14px] font-black text-white flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-45">
                 Continuar <ArrowRight size={17} strokeWidth={2.5} />
               </button>
             )}
-            {numero !== null && !valida[numero] && (
-              <p className="text-center text-[10px] text-[#5B4041]/55 mt-2">Preencha os campos desta etapa pra continuar</p>
+            {atual && !ok && !pular && (
+              <p className="text-center text-[10px] text-[#5B4041]/55 mt-2">
+                {atual.tipo === 'longo' ? 'Escreve (ou fala) um pouquinho mais pra continuar' : 'Responde essa pra continuar'}
+              </p>
             )}
           </div>
         </div>
