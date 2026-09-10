@@ -2,8 +2,8 @@ import React, { useMemo } from 'react';
 import { Play, Clock, MonitorPlay, CheckCircle2 } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useLiveStatus } from '@/hooks/useLiveStatus';
-import { getUpcomingLives } from '@/data/liveSchedule';
-import { useModuleBySlug, useLessonProgress, LIVE_MODULE_SLUG } from '@/hooks/useCourses';
+import { getUpcomingLives, type ScheduledLive } from '@/data/liveSchedule';
+import { useModuleBySlug, useLessonProgress, lessonReleased, LIVE_MODULE_SLUG, type Lesson } from '@/hooks/useCourses';
 import { dbText } from '@/lib/dbText';
 import { getYouTubeVideoId, buildYouTubeEmbedUrl } from '@/lib/youtube';
 import { formatDateShort, localeTag } from '@/lib/formatLocale';
@@ -74,7 +74,7 @@ const LiveCover: React.FC<{
 
       {/* centro: título */}
       <div className="flex flex-col items-center">
-        <span className="text-[12px] font-black uppercase leading-[0.95] text-white drop-shadow-sm tracking-tight">{title}</span>
+        <span className="text-[12px] font-black uppercase leading-[0.95] text-white drop-shadow-sm tracking-tight line-clamp-3">{title}</span>
         <span className="mt-1 h-[2px] w-6 rounded-full bg-white/70" />
       </div>
 
@@ -106,16 +106,31 @@ const AoVivo: React.FC = () => {
   // Vivo). Abrir uma cai na tela de aula normal, com a URL sendo o índice na
   // lista em ordem de position — por isso o carrossel inverte só na exibição.
   const navigate = useLocalizedNavigate();
-  const { data: liveModule } = useModuleBySlug(LIVE_MODULE_SLUG);
+  // includeUpcoming: a live agendada (recorded_at no futuro) vem junto, mas vai
+  // pra "Próximas aulas" — o índice da URL conta só as já lançadas, igual ao
+  // useLesson.
+  const { data: liveModule } = useModuleBySlug(LIVE_MODULE_SLUG, { includeUpcoming: true });
   const lessons = useMemo(() => liveModule?.lessons ?? [], [liveModule]);
-  const lessonIds = useMemo(() => lessons.map(l => l.id), [lessons]);
+  const released = useMemo(() => lessons.filter(lessonReleased), [lessons]);
+  const lessonIds = useMemo(() => released.map(l => l.id), [released]);
   const { completed } = useLessonProgress(lessonIds);
   const replays = useMemo(
-    () => lessons.map((lesson, index) => ({ lesson, index })).reverse(),
-    [lessons],
+    () => released.map((lesson, index) => ({ lesson, index })).reverse(),
+    [released],
   );
 
-  const upcoming = getUpcomingLives();
+  // Próximas aulas = cronograma fixo (liveSchedule.ts, só PT) + lives já
+  // agendadas no YouTube (aulas com data futura). Mesma data = um card só,
+  // com o título real e o link da transmissão.
+  const upcoming = useMemo(() => {
+    const byDate = new Map<string, ScheduledLive & { lesson?: Lesson }>();
+    if (lang !== 'es') for (const s of getUpcomingLives()) byDate.set(s.date, { ...s });
+    for (const l of lessons) {
+      if (lessonReleased(l) || !l.recorded_at) continue;
+      byDate.set(l.recorded_at, { ...(byDate.get(l.recorded_at) ?? { date: l.recorded_at, time: '' }), lesson: l });
+    }
+    return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+  }, [lessons, lang]);
 
   const openStream = () => {
     if (status.stream_url) window.open(status.stream_url, '_blank', 'noopener,noreferrer');
@@ -228,7 +243,7 @@ const AoVivo: React.FC = () => {
       {/* Próximas aulas — o cronograma (liveSchedule.ts) é das mentorias em
           português; a versão ES não tem ciclo próprio, então a seção nem
           aparece lá (os replays já vêm filtrados por idioma do banco). */}
-      {lang !== 'es' && (
+      {(lang !== 'es' || upcoming.length > 0) && (
       <motion.section
         initial={reduce ? false : { opacity: 0, y: 22 }}
         animate={{ opacity: 1, y: 0 }}
@@ -261,20 +276,32 @@ const AoVivo: React.FC = () => {
               const day = d.toLocaleDateString(tag, { day: '2-digit' });
               const month = d.toLocaleDateString(tag, { month: 'short' }).replace('.', '').toUpperCase();
               const weekday = d.toLocaleDateString(tag, { weekday: 'long' });
-              return (
-                <div
-                  key={l.date}
-                  className="shrink-0 w-[120px] h-[164px] rounded-[1rem] border border-[#BE0D3E]/20 relative overflow-hidden shadow-[0_8px_20px_rgba(190,13,62,0.12)] snap-start"
-                >
-                  <LiveCover
-                    title={TXT.title}
-                    day={day}
-                    month={month}
-                    weekday={weekday}
-                    time={l.time}
-                    presenterLabel={l.presenter ? `${TXT.presenter_prefix} ${l.presenter}` : undefined}
-                  />
-                </div>
+              // Título do YouTube é longo ("TEMA: subtítulo - AUTOR"); no card
+              // cabe só o tema.
+              const tema = l.lesson
+                ? dbText(l.lesson.titulo, l.lesson.titulo_es, lang).split(/[:–-]\s/)[0].trim()
+                : TXT.title;
+              const cardCls = 'shrink-0 w-[120px] h-[164px] rounded-[1rem] border border-[#BE0D3E]/20 relative overflow-hidden shadow-[0_8px_20px_rgba(190,13,62,0.12)] snap-start';
+              const cover = (
+                <LiveCover
+                  title={tema}
+                  day={day}
+                  month={month}
+                  weekday={weekday}
+                  time={l.time}
+                  presenterLabel={l.presenter ? `${TXT.presenter_prefix} ${l.presenter}` : undefined}
+                />
+              );
+              // Live já agendada: abre a página do YouTube (dá pra ativar o
+              // lembrete e, no dia, assistir por lá).
+              return l.lesson?.video_url ? (
+                <a key={l.date} href={l.lesson.video_url} target="_blank" rel="noopener noreferrer"
+                  className={`${cardCls} block active:scale-[0.97] transition-transform`}
+                  style={{ WebkitTapHighlightColor: 'transparent' }}>
+                  {cover}
+                </a>
+              ) : (
+                <div key={l.date} className={cardCls}>{cover}</div>
               );
             })}
             <div className="w-1 shrink-0" />

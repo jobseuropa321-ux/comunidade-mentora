@@ -75,6 +75,17 @@ export const LIVE_MODULE_SLUG = 'aulas-ao-vivo';
 export const lessonVisible = (l: Pick<Lesson, 'lang'>, lang: string): boolean =>
   !l.lang || l.lang === 'both' || l.lang === lang;
 
+/** Aula já lançada? Só o módulo de lives usa `recorded_at`: uma live com data
+ *  no futuro (ou de hoje — a transmissão ainda não aconteceu/terminou) fica
+ *  fora da lista de aulas e aparece em "Próximas aulas" da tela Ao Vivo.
+ *  No dia seguinte vira gravação sozinha. */
+export const lessonReleased = (l: Pick<Lesson, 'recorded_at'>): boolean => {
+  if (!l.recorded_at) return true;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return new Date(l.recorded_at + 'T00:00:00').getTime() < today.getTime();
+};
+
 /** Vídeo que toca no idioma da tela: em ES usa o video_url_es quando existe. */
 export const lessonVideoUrl = (l: Pick<Lesson, 'video_url' | 'video_url_es'>, lang: string): string | null =>
   (lang === 'es' && l.video_url_es) ? l.video_url_es : l.video_url;
@@ -132,8 +143,9 @@ export function useAllModules(includeUnpublished = false) {
 /** Módulo + suas aulas, por slug. Usado em ModuleDetail.
  *  As aulas vêm filtradas pelo idioma da URL — MESMO filtro do useLesson,
  *  porque a URL da aula é o índice na lista (mudar um sem o outro desalinha). */
-export function useModuleBySlug(slug: string | undefined) {
+export function useModuleBySlug(slug: string | undefined, opts: { includeUpcoming?: boolean } = {}) {
   const lang = useCurrentLang();
+  const includeUpcoming = !!opts.includeUpcoming;
   const [data, setData] = useState<ModuleWithLessons | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -151,12 +163,13 @@ export function useModuleBySlug(slug: string | undefined) {
         .eq('module_id', (mod as Module).id)
         .order('position', { ascending: true });
       if (cancel) return;
-      const visiveis = ((lessons ?? []) as Lesson[]).filter(l => lessonVisible(l, lang));
+      const visiveis = ((lessons ?? []) as Lesson[])
+        .filter(l => lessonVisible(l, lang) && (includeUpcoming || lessonReleased(l)));
       setData({ ...(mod as Module), lessons: visiveis });
       setLoading(false);
     })();
     return () => { cancel = true; };
-  }, [slug, lang]);
+  }, [slug, lang, includeUpcoming]);
 
   return { data, loading };
 }
@@ -235,7 +248,7 @@ export function useLesson(moduleSlug: string | undefined, lessonIndex: number | 
         .eq('module_id', (mod as Module).id)
         .order('position', { ascending: true });
       if (cancel) { return; }
-      const lessons = ((allLessons ?? []) as Lesson[]).filter(l => lessonVisible(l, lang));
+      const lessons = ((allLessons ?? []) as Lesson[]).filter(l => lessonVisible(l, lang) && lessonReleased(l));
       if (lessons.length === 0) { setData(null); setLoading(false); return; }
       const lesson = lessons[lessonIndex];
       if (!lesson) { setData(null); setLoading(false); return; }
