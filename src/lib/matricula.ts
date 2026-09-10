@@ -12,7 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 /** Link do grupo onde a aluna garante o ingresso. Vazio = botão do grupo
  *  fica em "em breve" na tela final. */
-export const GRUPO_INGRESSO_URL = '';
+export const GRUPO_INGRESSO_URL = 'https://chat.whatsapp.com/LQm1xIuuJln4LfvSyRcXlW?mode=gi_t';
 
 export interface Matricula {
   id?: string;
