@@ -212,7 +212,7 @@ const Mentoria: React.FC = () => {
   };
 
   const voltar = () => {
-    if (etapa === 'capa' || etapa === 'fim') { navigate(user ? '/modulo/comece-por-aqui/aula/1' : '/auth'); return; }
+    if (etapa === 'capa' || etapa === 'fim') { navigate(user ? '/modulo/boas-vindas-a-comunidade/aula/1' : '/auth'); return; }
     if (etapa === 0) { ir('capa', -1); return; }
     ir((etapa - 1) as Etapa, -1);
   };

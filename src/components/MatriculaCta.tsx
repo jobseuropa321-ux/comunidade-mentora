@@ -3,7 +3,7 @@ import { Ticket, Sparkles, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 import { useMinhaMatricula } from '@/lib/matricula';
 
-/* Botão da ficha de matrícula, na primeira aula de "Comece por aqui".
+/* Botão da ficha de matrícula, na primeira aula de "Boas-vindas à comunidade".
    Campanha em português — quem renderiza já filtra o idioma. */
 const MatriculaCta: React.FC = () => {
   const navigate = useLocalizedNavigate();

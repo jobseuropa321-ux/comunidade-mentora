@@ -121,7 +121,7 @@ const fullscreenRoutes = (prefix: "" | "/es") => (
     {/* Oferta do Viral 1 Min — aberta pela "aula" do módulo viral-em-1-minuto.
         Fora do AppLayout: é uma VSL, ocupa a tela toda (tem botão de voltar). */}
     <Route path={`${prefix}/oferta/viral-1-min`} element={<ProtectedRoute><OfertaViral1Min /></ProtectedRoute>} />
-    {/* Ficha de matrícula — aberta pelo botão na 1ª aula de "Comece por aqui".
+    {/* Ficha de matrícula — aberta pelo botão na 1ª aula de "Boas-vindas à comunidade".
         Tela cheia: é um wizard imersivo com confete no fim. */}
     <Route path={`${prefix}/matricula`} element={<ProtectedRoute><Matricula /></ProtectedRoute>} />
     {/* Versão pública da ficha, pra divulgar fora do app (lead cai na aba

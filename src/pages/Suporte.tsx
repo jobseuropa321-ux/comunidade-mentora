@@ -92,7 +92,7 @@ const Suporte: React.FC = () => {
       <div className="relative max-w-lg mx-auto px-4 pt-4 pb-12">
         <div className="flex items-center gap-3">
           {user && (
-            <button onClick={() => navigate('/modulo/comece-por-aqui/aula/1')} aria-label="Voltar"
+            <button onClick={() => navigate('/modulo/boas-vindas-a-comunidade/aula/1')} aria-label="Voltar"
               className="glass-btn-pink shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white active:scale-95 transition-transform">
               <ArrowLeft size={17} strokeWidth={2.5} />
             </button>

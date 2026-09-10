@@ -211,9 +211,9 @@ const AulaDetail: React.FC = () => {
         </button>
       </div>
 
-      {/* FICHA DE MATRÍCULA — só na 1ª aula de "Comece por aqui", em PT
+      {/* FICHA DE MATRÍCULA — só na 1ª aula de "Boas-vindas à comunidade", em PT
           (campanha do ingresso do evento é em português). */}
-      {lang !== 'es' && modulo.slug === 'comece-por-aqui' && aulaIndex === 0 && (
+      {lang !== 'es' && modulo.slug === 'boas-vindas-a-comunidade' && aulaIndex === 0 && (
         <div className="px-4 mt-3 space-y-2.5">
           <MatriculaCta />
           <MentoriaCta />

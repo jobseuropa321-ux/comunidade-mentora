@@ -3,7 +3,7 @@ import { Crown, LifeBuoy, ChevronRight } from 'lucide-react';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
 /* Botões que ficam embaixo da ficha de matrícula na 1ª aula de
-   "Comece por aqui": aplicação da mentoria (preto e dourado) e suporte. */
+   "Boas-vindas à comunidade": aplicação da mentoria (preto e dourado) e suporte. */
 
 export const MentoriaCta: React.FC = () => {
   const navigate = useLocalizedNavigate();

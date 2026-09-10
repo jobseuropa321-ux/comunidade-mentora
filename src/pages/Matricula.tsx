@@ -236,7 +236,7 @@ const Matricula: React.FC<{ publico?: boolean }> = ({ publico = false }) => {
   };
 
   const voltar = () => {
-    if (etapa === 'capa' || etapa === 'fim') { navigate(anonimo ? '/auth' : '/modulo/comece-por-aqui/aula/1'); return; }
+    if (etapa === 'capa' || etapa === 'fim') { navigate(anonimo ? '/auth' : '/modulo/boas-vindas-a-comunidade/aula/1'); return; }
     if (etapa === 0) { ir('capa', -1); return; }
     ir((etapa - 1) as Etapa, -1);
   };
@@ -411,7 +411,7 @@ const Matricula: React.FC<{ publico?: boolean }> = ({ publico = false }) => {
                 ) : (
                   <div className="w-full rounded-2xl py-4 px-4 text-center bg-white border border-dashed border-[#BE0D3E]/30">
                     <p className="text-[12px] font-black text-[#1E1B11]">O link do grupo chega em breve</p>
-                    <p className="text-[11px] text-[#5B4041]/70 mt-1">Seu ingresso já está reservado no seu nome. Volte aqui pela aula "Comece por aqui".</p>
+                    <p className="text-[11px] text-[#5B4041]/70 mt-1">Seu ingresso já está reservado no seu nome. Volte aqui pela aula "Boas-vindas à comunidade".</p>
                   </div>
                 )}
                 {anonimo ? (
