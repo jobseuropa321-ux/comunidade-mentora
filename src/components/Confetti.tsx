@@ -3,7 +3,9 @@ import React, { useEffect, useRef } from 'react';
 /* Chuva de confete nas cores da marca, em canvas puro (sem dependência).
    Dispara ao montar, dura ~4s e some sozinha. Respeita reduzir movimento. */
 
-const CORES = ['#BE0D3E', '#E06B85', '#F6B43A', '#FBC85F', '#F6D6DC', '#FFF3D6', '#94002D'];
+const CORES_MARCA = ['#BE0D3E', '#E06B85', '#F6B43A', '#FBC85F', '#F6D6DC', '#FFF3D6', '#94002D'];
+/** Variante preto e dourado (mentoria). */
+export const CORES_OURO = ['#D4AF37', '#F1D27A', '#B8860B', '#FFF1B8', '#8A6D1D', '#FFFFFF'];
 
 interface Particula {
   x: number; y: number; vx: number; vy: number;
@@ -11,7 +13,7 @@ interface Particula {
   cor: string; forma: 'rect' | 'circle'; vida: number;
 }
 
-const Confetti: React.FC<{ duracaoMs?: number; quantidade?: number }> = ({ duracaoMs = 4200, quantidade = 160 }) => {
+const Confetti: React.FC<{ duracaoMs?: number; quantidade?: number; cores?: readonly string[] }> = ({ duracaoMs = 4200, quantidade = 160, cores = CORES_MARCA }) => {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -46,7 +48,7 @@ const Confetti: React.FC<{ duracaoMs?: number; quantidade?: number }> = ({ durac
           vx: Math.cos(ang) * forca, vy: Math.sin(ang) * forca,
           w: 6 + Math.random() * 6, h: 4 + Math.random() * 8,
           rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.3,
-          cor: CORES[Math.floor(Math.random() * CORES.length)],
+          cor: cores[Math.floor(Math.random() * cores.length)],
           forma: Math.random() < 0.25 ? 'circle' : 'rect',
           vida: 1,
         });
@@ -61,7 +63,7 @@ const Confetti: React.FC<{ duracaoMs?: number; quantidade?: number }> = ({ durac
         vx: (Math.random() - 0.5) * 1.5, vy: 2 + Math.random() * 3,
         w: 5 + Math.random() * 6, h: 4 + Math.random() * 8,
         rot: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.25,
-        cor: CORES[Math.floor(Math.random() * CORES.length)],
+        cor: cores[Math.floor(Math.random() * cores.length)],
         forma: Math.random() < 0.25 ? 'circle' : 'rect',
         vida: 1,
       });
@@ -97,6 +99,7 @@ const Confetti: React.FC<{ duracaoMs?: number; quantidade?: number }> = ({ durac
     raf = requestAnimationFrame(tick);
 
     return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [duracaoMs, quantidade]);
 
   return <canvas ref={ref} className="fixed inset-0 z-[60] pointer-events-none" aria-hidden />;

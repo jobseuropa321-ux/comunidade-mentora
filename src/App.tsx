@@ -37,6 +37,8 @@ const AulaDetail    = lazy(() => import("@/pages/AulaDetail"));
 const Estudio       = lazy(() => import("@/pages/Estudio"));
 const OfertaViral1Min = lazy(() => import("@/pages/OfertaViral1Min"));
 const Matricula     = lazy(() => import("@/pages/Matricula"));
+const Mentoria      = lazy(() => import("@/pages/Mentoria"));
+const Suporte       = lazy(() => import("@/pages/Suporte"));
 const NotFound      = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -125,6 +127,10 @@ const fullscreenRoutes = (prefix: "" | "/es") => (
     {/* Versão pública da ficha, pra divulgar fora do app (lead cai na aba
         Matrículas com origem "link"). Sem guard de propósito. */}
     <Route path={`${prefix}/ficha`} element={<Matricula publico />} />
+    {/* Aplicação da mentoria e suporte: mesma página logada ou não (sem
+        login pede e-mail e entra como origem "link"). */}
+    <Route path={`${prefix}/mentoria`} element={<Mentoria />} />
+    <Route path={`${prefix}/suporte`} element={<Suporte />} />
   </>
 );
 

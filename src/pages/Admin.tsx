@@ -8,15 +8,18 @@ import AdminAccess from '@/components/admin/AdminAccess';
 import AdminAscensao from '@/components/admin/AdminAscensao';
 import AdminPush from '@/components/admin/AdminPush';
 import AdminMatriculas from '@/components/admin/AdminMatriculas';
+import AdminLeads from '@/components/admin/AdminLeads';
 import { AdminLangProvider, AdminLangSwitch } from '@/components/admin/AdminLang';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 
-type Tab = 'cursos' | 'aovivo' | 'avisos' | 'acessos' | 'ascensao' | 'matriculas';
+type Tab = 'cursos' | 'aovivo' | 'avisos' | 'acessos' | 'ascensao' | 'fichas';
+type Ficha = 'matricula' | 'mentoria' | 'suporte';
 
 const Admin: React.FC = () => {
   const navigate = useLocalizedNavigate();
   const { isExpert, loading } = useAuth();
   const [tab, setTab] = useState<Tab>('cursos');
+  const [ficha, setFicha] = useState<Ficha>('matricula');
 
   if (loading) {
     return (
@@ -38,7 +41,7 @@ const Admin: React.FC = () => {
     { id: 'avisos', label: 'Avisos', icon: BellRing },
     { id: 'acessos', label: 'Acessos', icon: KeyRound },
     { id: 'ascensao', label: 'Ascensão', icon: TrendingUp },
-    { id: 'matriculas', label: 'Matrículas', icon: ClipboardList },
+    { id: 'fichas', label: 'Fichas', icon: ClipboardList },
   ];
 
   return (
@@ -91,7 +94,23 @@ const Admin: React.FC = () => {
       </AdminLangProvider>
       {tab === 'acessos' && <AdminAccess />}
       {tab === 'ascensao' && <AdminAscensao />}
-      {tab === 'matriculas' && <AdminMatriculas />}
+      {tab === 'fichas' && (
+        <>
+          {/* Três formulários: ficha de matrícula (ingresso), aplicação da
+              mentoria (comercial) e suporte. */}
+          <div className="grid grid-cols-3 gap-1 bg-[#F6D6DC]/50 p-1 rounded-xl mb-4">
+            {([['matricula', 'Matrícula'], ['mentoria', 'Mentoria'], ['suporte', 'Suporte']] as const).map(([id, rotulo]) => (
+              <button key={id} onClick={() => setFicha(id)}
+                className={`py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ${ficha === id ? 'bg-white text-[#BE0D3E] shadow-sm' : 'text-[#5B4041]/70'}`}>
+                {rotulo}
+              </button>
+            ))}
+          </div>
+          {ficha === 'matricula' && <AdminMatriculas />}
+          {ficha === 'mentoria' && <AdminLeads tipo="mentoria" />}
+          {ficha === 'suporte' && <AdminLeads tipo="suporte" />}
+        </>
+      )}
     </div>
   );
 };
