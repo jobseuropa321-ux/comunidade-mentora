@@ -26,7 +26,6 @@ const BANNERS_PT: BannerDef[] = [
   // Azendy (app de agendamento) — o link de download entra em `href` quando
   // a admin passar; sem ele o banner é só arte.
   { src: '/covers/banner-3.webp', altKey: 'home.bannerAlt4' },
-  { src: '/covers/banner-2.webp', altKey: 'home.bannerAlt2' },
 ];
 // O espanhol tem arte por dispositivo: mobile (1600x720), tablet (1024x768)
 // e desktop (1920x864). Quem não tem variante cai na arte mobile.
