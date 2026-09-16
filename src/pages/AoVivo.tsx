@@ -338,69 +338,69 @@ const AoVivo: React.FC = () => {
             style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
           >
             {replays.map(({ lesson: r, index }) => {
-              // Sem capa própria: gravação do YouTube usa a thumbnail do vídeo
-              // (sddefault 4:3 corta menos no card portrait; se não existir,
-              // o onError troca pra hqdefault, que sempre existe).
+              // Sem capa própria: gravação do YouTube usa a thumbnail do vídeo.
+              // Card horizontal (16:9) pra thumb aparecer inteira; maxresdefault
+              // nem sempre existe, então o onError cai pro hqdefault.
               const ytId = getYouTubeVideoId(r.video_url);
-              const coverUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/sddefault.jpg` : null;
+              const coverUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg` : null;
               const titulo = dbText(r.titulo, r.titulo_es, lang);
               const done = completed.has(r.id);
               return (
               <button
                 key={r.id}
                 onClick={() => navigate(`/modulo/${LIVE_MODULE_SLUG}/aula/${index + 1}`)}
-                className="shrink-0 w-[148px] h-[200px] rounded-[1rem] border border-[#BE0D3E]/20 relative overflow-hidden shadow-[0_8px_20px_rgba(190,13,62,0.12)] bg-[#FFF7E6] active:scale-[0.97] transition-transform snap-start"
+                className="shrink-0 w-[260px] rounded-[1rem] border border-[#BE0D3E]/20 overflow-hidden shadow-[0_8px_20px_rgba(190,13,62,0.12)] bg-white active:scale-[0.97] transition-transform snap-start text-left"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                {/* Capa (ou fallback) */}
-                {coverUrl ? (
-                  <img
-                    src={coverUrl}
-                    alt={titulo}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                    draggable={false}
-                    onError={(e) => {
-                      const img = e.currentTarget;
-                      if (ytId && !img.src.includes('/hqdefault.jpg')) {
-                        img.src = `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
-                      }
-                    }}
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#BE0D3E]/30 to-[#E06B85]/30" />
-                )}
-                {/* Overlay escuro na base */}
-                <div className="absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+                <div className="relative w-full aspect-video bg-[#FFF7E6]">
+                  {/* Capa (ou fallback) */}
+                  {coverUrl ? (
+                    <img
+                      src={coverUrl}
+                      alt={titulo}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      draggable={false}
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        if (ytId && !img.src.includes('/hqdefault.jpg')) {
+                          img.src = `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
+                        }
+                      }}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#BE0D3E]/30 to-[#E06B85]/30" />
+                  )}
 
-                {/* Botão play centralizado */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-11 h-11 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-[0_6px_18px_rgba(0,0,0,0.25)]">
-                    <Play size={18} className="text-[#1E1B11] ml-0.5" fill="#1E1B11" />
+                  {/* Botão play centralizado */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-[0_6px_18px_rgba(0,0,0,0.25)]">
+                      <Play size={16} className="text-[#1E1B11] ml-0.5" fill="#1E1B11" />
+                    </div>
                   </div>
+
+                  {/* Concluída (mesmo progresso das aulas normais) */}
+                  {done && (
+                    <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-[#C8F000] flex items-center justify-center shadow">
+                      <CheckCircle2 size={14} strokeWidth={2.75} className="text-[#1E1B11]" />
+                    </div>
+                  )}
+
+                  {/* Badge de duração */}
+                  {r.duracao && (
+                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-2 py-0.5">
+                      <Clock size={9} className="text-white" />
+                      <span className="text-[9px] font-black text-white">{r.duracao}</span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Concluída (mesmo progresso das aulas normais) */}
-                {done && (
-                  <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-[#C8F000] flex items-center justify-center shadow">
-                    <CheckCircle2 size={14} strokeWidth={2.75} className="text-[#1E1B11]" />
-                  </div>
-                )}
-
-                {/* Badge de duração */}
-                {r.duracao && (
-                  <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-2 py-0.5">
-                    <Clock size={9} className="text-white" />
-                    <span className="text-[9px] font-black text-white">{r.duracao}</span>
-                  </div>
-                )}
-
-                {/* Título + data */}
-                <div className="absolute inset-x-0 bottom-0 p-3 text-left">
-                  <p className="text-[11px] font-black text-white leading-tight mb-0.5 line-clamp-2 drop-shadow">{titulo}</p>
+                {/* Título + data (abaixo da capa, sem tampar a thumb) */}
+                <div className="px-3 py-2.5">
+                  <p className="text-[11px] font-black text-[#1E1B11] leading-tight mb-0.5 line-clamp-2 min-h-[2.2em]">{titulo}</p>
                   {r.recorded_at && (
-                    <p className="text-[9px] text-white/75 font-semibold">{formatShortDate(r.recorded_at, lang)}</p>
+                    <p className="text-[9px] text-[#5B4041] font-semibold">{formatShortDate(r.recorded_at, lang)}</p>
                   )}
                 </div>
               </button>
