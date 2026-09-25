@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { dbText } from '@/lib/dbText';
 import { toEmbedSrc } from '@/lib/youtube';
 import MatriculaCta from '@/components/MatriculaCta';
+import LinkifiedText from '@/components/LinkifiedText';
 import { MentoriaCta, SuporteCta } from '@/components/LeadCtas';
 
 const TIPO_ICON: Record<string, React.ReactNode> = {
@@ -268,7 +269,7 @@ const AulaDetail: React.FC = () => {
         {aula.conteudo && (
           <div className="bg-[#FFFFFF] border border-[#BE0D3E]/12 rounded-2xl p-4">
             <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/40 mb-3">{t('aula.resumo')}</h3>
-            <p className="text-[12px] text-[#5B4041]/75 leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{dbText(aula.conteudo, aula.conteudo_es, lang)}</p>
+            <p className="text-[12px] text-[#5B4041]/75 leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere]"><LinkifiedText text={dbText(aula.conteudo, aula.conteudo_es, lang)} /></p>
           </div>
         )}
 
