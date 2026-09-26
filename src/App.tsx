@@ -39,6 +39,7 @@ const OfertaViral1Min = lazy(() => import("@/pages/OfertaViral1Min"));
 const Matricula     = lazy(() => import("@/pages/Matricula"));
 const Mentoria      = lazy(() => import("@/pages/Mentoria"));
 const Suporte       = lazy(() => import("@/pages/Suporte"));
+const Onboarding    = lazy(() => import("@/pages/Onboarding"));
 const NotFound      = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -57,16 +58,26 @@ const Spinner: React.FC = () => (
   </div>
 );
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuth();
+/* `onboarding` = a própria rota /onboarding, que não pode redirecionar pra si.
+   Todas as outras rotas protegidas seguram a aluna no onboarding enquanto
+   profiles.onboarding_concluido_em for NULL (primeiro login). Sem linha de
+   perfil (fetch falhou) não bloqueia: melhor entrar sem onboarding do que
+   ficar presa numa tela que não consegue salvar. */
+const ProtectedRoute: React.FC<{ children: React.ReactNode; onboarding?: boolean }> = ({ children, onboarding = false }) => {
+  const { user, loading, profile, profileLoading } = useAuth();
   const lang = useCurrentLang();
 
   if (loading) return <Spinner />;
   if (!user) return <Navigate to={localizedPath("/auth", lang)} replace />;
+  // Só na 1ª carga: em refresh de sessão o perfil já está na mão.
+  if (profileLoading && !profile) return <Spinner />;
+  if (!onboarding && profile && !profile.onboarding_concluido_em) {
+    return <Navigate to={localizedPath("/onboarding", lang)} replace />;
+  }
 
   return (
     <>
-      <InstallPrompt />
+      {!onboarding && <InstallPrompt />}
       {children}
     </>
   );
@@ -116,6 +127,9 @@ const fullscreenRoutes = (prefix: "" | "/es") => (
   <>
     <Route path={`${prefix}/auth`} element={<PublicRoute><Auth /></PublicRoute>} />
     <Route path={`${prefix}/reset-password`} element={<ResetPassword />} />
+    {/* Onboarding de boas-vindas (1º login): foto obrigatória, Instagram e
+        perguntinhas. O ProtectedRoute manda pra cá até concluir. */}
+    <Route path={`${prefix}/onboarding`} element={<ProtectedRoute onboarding><Onboarding /></ProtectedRoute>} />
     <Route path={`${prefix}/estudio`} element={<ProtectedRoute><Estudio /></ProtectedRoute>} />
     <Route path={`${prefix}/estudio/:cardId`} element={<ProtectedRoute><Estudio /></ProtectedRoute>} />
     {/* Oferta do Viral 1 Min — aberta pela "aula" do módulo viral-em-1-minuto.

@@ -1272,5 +1272,108 @@
     "sucesso": "Pronto! Você vai receber os avisos.",
     "negado": "Sem problema — dá pra ativar depois nos ajustes do aparelho.",
     "erro": "Não deu pra ativar agora. Tente de novo mais tarde."
+  },
+  "onboarding": {
+    "topo": "Boas-vindas",
+    "passo": "Seu perfil está ganhando vida",
+    "sair": "Sair",
+    "continuar": "Continuar",
+    "voltar": "Voltar",
+    "boasVindas": {
+      "titulo": "Que bom ter você aqui, {{nome}}!",
+      "tituloSemNome": "Que bom ter você aqui!",
+      "texto": "Antes de começar, vamos montar o seu perfil na comunidade. Leva menos de 2 minutos.",
+      "itens": [
+        "Sua foto no perfil",
+        "Seu Instagram linkado",
+        "Umas perguntinhas rápidas"
+      ],
+      "cta": "Bora começar"
+    },
+    "nome": {
+      "titulo": "Como você quer ser chamada?",
+      "sub": "É assim que a comunidade vai te ver.",
+      "placeholder": "Seu nome"
+    },
+    "foto": {
+      "titulo": "Coloca uma foto sua",
+      "sub": "Aqui a gente se conhece pelo rosto. Escolha uma foto em que dê pra te ver bem.",
+      "escolher": "Escolher foto",
+      "trocar": "Trocar foto",
+      "enviando": "Enviando sua foto...",
+      "linda": "Ficou linda! ✨",
+      "obrigatoria": "A foto é obrigatória pra continuar",
+      "arquivoGrande": "Essa foto passa de 25MB. Escolha outra.",
+      "formato": "Não deu pra abrir esse formato. Tente um JPG ou PNG (ou tire um print da foto).",
+      "falha": "Não deu pra enviar a foto. Tenta de novo?"
+    },
+    "insta": {
+      "titulo": "Qual o seu Instagram?",
+      "sub": "Ele fica linkado no seu perfil pra comunidade te encontrar.",
+      "placeholder": "seu.perfil",
+      "ligado": "Linkado no seu perfil!",
+      "naoTenho": "Não tenho Instagram"
+    },
+    "profissao": {
+      "titulo": "Qual é a sua área?",
+      "sub": "Escolha a que mais tem a ver com você.",
+      "outraPlaceholder": "Escreva a sua área",
+      "opcoes": [
+        "Cabelo",
+        "Unhas",
+        "Estética",
+        "Sobrancelhas e cílios",
+        "Maquiagem",
+        "Barbearia",
+        "Massagem e terapias",
+        "Ainda não atuo",
+        "Outra"
+      ]
+    },
+    "tempo": {
+      "titulo": "Há quanto tempo você está na área?",
+      "opcoes": [
+        "Ainda vou começar",
+        "Menos de 1 ano",
+        "1 a 3 anos",
+        "3 a 5 anos",
+        "Mais de 5 anos"
+      ]
+    },
+    "objetivo": {
+      "titulo": "O que você mais quer conquistar aqui?",
+      "sub": "Escolha o principal agora. Dá pra ter todos depois 😉",
+      "opcoes": [
+        "Atrair mais clientes",
+        "Crescer no Instagram",
+        "Aprender a gravar e editar",
+        "Vender mais e faturar",
+        "Perder a vergonha de aparecer",
+        "Organizar minha rotina"
+      ]
+    },
+    "expectativa": {
+      "titulo": "E o que você espera da comunidade?",
+      "sub": "Conta com suas palavras. Pode escrever ou mandar por áudio.",
+      "placeholder": "Escreve aqui..."
+    },
+    "escolheu": "Escolheu? A próxima já aparece.",
+    "concluir": "Concluir meu perfil",
+    "falhaSalvar": "Não deu pra salvar. Tenta de novo?",
+    "balao": {
+      "inicio": "Vamos lá! Uma coisinha de cada vez ✨",
+      "foto": "Primeiro, bora colocar sua foto no perfil 📸",
+      "insta": "Agora é só linkar o seu Insta 🔗",
+      "meio": "Tá indo super bem, {{nome}}! 🔥",
+      "quase": "Quase lá! 🎉",
+      "ultima": "Última! Depois dessa seu perfil tá pronto 💖"
+    },
+    "fim": {
+      "selo": "Perfil pronto",
+      "titulo": "Bem-vinda à comunidade, {{nome}}!",
+      "texto": "Seu perfil está no ar. Agora é só entrar e começar a sua jornada.",
+      "cartao": "Seu cartão na comunidade",
+      "cta": "Entrar na comunidade"
+    }
   }
 }

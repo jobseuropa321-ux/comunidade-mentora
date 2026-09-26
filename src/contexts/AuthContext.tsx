@@ -29,6 +29,8 @@ export interface Profile {
   full_name: string | null;
   avatar_url: string | null;
   instagram: string | null;
+  /** NULL = ainda não fez o onboarding de boas-vindas (/onboarding). */
+  onboarding_concluido_em?: string | null;
 }
 
 interface AuthContextType {
@@ -38,6 +40,8 @@ interface AuthContextType {
   isExpert: boolean;
   isTester: boolean;
   loading: boolean;
+  /** true enquanto a linha de `profiles` da sessão atual ainda não chegou. */
+  profileLoading: boolean;
   accessDeniedStatus: Exclude<SubStatus, 'active'> | null;
   clearAccessDeniedNotice: () => void;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: unknown }>;
@@ -55,13 +59,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isExpert, setIsExpert] = useState(false);
   const [isTester, setIsTester] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [accessDeniedStatus, setAccessDeniedStatus] = useState<Exclude<SubStatus, 'active'> | null>(null);
   const interactiveSignIn = useRef(false);
   const authCheckVersion = useRef(0);
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle();
-    setProfile(data ? data as Profile : null);
+    setProfileLoading(true);
+    try {
+      const { data } = await supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle();
+      setProfile(data ? data as Profile : null);
+    } finally {
+      setProfileLoading(false);
+    }
   };
 
   const checkRoles = async (userId: string) => {
@@ -80,6 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     setSession(null);
     setProfile(null);
+    setProfileLoading(false);
     setIsExpert(false);
     setIsTester(false);
   };
@@ -106,6 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setAccessDeniedStatus(null);
     setSession(nextSession);
+    setProfileLoading(true);
     setUser(nextSession.user);
     void fetchProfile(nextSession.user.id);
     void checkRoles(nextSession.user.id);
@@ -207,6 +219,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isExpert,
         isTester,
         loading,
+        profileLoading,
         accessDeniedStatus,
         clearAccessDeniedNotice: () => setAccessDeniedStatus(null),
         signUp,

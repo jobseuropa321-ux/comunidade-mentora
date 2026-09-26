@@ -13,7 +13,8 @@ import {
   LogOut, User, Mail, Edit2, Check, X, Camera, Loader2, Trash2, ImagePlus,
   Sparkles, Crown, ChevronRight, Shield, HelpCircle, Zap, ShieldCheck, Instagram,
 } from 'lucide-react';
-import { prepareImageUpload, ImageProcessingError } from '@/lib/imageCompression';
+import { ImageProcessingError } from '@/lib/imageCompression';
+import { AVATAR_PATH, AVATAR_MAX_BYTES, uploadAvatar } from '@/lib/avatar';
 import { normalizeInstagramHandle, instagramUrl } from '@/lib/instagram';
 import { supabase } from '@/integrations/supabase/client';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
@@ -25,12 +26,6 @@ import { useTranslation } from 'react-i18next';
 /* Só o número da versão fica aqui. O nome vem do i18n porque a marca muda
    por idioma: 'Amentora' em português, 'Comunidad Digital' em espanhol. */
 const APP_VERSION = 'v1.0';
-
-/* Avatar real (Supabase Storage): a foto comprimida sobe pro bucket público
- * `avatars` no caminho `${user.id}/avatar.jpg` (a 1ª pasta = auth.uid(), que é
- * o que as policies de RLS validam — ver docs/backend/). A URL pública é
- * persistida em profiles.avatar_url via updateProfile. */
-const AVATAR_PATH = (userId: string) => `${userId}/avatar.jpg`;
 
 /* Avatar próprio (sem depender do sistema de "pet"):
  * mostra a imagem se existir, senão a inicial do nome num círculo vermelho. */
@@ -88,34 +83,13 @@ const Profile: React.FC = () => {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
-    if (file.size > 25 * 1024 * 1024) {
+    if (file.size > AVATAR_MAX_BYTES) {
       toast({ title: t('profile.arquivoGrande'), description: t('profile.maximo25'), variant: 'destructive' });
       return;
     }
     setIsUploadingAvatar(true);
     try {
-      // Avatar é exibido em ~112px max — 400px de largura é mais que suficiente.
-      // prepareImageUpload SEMPRE devolve JPEG: o bucket só aceita jpeg/png/webp
-      // e o HEIC do iPhone subindo cru era o que dava 400 aqui.
-      const jpeg = await prepareImageUpload(file, {
-        maxWidth: 400,
-        quality: 0.88,
-        maxBytes: 1.5 * 1024 * 1024, // bucket `avatars` = 5MB; folga de sobra
-      });
-
-      // Sobe pro caminho `${user.id}/avatar.jpg` (upsert = sobrescreve a foto anterior).
-      // contentType aqui é decorativo: com corpo File o storage-js manda FormData
-      // e o mime que vale é o do próprio arquivo (garantido image/jpeg acima).
-      const path = AVATAR_PATH(user.id);
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(path, jpeg, { upsert: true, contentType: 'image/jpeg' });
-      if (uploadError) throw uploadError;
-
-      // URL pública + cache-buster pra forçar o <img> a recarregar após re-upload.
-      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
-      const avatarUrl = `${publicUrl}?t=${Date.now()}`;
-
+      const avatarUrl = await uploadAvatar(user.id, file);
       const { error } = await updateProfile({ avatar_url: avatarUrl });
       if (error) throw error;
       toast({ title: t('profile.avatarAtualizado') });
