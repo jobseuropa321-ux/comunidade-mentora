@@ -13,7 +13,7 @@ interface Particula {
   cor: string; forma: 'rect' | 'circle'; vida: number;
 }
 
-const Confetti: React.FC<{ duracaoMs?: number; quantidade?: number; cores?: readonly string[] }> = ({ duracaoMs = 4200, quantidade = 160, cores = CORES_MARCA }) => {
+const Confetti: React.FC<{ duracaoMs?: number; quantidade?: number; cores?: readonly string[]; zIndex?: number }> = ({ duracaoMs = 4200, quantidade = 160, cores = CORES_MARCA, zIndex = 60 }) => {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -102,7 +102,7 @@ const Confetti: React.FC<{ duracaoMs?: number; quantidade?: number; cores?: read
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [duracaoMs, quantidade]);
 
-  return <canvas ref={ref} className="fixed inset-0 z-[60] pointer-events-none" aria-hidden />;
+  return <canvas ref={ref} className="fixed inset-0 pointer-events-none" style={{ zIndex }} aria-hidden />;
 };
 
 export default Confetti;

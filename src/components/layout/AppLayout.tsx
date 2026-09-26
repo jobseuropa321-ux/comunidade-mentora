@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import BottomNav from './BottomNav';
 import { useAppUsageTracking } from '@/hooks/useAppUsageTracking';
 import PushPermissionModal from '@/components/PushPermissionModal';
+import PremioMatriculaModal from '@/components/PremioMatriculaModal';
 
 const AppLayout: React.FC = () => {
   useAppUsageTracking();
   const location = useLocation();
+  // O pop-up do prêmio vem primeiro; o convite de notificação só entra depois
+  // que ele sair do caminho, pra não empilhar um em cima do outro.
+  const [premioResolvido, setPremioResolvido] = useState(false);
+  const resolverPremio = useCallback(() => setPremioResolvido(true), []);
   // Oculta header apenas dentro de um chat aberto (com slug), não na grid
   // O `(?:es\/)?` aceita o prefixo de idioma: sem ele, as telas cheias do
   // espanhol continuariam mostrando header e navbar por cima.
@@ -24,7 +29,8 @@ const AppLayout: React.FC = () => {
       {!isChatOpen && !isModuleOpen && !isAulaOpen && <BottomNav />}
       {/* Convite de notificação: só dispara com o app instalado, então não
           atrapalha quem ainda está navegando pelo Safari. */}
-      <PushPermissionModal />
+      <PremioMatriculaModal onResolvido={resolverPremio} />
+      {premioResolvido && <PushPermissionModal />}
     </div>
   );
 };
