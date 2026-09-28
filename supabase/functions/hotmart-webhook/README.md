@@ -1,7 +1,8 @@
 # hotmart-webhook
 
-Libera acesso das vendas em espanhol feitas na Hotmart. Espelha o
-`hubla-webhook`, com e-mail em espanhol e login apontando para `/es/auth`.
+Libera acesso das vendas feitas na Hotmart, em espanhol e em português.
+O idioma vem do produto (listas abaixo): espanhol manda e-mail em espanhol e
+login em `/es/auth`; português manda o mesmo e-mail da Hubla e login em `/auth`.
 
 ## Deploy
 
@@ -17,8 +18,10 @@ param de liberar acesso em silêncio.**
 
 | Variável | Obrigatória | O que é |
 |---|---|---|
-| `HOTMART_WEBHOOK_SECRET` | sim | o hottok, que a Hotmart manda no header `X-HOTMART-HOTTOK` |
-| `HOTMART_PRODUCT_IDS` | sim | ids de produto permitidos, separados por vírgula |
+| `HOTMART_WEBHOOK_SECRET` | sim | o hottok da conta da Espanha, que a Hotmart manda no header `X-HOTMART-HOTTOK` |
+| `HOTMART_PT_WEBHOOK_SECRET` | para o Brasil | o hottok da conta do Brasil (é outra conta Hotmart) |
+| `HOTMART_PRODUCT_IDS` | sim | ids dos produtos em espanhol, separados por vírgula |
+| `HOTMART_PT_PRODUCT_IDS` | para o Brasil | ids dos produtos em português, separados por vírgula |
 | `HOTMART_ANNUAL_PRODUCT_IDS` | não | quais desses ids são plano anual (o resto vira mensal) |
 | `RESEND_API_KEY` | sim | envio do e-mail de acesso |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | sim | injetadas pela plataforma |

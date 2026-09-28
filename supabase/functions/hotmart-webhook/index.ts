@@ -1,11 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendWelcomeEmailPT, sendAccessActiveEmailPT } from "./emails-pt.ts";
 
 /* ─────────────────────────────────────────────────────────────────────────
-   hotmart-webhook — libera acesso das vendas em ESPANHOL feitas na Hotmart.
+   hotmart-webhook — libera acesso das vendas feitas na Hotmart, em
+   ESPANHOL e em PORTUGUÊS.
 
-   Espelha o hubla-webhook (que é a referência viva deste projeto), com o
-   e-mail em espanhol e o login apontando para /es/auth.
+   O idioma vem do produto: cada produto está em uma das duas listas
+   (HOTMART_PRODUCT_IDS = espanhol, HOTMART_PT_PRODUCT_IDS = português).
+   O idioma decide o e-mail (textos e login /es/auth ou /auth) e o locale
+   gravado na conta nova. Os e-mails em PT são os mesmos da Hubla
+   (emails-pt.ts).
 
    ⚠️ DEPLOY: precisa de --no-verify-jwt. Sem a flag, a Hotmart recebe 401
    permanente e as vendas param de liberar acesso EM SILÊNCIO — só o painel
@@ -13,8 +18,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
    ENV NECESSÁRIAS
      SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-     HOTMART_WEBHOOK_SECRET        → o hottok
-     HOTMART_PRODUCT_IDS           → ids permitidos, separados por vírgula
+     HOTMART_WEBHOOK_SECRET        → o hottok da conta Hotmart da Espanha
+     HOTMART_PT_WEBHOOK_SECRET     → o hottok da conta Hotmart do Brasil (é
+                                     outra conta; sem ele a Hotmart BR leva 401)
+     HOTMART_PRODUCT_IDS           → ids dos produtos em ESPANHOL, separados por vírgula
+     HOTMART_PT_PRODUCT_IDS        → ids dos produtos em PORTUGUÊS (opcional;
+                                     vazio = Hotmart só vende o espanhol)
      HOTMART_ANNUAL_PRODUCT_IDS    → subconjunto que é plano anual (opcional)
      RESEND_API_KEY
 
@@ -38,6 +47,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 ───────────────────────────────────────────────────────────────────────── */
 
 const LOGIN_URL_ES = 'https://app.comunidadedigital.com.br/es/auth';
+const LOGIN_URL_PT = 'https://app.comunidadedigital.com.br/auth';
 const MAIL_FROM = 'Comunidade Digital <contato@comunidadedigital.com.br>';
 
 function json(body: unknown, status = 200) {
@@ -185,7 +195,10 @@ serve(async (req) => {
     const hottok = req.headers.get('x-hotmart-hottok')
       || (body as { hottok?: string }).hottok
       || '';
-    if (hottok !== webhookSecret) {
+    // O produto do Brasil está em OUTRA conta da Hotmart, com hottok próprio.
+    // Qualquer um dos dois vale; quem decide o idioma é a lista de produtos.
+    const ptSecret = Deno.env.get('HOTMART_PT_WEBHOOK_SECRET');
+    if (!hottok || (hottok !== webhookSecret && hottok !== ptSecret)) {
       return json({ error: 'hottok invalido' }, 401);
     }
 
@@ -215,17 +228,21 @@ serve(async (req) => {
     const subscription = data.subscription || purchase.subscription || {};
     const product = data.product || {};
 
-    // ── 2. FILTRO DE PRODUTO ───────────────────────────────────────────
+    // ── 2. FILTRO DE PRODUTO (e idioma) ────────────────────────────────
     // Sem isto, qualquer venda feita com o mesmo hottok libera acesso ao app.
-    // Lista VAZIA rejeita tudo de propósito: liberar geral por engano de
-    // configuração é pior do que não liberar ninguém e aparecer no log.
-    const allowedProducts = envList('HOTMART_PRODUCT_IDS');
+    // As duas listas VAZIAS rejeitam tudo de propósito: liberar geral por
+    // engano de configuração é pior do que não liberar ninguém e aparecer no log.
+    const productsES = envList('HOTMART_PRODUCT_IDS');
+    const productsPT = envList('HOTMART_PT_PRODUCT_IDS');
     const productId = String(product?.id ?? product?.ucode ?? '');
-    if (allowedProducts.length === 0) {
-      await logDebug({ recusado: 'HOTMART_PRODUCT_IDS vazio', productId });
+    if (productsES.length === 0 && productsPT.length === 0) {
+      await logDebug({ recusado: 'HOTMART_PRODUCT_IDS e HOTMART_PT_PRODUCT_IDS vazios', productId });
       return json({ error: 'HOTMART_PRODUCT_IDS nao configurado' }, 500);
     }
-    if (!allowedProducts.includes(productId)) {
+    const lang: 'pt' | 'es' | null = productsPT.includes(productId)
+      ? 'pt'
+      : productsES.includes(productId) ? 'es' : null;
+    if (!lang) {
       await logDebug({ recusado: 'produto fora da lista', productId });
       return json({ ok: true, ignored: true, reason: 'produto_nao_permitido', productId });
     }
@@ -302,7 +319,7 @@ serve(async (req) => {
           email,
           password: generatedPassword,
           email_confirm: true,
-          user_metadata: { full_name: name || null, locale: 'es' },
+          user_metadata: { full_name: name || null, locale: lang },
         });
         if (!res.error) {
           userId = res.data.user?.id ?? null;
@@ -352,7 +369,13 @@ serve(async (req) => {
     // funciona; e-mail que falha é problema de entrega, não de liberação.
     if (newStatus === 'active' && resendApiKey) {
       try {
-        if (generatedPassword) {
+        if (lang === 'pt') {
+          if (generatedPassword) {
+            await sendWelcomeEmailPT({ resendApiKey, to: email, name, password: generatedPassword, loginUrl: LOGIN_URL_PT });
+          } else if (accountAlreadyExisted) {
+            await sendAccessActiveEmailPT({ resendApiKey, to: email, name, loginUrl: LOGIN_URL_PT });
+          }
+        } else if (generatedPassword) {
           await sendWelcomeEmailES({ resendApiKey, to: email, name, password: generatedPassword });
         } else if (accountAlreadyExisted) {
           await sendAccessActiveEmailES({ resendApiKey, to: email, name });
@@ -362,7 +385,7 @@ serve(async (req) => {
       }
     }
 
-    return json({ ok: true, event, status: newStatus, email, planType, productId });
+    return json({ ok: true, event, status: newStatus, email, planType, productId, lang });
   } catch (err) {
     return json({ error: String(err instanceof Error ? err.message : err) }, 500);
   }
