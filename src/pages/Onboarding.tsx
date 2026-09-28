@@ -23,7 +23,7 @@ import {
    enquanto profiles.onboarding_concluido_em for NULL. Quem já usava o app
    antes disso foi marcado como concluído na migration.
 
-   Foto é OBRIGATÓRIA (sobe na hora, igual ao Perfil). Instagram vai direto
+   Foto é opcional (sobe na hora, igual ao Perfil; sem foto o botão vira "Pular"). Instagram vai direto
    pro profiles.instagram (fica linkado no perfil). O resto vai pra
    onboarding_respostas — separado porque profiles é legível por todas.
 
@@ -213,7 +213,7 @@ const Onboarding: React.FC = () => {
   const ok = (() => {
     switch (passo) {
       case 'nome': return nome.trim().length >= 2;
-      case 'foto': return !!avatar && !enviandoFoto;
+      case 'foto': return !enviandoFoto;
       case 'insta': return handle.length >= 2;
       case 'profissao': return !!profissao && (profissao !== OUTRA || profissaoOutra.trim().length >= 2);
       case 'tempo': return !!tempo;
@@ -319,7 +319,7 @@ const Onboarding: React.FC = () => {
             </motion.form>
           )}
 
-          {/* ── FOTO (obrigatória) ── */}
+          {/* ── FOTO (opcional) ── */}
           {passo === 'foto' && (
             <motion.div key="foto" {...entrada} className="text-center">
               <h2 className="mt-7 text-[26px] font-black leading-tight text-[#1E1B11]">{t('onboarding.foto.titulo')}</h2>
@@ -495,11 +495,8 @@ const Onboarding: React.FC = () => {
             ) : (
               <button onClick={() => void avancar()} disabled={!ok}
                 className="glass-btn-pink w-full rounded-2xl py-4 text-[14px] font-black text-white flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-45">
-                {t('onboarding.continuar')} <ArrowRight size={17} strokeWidth={2.5} />
+                {passo === 'foto' && !avatar ? t('onboarding.foto.pular') : t('onboarding.continuar')} <ArrowRight size={17} strokeWidth={2.5} />
               </button>
-            )}
-            {passo === 'foto' && !avatar && !enviandoFoto && (
-              <p className="text-center text-[10.5px] font-bold text-[#BE0D3E]/70 mt-2">{t('onboarding.foto.obrigatoria')}</p>
             )}
           </div>
         </div>

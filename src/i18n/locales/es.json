@@ -1302,7 +1302,7 @@
       "trocar": "Cambiar foto",
       "enviando": "Subiendo tu foto...",
       "linda": "¡Quedó hermosa! ✨",
-      "obrigatoria": "La foto es obligatoria para continuar",
+      "pular": "Omitir por ahora",
       "arquivoGrande": "Esta foto pesa más de 25MB. Elige otra.",
       "formato": "No pudimos abrir este formato. Prueba con un JPG o PNG (o haz una captura de la foto).",
       "falha": "No pudimos subir la foto. ¿Intentas de nuevo?"
