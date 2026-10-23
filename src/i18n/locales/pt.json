@@ -473,9 +473,9 @@
       "perfil": "Perfil"
     },
     "agente-1": {
-      "nome": "Arquiteto do Curso",
+      "nome": "Arquiteto do Produto",
       "desc": "Monta o esqueleto do curso: módulos e aulas na ordem certa.",
-      "abertura": "Olá! Eu sou o **Arquiteto do Curso** 🏗️\n\nEu desenho o **esqueleto completo** do seu curso: módulos, aulas e a ordem ideal de ensino.\n\nPra começar, me conta:\n\n1. Qual é o seu **nicho**?\n2. Qual **transformação** você quer entregar pras suas alunas?"
+      "abertura": "Olá! Eu sou o **Arquiteto do Produto** 🏗️\n\nEu desenho o **esqueleto completo** do seu curso: módulos, aulas e a ordem ideal de ensino.\n\nPra começar, me conta:\n\n1. Qual é o seu **nicho**?\n2. Qual **transformação** você quer entregar pras suas alunas?"
     },
     "agente-2": {
       "nome": "Roteirista de Aulas",
@@ -753,6 +753,34 @@
         "title": "Conteúdo e divulgação",
         "description": "Roteiros, anúncios e formatos virais"
       }
+    },
+    "nota": {
+      "placeholder": "Comece a escrever...",
+      "estilos": "Estilos de texto",
+      "estilo_titulo": "Título",
+      "estilo_cabecalho": "Cabeçalho",
+      "estilo_subtitulo": "Subtítulo",
+      "estilo_corpo": "Corpo",
+      "lista_marcadores": "Lista com marcadores",
+      "lista_numerada": "Lista numerada",
+      "negrito": "Negrito",
+      "italico": "Itálico",
+      "riscado": "Riscado",
+      "desfazer": "Desfazer",
+      "refazer": "Refazer",
+      "salvando": "Salvando...",
+      "salvo": "Salvo",
+      "tentar_de_novo": "Não salvou — tentar de novo",
+      "erro_salvar": "Não conseguimos salvar sua última alteração. Confira a internet e tente de novo.",
+      "erro_exportar": "Não foi possível gerar o arquivo",
+      "baixar": "Baixar",
+      "baixar_pdf": "PDF",
+      "baixar_pdf_desc": "Pra ler, imprimir ou enviar",
+      "baixar_word": "Documento Word (.docx)",
+      "baixar_word_desc": "Pra continuar editando no Word, Google Docs ou Pages",
+      "whatsapp": "WhatsApp",
+      "mais": "Mais opções",
+      "fechar": "Fechar"
     }
   },
   "kanban": {

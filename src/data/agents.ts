@@ -2,7 +2,7 @@
  *  CONFIGURAÇÃO DOS AGENTES DE IA — edite AQUI pra mudar os agentes.
  *
  *  Os 4 agentes formam a esteira de criação de curso da Amentora:
- *   01 Arquiteto do Curso  → esqueleto (módulos + aulas + ordem)
+ *   01 Arquiteto do Produto  → esqueleto (módulos + aulas + ordem)
  *   02 Roteirista de Aulas → roteiro pronto pra gravar, aula por aula
  *   03 Apostila Técnica    → material de apoio escrito do curso
  *   04 Pesquisa de Mercado → concorrentes, dores e oportunidades do nicho

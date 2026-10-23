@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  ArrowLeft, Loader2, Library as LibraryIcon, Copy, Check,
-  Pencil, Trash2, X, Save, BookOpen, Search, Clock3,
+  ArrowLeft, Loader2, Library as LibraryIcon, BookOpen, Search, Clock3,
   ChevronRight, Layers3, Sparkles,
 } from 'lucide-react';
+import NoteModal from '@/components/biblioteca/NoteModal';
 import { supabase, SUPABASE_READY } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -57,12 +57,9 @@ interface SavedItem {
   created_at: string;
 }
 
-const renderBold = (text: string) =>
-  text.split(/(\*\*[^*]+\*\*)/g).map((p, i) =>
-    p.startsWith('**') && p.endsWith('**')
-      ? <strong key={i} className="font-bold text-[#BE0D3E]">{p.slice(2, -2)}</strong>
-      : <span key={i}>{p}</span>
-  );
+// Prévia do card: sem "##" e "**" aparecendo (mesmo corte do seletor do Chat).
+const previewText = (md: string) =>
+  md.replace(/[#*_>`~-]/g, ' ').replace(/\\/g, '').replace(/\s+/g, ' ').trim().slice(0, 150);
 
 const formatDate = (ts: string, lang: SupportedLang) => formatDateNumeric(ts, lang);
 
@@ -308,12 +305,6 @@ const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
   const [items, setItems] = useState<SavedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [openItemId, setOpenItemId] = useState<string | null>(null);
-  const [editingTitle, setEditingTitle] = useState(false);
-  const [titleDraft, setTitleDraft] = useState('');
-  const [editingContent, setEditingContent] = useState(false);
-  const [contentDraft, setContentDraft] = useState('');
-  const [savingContent, setSavingContent] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -343,25 +334,19 @@ const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
 
   const openItem = items.find(i => i.id === openItemId);
 
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
-
-  const handleSaveTitle = async () => {
-    if (!openItemId || !titleDraft.trim()) return;
+  const handleSaveTitle = async (title: string) => {
+    if (!openItemId) return false;
     const { error } = await supabase
       .from('saved_viral_outputs')
-      .update({ title: titleDraft.trim() })
+      .update({ title })
       .eq('id', openItemId);
     if (error) {
       toast({ title: TXT.toast_error, description: error.message, variant: 'destructive' });
-      return;
+      return false;
     }
-    setItems(prev => prev.map(i => i.id === openItemId ? { ...i, title: titleDraft.trim() } : i));
-    setEditingTitle(false);
+    setItems(prev => prev.map(i => i.id === openItemId ? { ...i, title } : i));
     toast({ title: TXT.toast_title_updated });
+    return true;
   };
 
   const handleDelete = async (id: string) => {
@@ -378,23 +363,6 @@ const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
     setItems(prev => prev.filter(i => i.id !== id));
     setOpenItemId(null);
     toast({ title: TXT.toast_removed });
-  };
-
-  const handleSaveContent = async () => {
-    if (!openItemId || !contentDraft.trim()) return;
-    setSavingContent(true);
-    const { error } = await supabase
-      .from('saved_viral_outputs')
-      .update({ ai_response: contentDraft })
-      .eq('id', openItemId);
-    setSavingContent(false);
-    if (error) {
-      toast({ title: TXT.toast_error, description: error.message, variant: 'destructive' });
-      return;
-    }
-    setItems(prev => prev.map(i => i.id === openItemId ? { ...i, ai_response: contentDraft } : i));
-    setEditingContent(false);
-    toast({ title: TXT.toast_updated });
   };
 
   /* No app original havia um botão "Mandar pro Kanban" aqui, que criava um
@@ -439,165 +407,28 @@ const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
           {items.map(item => (
             <button
               key={item.id}
-              onClick={() => {
-                setOpenItemId(item.id);
-                setEditingTitle(false);
-                setTitleDraft(item.title);
-              }}
+              onClick={() => setOpenItemId(item.id)}
               className="w-full bg-white border border-[#BE0D3E]/15 rounded-2xl p-4 text-left shadow-[0_4px_12px_rgba(190,13,62,0.06)] hover:border-[#BE0D3E]/40 active:scale-[0.99] transition-all"
               style={{ WebkitTapHighlightColor: 'transparent' }}
             >
               <p className="text-[13px] font-black text-[#1E1B11] leading-tight mb-1.5 line-clamp-2">{item.title}</p>
-              <p className="text-[10px] text-[#5B4041]/70 line-clamp-2 mb-2">{item.ai_response.slice(0, 150)}…</p>
+              <p className="text-[10px] text-[#5B4041]/70 line-clamp-2 mb-2">{previewText(item.ai_response)}…</p>
               <p className="text-[9px] text-[#5B4041]/50">{formatDate(item.created_at, lang)}</p>
             </button>
           ))}
         </div>
       )}
 
-      {/* Modal de item aberto */}
       {openItem && (
-        <div
-          className="fixed inset-0 z-[100] bg-[#1E1B11]/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
-          onClick={() => setOpenItemId(null)}
-        >
-          <div
-            className="bg-white w-full max-w-2xl rounded-t-3xl sm:rounded-3xl max-h-[92vh] flex flex-col shadow-[0_-8px_40px_rgba(0,0,0,0.2)]"
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="shrink-0 px-5 pt-5 pb-3 border-b border-[#BE0D3E]/10">
-              <div className="flex items-start justify-between gap-3 mb-3">
-                <div className="flex-1 min-w-0">
-                  {editingTitle ? (
-                    <input
-                      type="text"
-                      value={titleDraft}
-                      onChange={e => setTitleDraft(e.target.value.slice(0, 120))}
-                      onKeyDown={e => { if (e.key === 'Enter') handleSaveTitle(); }}
-                      className="w-full bg-[#FFF7E6] border-2 border-[#BE0D3E]/30 focus:border-[#BE0D3E] rounded-lg px-2 py-1.5 text-[14px] font-black text-[#1E1B11] outline-none"
-                      autoFocus
-                    />
-                  ) : (
-                    <h3 className="text-[16px] font-black text-[#1E1B11] leading-tight">{openItem.title}</h3>
-                  )}
-                  <p className="text-[10px] text-[#5B4041]/70 mt-1">
-                    {openItem.model_name} · {formatDate(openItem.created_at, lang)}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => setOpenItemId(null)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-[#FFF7E6] text-[#5B4041]"
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
-                >
-                  <X size={14} />
-                </button>
-              </div>
-
-              <div className="flex items-center gap-2 flex-wrap">
-                {editingTitle ? (
-                  <>
-                    <button
-                      onClick={handleSaveTitle}
-                      className="flex items-center gap-1 bg-[#BE0D3E] text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg"
-                      style={{ WebkitTapHighlightColor: 'transparent' }}
-                    >
-                      <Save size={11} /> {TXT.save_title}
-                    </button>
-                    <button
-                      onClick={() => { setEditingTitle(false); setTitleDraft(openItem.title); }}
-                      className="text-[10px] text-[#5B4041] font-bold uppercase tracking-widest px-2 py-1.5"
-                      style={{ WebkitTapHighlightColor: 'transparent' }}
-                    >
-                      {TXT.cancel}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => handleCopy(openItem.ai_response)}
-                      className="flex items-center gap-1 bg-white border border-[#BE0D3E]/30 text-[#BE0D3E] text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg"
-                      style={{ WebkitTapHighlightColor: 'transparent' }}
-                    >
-                      {copied ? <><Check size={11} /> {TXT.copied}</> : <><Copy size={11} /> {TXT.copy}</>}
-                    </button>
-                    <button
-                      onClick={() => setEditingTitle(true)}
-                      className="flex items-center gap-1 bg-white border border-[#5B4041]/25 text-[#5B4041] text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg"
-                      style={{ WebkitTapHighlightColor: 'transparent' }}
-                    >
-                      <Pencil size={11} /> {TXT.rename}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(openItem.id)}
-                      disabled={deletingId === openItem.id}
-                      className="flex items-center gap-1 bg-white border border-red-400/40 text-red-500 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg ml-auto disabled:opacity-50"
-                      style={{ WebkitTapHighlightColor: 'transparent' }}
-                    >
-                      {deletingId === openItem.id ? <Loader2 size={11} className="animate-spin" /> : <Trash2 size={11} />} {TXT.delete}
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Body scrollable */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
-              <div>
-                <p className="text-[9px] font-black text-[#5B4041] uppercase tracking-widest mb-1.5">{TXT.briefing}</p>
-                <div className="bg-[#FFF7E6] border border-[#BE0D3E]/15 rounded-xl p-3">
-                  <p className="text-[12px] text-[#1E1B11] leading-relaxed whitespace-pre-wrap">{openItem.user_input}</p>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <p className="text-[9px] font-black text-[#5B4041] uppercase tracking-widest">{TXT.ai_response}</p>
-                  {!editingContent ? (
-                    <button
-                      onClick={() => { setEditingContent(true); setContentDraft(openItem.ai_response); }}
-                      className="flex items-center gap-1 text-[10px] font-bold text-[#BE0D3E] uppercase tracking-widest"
-                      style={{ WebkitTapHighlightColor: 'transparent' }}
-                    >
-                      <Pencil size={10} /> {TXT.edit}
-                    </button>
-                  ) : (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleSaveContent}
-                        disabled={savingContent || !contentDraft.trim()}
-                        className="flex items-center gap-1 bg-[#BE0D3E] text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-lg disabled:opacity-50"
-                        style={{ WebkitTapHighlightColor: 'transparent' }}
-                      >
-                        {savingContent ? <Loader2 size={10} className="animate-spin" /> : <Save size={10} />} {TXT.save}
-                      </button>
-                      <button
-                        onClick={() => { setEditingContent(false); setContentDraft(''); }}
-                        className="text-[10px] text-[#5B4041] font-bold uppercase tracking-widest px-2 py-1"
-                        style={{ WebkitTapHighlightColor: 'transparent' }}
-                      >
-                        {TXT.cancel}
-                      </button>
-                    </div>
-                  )}
-                </div>
-                {editingContent ? (
-                  <textarea
-                    value={contentDraft}
-                    onChange={e => setContentDraft(e.target.value)}
-                    className="w-full bg-white border-2 border-[#BE0D3E]/30 focus:border-[#BE0D3E] rounded-xl p-3 text-[12px] text-[#1E1B11] leading-relaxed outline-none min-h-[240px] resize-y"
-                    autoFocus
-                  />
-                ) : (
-                  <div className="bg-white border border-[#BE0D3E]/15 rounded-xl p-3">
-                    <p className="text-[12px] text-[#1E1B11] leading-relaxed whitespace-pre-wrap">{renderBold(openItem.ai_response)}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        <NoteModal
+          key={openItem.id}
+          item={{ ...openItem, model_name: modelName }}
+          deleting={deletingId === openItem.id}
+          onClose={() => setOpenItemId(null)}
+          onRename={handleSaveTitle}
+          onDelete={() => handleDelete(openItem.id)}
+          onContentSaved={md => setItems(prev => prev.map(i => i.id === openItem.id ? { ...i, ai_response: md } : i))}
+        />
       )}
     </div>
   );
