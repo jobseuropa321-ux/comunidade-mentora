@@ -45,7 +45,7 @@ const Install: React.FC = () => {
   const passos = aba === 'iphone' ? PASSOS_IPHONE : PASSOS_ANDROID;
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-28">
+    <div className="max-w-lg mx-auto px-4 pt-4 pb-28 lg:max-w-4xl lg:px-0 lg:pt-8">
       {/* Header da tela */}
       <div className="mb-6">
         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50">
@@ -95,11 +95,11 @@ const Install: React.FC = () => {
       </div>
 
       {/* Passo a passo */}
-      <div className="space-y-4 mb-6">
+      <div className="space-y-4 mb-6 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
         {passos.map((passo, index) => {
           const Icon = passo.icon;
           return (
-            <div key={`${aba}-${index}`} className="viral-card rounded-2xl p-4 flex gap-4 items-start">
+            <div key={`${aba}-${index}`} className="viral-card rounded-2xl p-4 flex gap-4 items-start transition-transform lg:hover:-translate-y-0.5">
               <div
                 className="w-9 h-9 rounded-full flex items-center justify-center text-white text-[13px] font-black shrink-0"
                 style={{

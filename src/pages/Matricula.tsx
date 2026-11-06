@@ -336,7 +336,7 @@ const Matricula: React.FC<{ publico?: boolean }> = ({ publico = false }) => {
         <div className="absolute -bottom-20 right-[-10%] w-80 h-80 rounded-full" style={{ background: 'radial-gradient(circle, rgba(190,13,62,0.16), transparent 65%)' }} />
       </div>
 
-      <div className="relative max-w-lg mx-auto px-4 pt-4 pb-36">
+      <div className="relative max-w-lg mx-auto px-4 pt-4 pb-36 lg:mt-10 lg:mb-10 lg:max-w-xl lg:rounded-3xl lg:bg-white/80 lg:p-8 lg:pb-36 lg:shadow-[0_24px_70px_rgba(190,13,62,0.12)]">
         {/* topo */}
         <div className="flex items-center gap-3">
           {!(anonimo && typeof etapa !== 'number') && (
@@ -506,7 +506,7 @@ const Matricula: React.FC<{ publico?: boolean }> = ({ publico = false }) => {
       {/* ação fixa embaixo (não usa inset-0: o teclado do iPhone empurra normal) */}
       {etapa !== 'fim' && (
         <div className="fixed bottom-0 inset-x-0 z-40 pointer-events-none">
-          <div className="max-w-lg mx-auto px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-6 pointer-events-auto"
+          <div className="max-w-lg mx-auto px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-6 pointer-events-auto lg:max-w-xl lg:px-8"
             style={{ background: 'linear-gradient(180deg, rgba(255,249,238,0) 0%, #FFF9EE 40%)' }}>
             {etapa === 'capa' ? (
               <button onClick={() => ir(0, 1)}

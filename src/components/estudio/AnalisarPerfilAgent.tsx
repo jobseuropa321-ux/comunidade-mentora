@@ -316,12 +316,12 @@ const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
   const cardBase = 'bg-white border border-[#FF2D7A]/15 rounded-2xl p-4 shadow-[0_10px_26px_-18px_rgba(138,0,64,0.45)]';
 
   return (
-    <div className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div className="fixed inset-0 bg-[#FFF7E6] flex flex-col lg:left-[calc(var(--sidenav-w)+max(0px,(100vw-var(--sidenav-w)-48rem)/2))] lg:right-auto lg:w-full lg:max-w-3xl lg:shadow-[0_0_60px_rgba(30,27,17,0.28)]" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       {/* Palco do robô */}
       <div className="shrink-0 relative overflow-hidden" style={{ background: agent.gradient }}>
         <button
           onClick={() => navigate('/chat')}
-          className="absolute top-3 left-3 z-10 w-8 h-8 flex items-center justify-center text-white/90"
+          className="absolute top-3 left-3 z-10 w-8 h-8 flex items-center justify-center text-white/90 hover:bg-white/15 rounded-full transition-colors"
           style={{ WebkitTapHighlightColor: 'transparent' }}
           aria-label={t('a11y.voltarEstudio')}
         >
@@ -369,7 +369,7 @@ const AnalisarPerfilAgent: React.FC<{ agent: Agent }> = ({ agent }) => {
             </div>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-[12px] font-black uppercase tracking-widest text-white shadow-[0_8px_20px_-8px_rgba(255,45,122,0.65)] active:scale-[0.98] transition-transform"
+              className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 text-[12px] font-black uppercase tracking-widest text-white shadow-[0_8px_20px_-8px_rgba(255,45,122,0.65)] hover:brightness-105 active:scale-[0.98] transition-all"
               style={{ background: agent.gradient, WebkitTapHighlightColor: 'transparent' }}
             >
               <Camera size={16} strokeWidth={2.5} /> {TXT.upload}

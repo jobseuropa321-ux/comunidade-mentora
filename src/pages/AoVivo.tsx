@@ -137,7 +137,7 @@ const AoVivo: React.FC = () => {
   };
 
   return (
-    <div className="px-4 pt-2 pb-28">
+    <div className="px-4 pt-2 pb-28 lg:px-0 lg:pt-8">
       {/* Header */}
       <motion.h2
         initial={reduce ? false : { opacity: 0, y: 10 }}
@@ -156,12 +156,15 @@ const AoVivo: React.FC = () => {
         {TXT.subtitle}
       </motion.p>
 
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-8">
+
       {/* Card principal — aula acontecendo agora ou estado vazio */}
       {!loading && (
         <motion.div
           initial={reduce ? false : { opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...cardSpring, delay: 0.12 }}
+          className="lg:min-w-0"
         >
         {isLive ? (
           youtubeEmbedUrl ? (
@@ -240,6 +243,8 @@ const AoVivo: React.FC = () => {
         </motion.div>
       )}
 
+      <div className="lg:min-w-0">
+
       {/* Próximas aulas — o cronograma (liveSchedule.ts) é das mentorias em
           português; a versão ES não tem ciclo próprio, então a seção nem
           aparece lá (os replays já vêm filtrados por idioma do banco). */}
@@ -248,7 +253,7 @@ const AoVivo: React.FC = () => {
         initial={reduce ? false : { opacity: 0, y: 22 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...cardSpring, delay: 0.2 }}
-        className="mb-6 -mx-4"
+        className="mb-6 -mx-4 lg:mx-0"
       >
         <h3 className="text-[10px] font-black text-[#5B4041] uppercase tracking-widest mb-3 px-4">{TXT.upcoming}</h3>
         {upcoming.length === 0 ? (
@@ -267,7 +272,7 @@ const AoVivo: React.FC = () => {
           </div>
         ) : (
           <div
-            className="flex gap-3 overflow-x-auto pb-2 px-4 snap-x snap-mandatory"
+            className="flex gap-3 overflow-x-auto pb-2 px-4 snap-x snap-mandatory lg:px-0"
             style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
           >
             {upcoming.map((l) => {
@@ -315,7 +320,7 @@ const AoVivo: React.FC = () => {
         initial={reduce ? false : { opacity: 0, y: 22 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...cardSpring, delay: 0.28 }}
-        className="-mx-4"
+        className="-mx-4 lg:mx-0"
       >
         <h3 className="text-[10px] font-black text-[#5B4041] uppercase tracking-widest mb-3 px-4">{TXT.replays}</h3>
         {replays.length === 0 ? (
@@ -334,7 +339,7 @@ const AoVivo: React.FC = () => {
           </div>
         ) : (
           <div
-            className="flex gap-3 overflow-x-auto pb-2 px-4 snap-x snap-mandatory"
+            className="flex gap-3 overflow-x-auto pb-2 px-4 snap-x snap-mandatory lg:flex-col lg:overflow-visible lg:px-0"
             style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
           >
             {replays.map(({ lesson: r, index }) => {
@@ -349,7 +354,7 @@ const AoVivo: React.FC = () => {
               <button
                 key={r.id}
                 onClick={() => navigate(`/modulo/${LIVE_MODULE_SLUG}/aula/${index + 1}`)}
-                className="shrink-0 w-[260px] rounded-[1rem] border border-[#BE0D3E]/20 overflow-hidden shadow-[0_8px_20px_rgba(190,13,62,0.12)] bg-white active:scale-[0.97] transition-transform snap-start text-left"
+                className="shrink-0 w-[260px] rounded-[1rem] border border-[#BE0D3E]/20 overflow-hidden shadow-[0_8px_20px_rgba(190,13,62,0.12)] bg-white active:scale-[0.97] transition-transform snap-start text-left lg:w-full lg:hover:-translate-y-0.5"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 <div className="relative w-full aspect-video bg-[#FFF7E6]">
@@ -410,6 +415,9 @@ const AoVivo: React.FC = () => {
           </div>
         )}
       </motion.section>
+
+      </div>
+      </div>
 
     </div>
   );

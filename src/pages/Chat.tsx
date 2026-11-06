@@ -3,8 +3,9 @@ import { useParams } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, Send, RotateCcw, Mic,
   Library as LibraryIcon, Save, Check, Loader2, X,
-  Blocks, Layers, ChevronRight, Sparkles, Zap, CircleHelp,
+  Blocks, Layers, ChevronRight, Sparkles, Zap, CircleHelp, NotebookPen,
 } from 'lucide-react';
+import NoteModal, { type NoteItem } from '@/components/biblioteca/NoteModal';
 import { motion, useReducedMotion } from 'framer-motion';
 import { supabase, SUPABASE_READY } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -74,6 +75,7 @@ const makeTxt = (t: (k: string, o?: Record<string, unknown>) => string) => ({
   toast_name_required: t('chat.toast_name_required'),
   toast_save_error: t('chat.toast_save_error'),
   toast_saved: t('chat.toast_saved'),
+  open_note: t('chat.open_note'),
   toast_audio_error: t('chat.toast_audio_error'),
   toast_transcription_failed: t('chat.toast_transcription_failed'),
   toast_transcription_error: t('chat.toast_transcription_error'),
@@ -231,7 +233,7 @@ const FormatsGrid: React.FC = () => {
   const reduce = useReducedMotion() ?? false;
 
   return (
-    <div className="pb-28 pt-1">
+    <div className="pb-28 pt-1 lg:pb-10 lg:max-w-3xl lg:mx-auto">
       {/* Header do Estúdio */}
       <div className="px-4 pt-3 mb-5 flex items-start gap-3">
         <div className="flex-1 min-w-0">
@@ -347,9 +349,11 @@ const renderResposta = (text: string) =>
 const Bubble: React.FC<{
   msg: Message;
   onSave?: () => void;
+  /** Abre a nota salva no editor (só existe depois de salvar com sucesso). */
+  onOpen?: () => void;
   saved?: boolean;
   saveStatus?: SaveStatus;
-}> = ({ msg, onSave, saved, saveStatus = 'idle' }) => {
+}> = ({ msg, onSave, onOpen, saved, saveStatus = 'idle' }) => {
   const TXT = useTxt();
   const isIA = msg.role === 'ia';
   const lastMeaningfulLine = msg.content.split('\n').map(line => line.trim()).filter(Boolean).pop() ?? '';
@@ -379,10 +383,11 @@ const Bubble: React.FC<{
           </div>
         )}
         {isIA && onSave && (
+          <div className="self-start mt-1.5 flex items-center gap-1.5">
           <button
             onClick={onSave}
             disabled={isSaved || isSaving}
-            className={`self-start mt-1.5 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg transition-colors ${
+            className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg transition-colors ${
               isSaved
                 ? 'bg-green-500/10 text-green-600 cursor-default'
                 : isSaving
@@ -401,6 +406,18 @@ const Bubble: React.FC<{
               ? <><Save size={11} /> {TXT.retry_save}</>
               : <><Save size={11} /> {TXT.save}</>}
           </button>
+          {/* Roteiro salvo vira nota: abre o editor estilo Notas aqui mesmo,
+              sem precisar ir até a Biblioteca pra ajustar o texto. */}
+          {isSaved && onOpen && (
+            <button
+              onClick={onOpen}
+              className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg bg-white border border-[#BE0D3E]/25 text-[#BE0D3E] hover:border-[#BE0D3E]/50 transition-colors"
+              style={{ WebkitTapHighlightColor: 'transparent' }}
+            >
+              <NotebookPen size={11} /> {TXT.open_note}
+            </button>
+          )}
+          </div>
         )}
       </div>
     </div>
@@ -684,7 +701,7 @@ const AgentIntakeForm: React.FC<{
   const goBack = () => (step === 0 ? onBack() : setStep(s => s - 1));
 
   return (
-    <div ref={shellRef} className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div ref={shellRef} className="fixed inset-0 lg:left-[var(--sidenav-w)] bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       {/* Palco do robô — com o teclado aberto vira uma faixa fina: o robô é
           decoração e sozinho comia a altura que o campo de texto precisa. */}
       <div className="shrink-0 relative overflow-hidden" style={{ background: agent.gradient }}>
@@ -813,7 +830,7 @@ const SkeletonPicker: React.FC<{
   }, [userId]);
 
   return (
-    <div ref={shellRef} className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div ref={shellRef} className="fixed inset-0 lg:left-[var(--sidenav-w)] bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       {/* Palco do robô */}
       <div className="shrink-0 relative overflow-hidden" style={{ background: agent.gradient }}>
         <button onClick={onBack} className="absolute top-3 left-3 z-10 w-8 h-8 flex items-center justify-center text-white/90" style={{ WebkitTapHighlightColor: 'transparent' }}>
@@ -927,6 +944,11 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
 
   // Biblioteca: IDs dos bubbles de IA já salvos na sessão + modal de salvar
   const [savedIdx, setSavedIdx] = useState<Set<number>>(() => new Set(draft?.savedIdx ?? []));
+  // id da linha salva por bubble → "Abrir e editar" abre a nota no editor.
+  const [savedIds, setSavedIds] = useState<Record<number, string>>(() => (draft?.savedIds ?? {}) as Record<number, string>);
+  const [openNote, setOpenNote] = useState<NoteItem | null>(null);
+  const [openNoteIdx, setOpenNoteIdx] = useState<number | null>(null);
+  const [deletingNote, setDeletingNote] = useState(false);
   const [saveModalIdx, setSaveModalIdx] = useState<number | null>(null);
   const [saveTitle, setSaveTitle] = useState('');
   const [saving, setSaving] = useState(false);
@@ -981,6 +1003,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     skeletonId,
     lessonProgress,
     savedIdx: [...savedIdx],
+    savedIds: savedIds as Record<string, string>,
     saveStatuses: saveStatuses as Record<string, SaveStatus>,
     form: formDraft,
   };
@@ -998,7 +1021,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   useEffect(() => {
     const id = setTimeout(() => persistRef.current(), 400);
     return () => clearTimeout(id);
-  }, [stage, messages, input, courseName, skeletonId, lessonProgress, savedIdx, saveStatuses, formDraft]);
+  }, [stage, messages, input, courseName, skeletonId, lessonProgress, savedIdx, savedIds, saveStatuses, formDraft]);
 
   // E garante a gravação no caminho que motivou tudo isso: sair da tela antes
   // do debounce disparar.
@@ -1024,7 +1047,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     }
 
     setSaveStatuses(prev => ({ ...prev, [replyIdx]: 'saving' }));
-    const { error } = await supabase.from('saved_viral_outputs').insert({
+    const { data: salvo, error } = await supabase.from('saved_viral_outputs').insert({
       user_id: user.id,
       model_slug: agent.slug,
       model_name: agent.name,
@@ -1033,7 +1056,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       ai_response: aiResponse,
       skeleton_id: vinculo?.skeletonId ?? null,
       lesson_number: vinculo?.lessonNumber ?? null,
-    });
+    }).select('id').single();
 
     if (error) {
       setSaveStatuses(prev => ({ ...prev, [replyIdx]: 'error' }));
@@ -1041,6 +1064,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       return;
     }
 
+    if (salvo) setSavedIds(prev => ({ ...prev, [replyIdx]: (salvo as { id: string }).id }));
     setSavedIdx(prev => new Set(prev).add(replyIdx));
     setSaveStatuses(prev => ({ ...prev, [replyIdx]: 'saved' }));
     toast({ title: TXT.lesson_saved });
@@ -1218,7 +1242,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
     const ehAulaAtual =
       agent.slug === 'agente-2' && !!skeletonId && !!lessonProgress
       && saveModalIdx === messages.length - 1;
-    const { error } = await supabase.from('saved_viral_outputs').insert({
+    const { data: salvo, error } = await supabase.from('saved_viral_outputs').insert({
       user_id: user.id,
       model_slug: agent.slug,
       model_name: agent.name,
@@ -1227,13 +1251,14 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       ai_response: iaMsg.content,
       skeleton_id: ehAulaAtual ? skeletonId : null,
       lesson_number: ehAulaAtual ? lessonProgress.current : null,
-    });
+    }).select('id').single();
     setSaving(false);
     if (error) {
       setSaveStatuses(prev => ({ ...prev, [saveModalIdx]: 'error' }));
       toast({ title: TXT.toast_save_error, description: error.message, variant: 'destructive' });
       return;
     }
+    if (salvo) setSavedIds(prev => ({ ...prev, [saveModalIdx]: (salvo as { id: string }).id }));
     setSavedIdx(prev => new Set(prev).add(saveModalIdx));
     setSaveStatuses(prev => ({ ...prev, [saveModalIdx]: 'saved' }));
     const wasExit = exitMode;
@@ -1244,6 +1269,41 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   };
 
   const closeSaveModal = () => { setSaveModalIdx(null); setExitMode(false); };
+
+  /* "Abrir e editar": busca a linha salva (título pode ter mudado na
+     Biblioteca) e abre o mesmo editor de tela cheia da Biblioteca. */
+  const abrirNota = async (idx: number) => {
+    const id = savedIds[idx];
+    if (!id) return;
+    const { data, error } = await supabase.from('saved_viral_outputs').select('*').eq('id', id).maybeSingle();
+    if (error || !data) {
+      toast({ title: TXT.toast_save_error, description: error?.message, variant: 'destructive' });
+      return;
+    }
+    setOpenNoteIdx(idx);
+    setOpenNote(data as NoteItem);
+  };
+  const renomearNota = async (title: string) => {
+    if (!openNote) return false;
+    const { error } = await supabase.from('saved_viral_outputs').update({ title }).eq('id', openNote.id);
+    if (error) { toast({ title: TXT.toast_save_error, description: error.message, variant: 'destructive' }); return false; }
+    setOpenNote(n => (n ? { ...n, title } : n));
+    return true;
+  };
+  const excluirNota = async () => {
+    if (!openNote || openNoteIdx === null) return;
+    setDeletingNote(true);
+    const { error } = await supabase.from('saved_viral_outputs').delete().eq('id', openNote.id);
+    setDeletingNote(false);
+    if (error) { toast({ title: TXT.toast_save_error, description: error.message, variant: 'destructive' }); return; }
+    // Volta o bubble pro estado "não salvo": dá pra salvar de novo.
+    const idx = openNoteIdx;
+    setSavedIdx(prev => { const n = new Set(prev); n.delete(idx); return n; });
+    setSavedIds(prev => { const n = { ...prev }; delete n[idx]; return n; });
+    setSaveStatuses(prev => ({ ...prev, [idx]: 'idle' }));
+    setOpenNote(null);
+    setOpenNoteIdx(null);
+  };
 
   // Formulário do Arquiteto concluído → gera o esqueleto a partir do briefing.
   const handleFormSubmit = (briefing: string, name: string) => {
@@ -1448,10 +1508,10 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
   const passouDoEsqueleto = !!lessonProgress && lessonProgress.current >= lessonProgress.total;
 
   return (
-    <div ref={shellRef} className="fixed inset-0 bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div ref={shellRef} className="fixed inset-0 lg:left-[var(--sidenav-w)] bg-[#FFF7E6] flex flex-col" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
       {/* Header */}
-      <div className="shrink-0 border-b border-[#BE0D3E]/10 px-4 pt-3 pb-3 flex items-center gap-3"
+      <div className="shrink-0 border-b border-[#BE0D3E]/10 px-4 pt-3 pb-3 flex items-center gap-3 lg:px-[max(1rem,calc((100%-56rem)/2))]"
         style={{ background: 'rgba(255,247,230,0.95)', backdropFilter: 'blur(20px)' }}>
         <button
           onClick={handleBackPress}
@@ -1503,9 +1563,12 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
       )}
 
       {/* Mensagens */}
+      {/* Desktop: a conversa fica numa coluna de leitura (≤ 56rem) centrada —
+          o padding lateral calculado faz isso sem wrapper novo, que mudaria
+          o alvo do scroll (listRef). */}
       <div
         ref={listRef}
-        className="flex-1 overflow-y-auto px-4 py-5 space-y-3"
+        className="flex-1 overflow-y-auto px-4 py-5 space-y-3 lg:px-[max(1rem,calc((100%-56rem)/2))]"
         style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
       >
         {messages.map((msg, i) => {
@@ -1516,6 +1579,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
               key={i}
               msg={msg}
               onSave={canSave ? () => openSaveModal(i) : undefined}
+              onOpen={savedIds[i] ? () => void abrirNota(i) : undefined}
               saved={savedIdx.has(i)}
               saveStatus={saveStatuses[i]}
             />
@@ -1527,7 +1591,7 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
 
       {/* Input */}
       <div
-        className="shrink-0 px-4 py-3 border-t border-[#BE0D3E]/10"
+        className="shrink-0 px-4 py-3 border-t border-[#BE0D3E]/10 lg:px-[max(1rem,calc((100%-56rem)/2))]"
         style={{ background: 'rgba(255,247,230,0.95)', backdropFilter: 'blur(20px)' }}
       >
         {showNextLesson && (
@@ -1604,6 +1668,19 @@ const ChatScreen: React.FC<{ formatSlug: string }> = ({ formatSlug }) => {
           <p className="text-[9px] text-[#5B4041]/25 text-center mt-2">{TXT.keyboard_hint}</p>
         )}
       </div>
+
+      {/* Nota salva aberta no editor estilo Notas (mesmo da Biblioteca) */}
+      {openNote && (
+        <NoteModal
+          key={openNote.id}
+          item={openNote}
+          deleting={deletingNote}
+          onClose={() => { setOpenNote(null); setOpenNoteIdx(null); }}
+          onRename={renomearNota}
+          onDelete={() => void excluirNota()}
+          onContentSaved={md => setOpenNote(n => (n ? { ...n, ai_response: md } : n))}
+        />
+      )}
 
       {/* Modal de salvar na biblioteca (também usado no "salvar antes de sair") */}
       {saveModalIdx !== null && (

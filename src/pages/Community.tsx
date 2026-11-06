@@ -458,7 +458,7 @@ const Community: React.FC = () => {
   };
 
   return (
-    <div className="px-4 pt-3 pb-24 max-w-lg mx-auto">
+    <div className="px-4 pt-3 pb-24 max-w-lg mx-auto lg:max-w-2xl lg:px-0 lg:pt-8">
       {/* ═══ Header — pegada do Estúdio: eyebrow + serif gradiente + SVG animado ═══ */}
       <div className="relative mb-5 pr-[92px]">
         {/* Constelação da comunidade — pontos conectados que se desenham e respiram */}
@@ -575,7 +575,7 @@ const Community: React.FC = () => {
         initial={reduce ? false : { opacity: 0, y: 22 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ ...cardSpring, delay: 0.12 }}
-        className="card-glass-liquid rounded-2xl p-4 mb-5"
+        className="card-glass-liquid rounded-2xl p-4 mb-5 lg:p-5"
       >
         <div className="flex gap-3">
           <div className="w-11 h-11 shrink-0 rounded-full ring-2 ring-white/70 shadow-[0_4px_12px_rgba(190,13,62,0.2)] overflow-hidden">
@@ -847,7 +847,7 @@ const Community: React.FC = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 lg:p-10"
             onClick={() => setFullscreenImage(null)}
           >
             <motion.img

@@ -45,7 +45,7 @@ const Admin: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-28">
+    <div className="max-w-lg mx-auto px-4 pt-4 pb-28 lg:max-w-4xl lg:px-0 lg:pt-8">
       {/* Topbar */}
       <div className="flex items-center gap-3 mb-5">
         <button
@@ -66,14 +66,14 @@ const Admin: React.FC = () => {
       </div>
 
       {/* Abas */}
-      <div className="grid grid-cols-3 gap-1 bg-[#F6D6DC]/50 p-1 rounded-xl mb-5">
+      <div className="grid grid-cols-3 gap-1 bg-[#F6D6DC]/50 p-1 rounded-xl mb-5 lg:grid-cols-6 lg:gap-2 lg:p-1.5">
         {TABS.map(t => {
           const active = tab === t.id;
           return (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex items-center justify-center gap-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ${
+              className={`flex items-center justify-center gap-1 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors hover:bg-white/70 ${
                 active ? 'bg-white text-[#BE0D3E] shadow-sm' : 'text-[#5B4041]/70'
               }`}
               style={{ WebkitTapHighlightColor: 'transparent' }}

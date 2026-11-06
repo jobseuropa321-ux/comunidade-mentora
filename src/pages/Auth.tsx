@@ -53,10 +53,16 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF9EE] flex flex-col items-center justify-center px-6 py-10">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen bg-[#FFF9EE] flex flex-col items-center justify-center px-6 py-10 lg:grid lg:grid-cols-2 lg:p-0">
+      <aside className="hidden lg:flex lg:min-h-screen lg:flex-col lg:items-center lg:justify-center lg:px-12 lg:text-center lg:text-white"
+        style={{ background: 'linear-gradient(145deg, #94002D 0%, #BE0D3E 100%)' }}>
+        <img src="/logo-app.webp" alt="" className="h-40 w-auto drop-shadow-2xl" draggable={false} />
+        <h1 className="mt-8 text-3xl font-black leading-tight">{t('auth.titulo')}</h1>
+        <p className="mt-3 max-w-md text-sm leading-relaxed text-white/80">{t('auth.subtitulo')}</p>
+      </aside>
+      <div className="w-full max-w-sm lg:mx-auto lg:max-w-md lg:px-6">
         {/* Logo */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-6 lg:hidden">
           <img src="/logo-app.webp" alt="Amentora" className="h-28 w-auto" draggable={false} />
         </div>
 
@@ -115,7 +121,7 @@ const Auth: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-2xl text-[13px] font-black uppercase tracking-widest text-white flex items-center justify-center gap-2 transition-transform active:scale-[0.98] disabled:opacity-60"
+            className="w-full py-3.5 rounded-2xl text-[13px] font-black uppercase tracking-widest text-white flex items-center justify-center gap-2 transition-transform hover:brightness-105 active:scale-[0.98] disabled:opacity-60"
               style={{ background: 'linear-gradient(135deg, #BE0D3E 0%, #E06B85 100%)', boxShadow: '0 8px 25px rgba(255,45,122,0.4)' }}
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={15} />}

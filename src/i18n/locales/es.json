@@ -11,7 +11,9 @@
       "comunidade": "Comunidad",
       "agentes": "Agentes",
       "grupoWhatsapp": "Grupo de WhatsApp"
-    }
+    },
+    "recolher": "Ocultar menú",
+    "expandir": "Mostrar menú"
   },
   "common": {
     "voltar": "Volver",
@@ -453,7 +455,8 @@
     "umaPorVez": "una a la vez",
     "pedirProxima": "La Clase {{atual}} está terminada. Ahora escribe solamente la Clase {{proxima}} del curso \"{{curso}}\", manteniendo el orden y el contenido definidos en el esqueleto.",
     "esqueletoValidado": "Esqueleto validado del curso \"{{curso}}\":\n\n{{conteudo}}\n\nEmpieza escribiendo la primera clase (Clase 1) con base en ese esqueleto.",
-    "cursoEscolhido": "📋 Curso elegido: \"{{curso}}\".\n\nVoy a crear una clase cada vez y guardar cada clase automáticamente en la Biblioteca."
+    "cursoEscolhido": "📋 Curso elegido: \"{{curso}}\".\n\nVoy a crear una clase cada vez y guardar cada clase automáticamente en la Biblioteca.",
+    "open_note": "Abrir y editar"
   },
   "agentes": {
     "bonus": "BONUS",
@@ -752,6 +755,10 @@
       "conteudo": {
         "title": "Contenido y difusión",
         "description": "Guiones, anuncios y formatos virales"
+      },
+      "anotacoes": {
+        "title": "Mis notas",
+        "description": "Notas libres, ideas y borradores tuyos"
       }
     },
     "nota": {
@@ -781,7 +788,11 @@
       "whatsapp": "WhatsApp",
       "mais": "Más opciones",
       "fechar": "Cerrar"
-    }
+    },
+    "anotacoes_nome": "Mis notas",
+    "nova_nota": "Nueva nota",
+    "anotacoes_vazio": "Todavía no hay notas. Toca en \"Nueva nota\" para empezar a escribir.",
+    "erro_criar_nota": "No se pudo crear la nota"
   },
   "kanban": {
     "organizacao": "Organización de contenido",

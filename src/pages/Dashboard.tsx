@@ -96,7 +96,7 @@ const TopPostRow: React.FC<{ post: TopPost }> = ({ post }) => {
   const { t } = useTranslation();
   return (
     <div
-      className="flex items-center gap-3 p-4 active:bg-[#FFF9EE]/70 transition-colors cursor-pointer"
+      className="flex items-center gap-3 p-4 active:bg-[#FFF9EE]/70 hover:bg-[#FFF9EE]/70 transition-colors cursor-pointer"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       <div
@@ -130,7 +130,7 @@ const Dashboard: React.FC = () => {
   const [selectedDay, setSelectedDay] = useState<number>(PEAK_DAY_INDEX);
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-4 pb-28">
+    <div className="max-w-lg mx-auto px-4 pt-4 pb-28 lg:max-w-none lg:px-0 lg:pt-8">
       {/* Cabeçalho */}
       <div className="mb-6">
         <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-[#5B4041]/50">
@@ -143,7 +143,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Grid de stat tiles */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
+      <div className="grid grid-cols-2 gap-3 mb-6 lg:grid-cols-3 lg:gap-5">
         {STAT_TILES.map((tile) => (
           <StatTileCard key={t(`dashboard.tiles.${tile.key}`)} tile={tile} />
         ))}

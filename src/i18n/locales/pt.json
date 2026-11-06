@@ -11,7 +11,9 @@
       "comunidade": "Comunidade",
       "agentes": "Agentes",
       "grupoWhatsapp": "Grupo do WhatsApp"
-    }
+    },
+    "recolher": "Recolher menu",
+    "expandir": "Mostrar menu"
   },
   "common": {
     "voltar": "Voltar",
@@ -453,7 +455,8 @@
     "umaPorVez": "uma por vez",
     "pedirProxima": "A Aula {{atual}} foi concluída. Agora escreva somente a Aula {{proxima}} do curso \"{{curso}}\", mantendo a ordem e o conteúdo definidos no esqueleto.",
     "esqueletoValidado": "Esqueleto validado do curso \"{{curso}}\":\n\n{{conteudo}}\n\nComece escrevendo a primeira aula (Aula 1) com base nesse esqueleto.",
-    "cursoEscolhido": "📋 Curso escolhido: \"{{curso}}\".\n\nVou criar uma aula por vez e salvar cada aula automaticamente na Biblioteca."
+    "cursoEscolhido": "📋 Curso escolhido: \"{{curso}}\".\n\nVou criar uma aula por vez e salvar cada aula automaticamente na Biblioteca.",
+    "open_note": "Abrir e editar"
   },
   "agentes": {
     "bonus": "BÔNUS",
@@ -752,6 +755,10 @@
       "conteudo": {
         "title": "Conteúdo e divulgação",
         "description": "Roteiros, anúncios e formatos virais"
+      },
+      "anotacoes": {
+        "title": "Minhas anotações",
+        "description": "Notas livres, ideias e rascunhos seus"
       }
     },
     "nota": {
@@ -781,7 +788,11 @@
       "whatsapp": "WhatsApp",
       "mais": "Mais opções",
       "fechar": "Fechar"
-    }
+    },
+    "anotacoes_nome": "Minhas anotações",
+    "nova_nota": "Nova anotação",
+    "anotacoes_vazio": "Nenhuma anotação ainda. Toque em \"Nova anotação\" pra começar a escrever.",
+    "erro_criar_nota": "Não deu pra criar a anotação"
   },
   "kanban": {
     "organizacao": "Organização de conteúdo",

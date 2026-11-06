@@ -97,10 +97,10 @@ const Estudio: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#1E1B11] text-white flex flex-col">
       {/* Topbar */}
-      <div className="flex items-center justify-between px-4 pt-5 pb-3 shrink-0">
+      <div className="flex items-center justify-between px-4 pt-5 pb-3 shrink-0 w-full lg:max-w-3xl lg:mx-auto lg:px-0 lg:pt-8">
         <button
           onClick={() => navigate('/home')}
-          className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center active:scale-90 transition-transform"
+          className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/15 active:scale-90 transition-all"
           style={{ WebkitTapHighlightColor: 'transparent' }}
           aria-label={t('common.voltar')}
         >
@@ -116,7 +116,7 @@ const Estudio: React.FC = () => {
 
         <button
           onClick={() => setEspelhado((v) => !v)}
-          className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center active:scale-90 transition-transform"
+          className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/15 active:scale-90 transition-all"
           style={{ WebkitTapHighlightColor: 'transparent' }}
           aria-label={t('a11y.virarCamera')}
         >
@@ -125,7 +125,7 @@ const Estudio: React.FC = () => {
       </div>
 
       {/* Área central: preview de câmera + teleprompter */}
-      <div className="flex-1 px-4 pb-4 flex flex-col min-h-0">
+      <div className="flex-1 px-4 pb-4 flex flex-col min-h-0 w-full lg:max-w-3xl lg:mx-auto lg:px-0">
         <div
           className="relative flex-1 rounded-3xl overflow-hidden border border-white/10"
           style={{
@@ -191,7 +191,7 @@ const Estudio: React.FC = () => {
       </div>
 
       {/* Controles */}
-      <div className="px-4 pb-8 pt-2 flex flex-col items-center gap-3 shrink-0">
+      <div className="px-4 pb-8 pt-2 flex flex-col items-center gap-3 shrink-0 w-full lg:max-w-3xl lg:mx-auto lg:px-0">
         <span className="text-[11px] font-bold text-white/40 uppercase tracking-widest">
           {estado === 'idle' && t('estudio.toqueParaGravar')}
           {estado === 'contagem' && t('estudio.preparando')}
@@ -201,7 +201,7 @@ const Estudio: React.FC = () => {
         <button
           onClick={handleRecPress}
           disabled={estado === 'contagem'}
-          className="relative w-20 h-20 rounded-full flex items-center justify-center active:scale-[0.92] transition-transform disabled:active:scale-100"
+          className="relative w-20 h-20 rounded-full flex items-center justify-center hover:brightness-110 active:scale-[0.92] transition-all disabled:active:scale-100"
           style={{
             WebkitTapHighlightColor: 'transparent',
             background:

@@ -58,7 +58,9 @@ const ModuleCard: React.FC<{ modulo: Module; priority?: boolean }> = ({ modulo, 
   return (
     <div
       onClick={() => navigate(`/modulo/${modulo.slug}`)}
-      className="min-w-[148px] h-[200px] rounded-[1rem] border border-[#BE0D3E]/20 relative overflow-hidden shrink-0 shadow-[0_8px_20px_rgba(255,45,122,0.12)] bg-[#FFF9EE] cursor-pointer active:scale-[0.97] transition-transform"
+      /* Desktop: o card deixa de ter largura fixa e vira célula da grade,
+         mantendo a proporção 3:4 das capas (800x1067). */
+      className="min-w-[148px] h-[200px] rounded-[1rem] border border-[#BE0D3E]/20 relative overflow-hidden shrink-0 shadow-[0_8px_20px_rgba(255,45,122,0.12)] bg-[#FFF9EE] cursor-pointer active:scale-[0.97] transition-transform lg:min-w-0 lg:w-full lg:h-auto lg:aspect-[3/4] lg:rounded-2xl lg:hover:-translate-y-1 lg:hover:shadow-[0_16px_32px_rgba(190,13,62,0.18)]"
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       {capa ? (
@@ -89,13 +91,14 @@ const ModuleCard: React.FC<{ modulo: Module; priority?: boolean }> = ({ modulo, 
   );
 };
 
+/* Celular: fileira com rolagem horizontal. Desktop: grade de 4–5 capas. */
 const HorizontalCardList: React.FC<{ modules: Module[]; priorityCount?: number }> = ({ modules, priorityCount = 0 }) => (
   <div
-    className="flex gap-3 overflow-x-auto pb-2 px-4"
+    className="flex gap-3 overflow-x-auto pb-2 px-4 lg:grid lg:grid-cols-4 xl:grid-cols-5 lg:gap-5 lg:overflow-visible lg:px-0 lg:pb-0"
     style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
   >
     {modules.map((m, i) => <ModuleCard key={m.id} modulo={m} priority={i < priorityCount} />)}
-    <div className="w-1 shrink-0" />
+    <div className="w-1 shrink-0 lg:hidden" />
   </div>
 );
 
@@ -115,10 +118,10 @@ const Home: React.FC = () => {
   const materiais = visiveis.filter(m => m.home_section === 'materiais');
 
   return (
-    <div className="pb-28">
+    <div className="pb-28 lg:pb-12">
       {/* Banner — placeholder vazio por enquanto (full bleed).
           Pra reativar o carrossel real, troque pela linha comentada abaixo. */}
-      <section className="mb-5 -mt-1">
+      <section className="mb-5 -mt-1 lg:mb-8 lg:mt-2 lg:rounded-3xl lg:overflow-hidden lg:shadow-[0_18px_40px_-24px_rgba(148,0,45,0.45)]">
         <BannerCarousel banners={(lang === 'es' ? BANNERS_ES : BANNERS_PT).map(({ altKey, ...b }) => ({ ...b, alt: t(altKey) }))} autoRotateMs={6000} height={180} heightDesktop={360} />
       </section>
 
@@ -129,18 +132,18 @@ const Home: React.FC = () => {
       ) : (
         <>
           {inicio.length > 0 && (
-            <section className="mb-6">
-              <div className="px-4 mb-3">
-                <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">{t('home.comecePorAqui')}</h2>
+            <section className="mb-6 lg:mb-10">
+              <div className="px-4 mb-3 lg:px-0 lg:mb-4">
+                <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase lg:text-[13px]">{t('home.comecePorAqui')}</h2>
               </div>
               <HorizontalCardList modules={inicio} priorityCount={3} />
             </section>
           )}
 
           {main.length > 0 && (
-            <section className="mb-4">
-              <div className="px-4 mb-3">
-                <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">{t('home.modulos')}</h2>
+            <section className="mb-4 lg:mb-10">
+              <div className="px-4 mb-3 lg:px-0 lg:mb-4">
+                <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase lg:text-[13px]">{t('home.modulos')}</h2>
               </div>
               <HorizontalCardList modules={main} />
             </section>
@@ -149,9 +152,9 @@ const Home: React.FC = () => {
           {/* Ferramentas — módulos da seção "materiais" do admin (o valor no
               banco continua 'materiais'; só o nome exibido mudou). */}
           {materiais.length > 0 && (
-            <section className="mb-4">
-              <div className="px-4 mb-3">
-                <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">{t('home.ferramentas')}</h2>
+            <section className="mb-4 lg:mb-10">
+              <div className="px-4 mb-3 lg:px-0 lg:mb-4">
+                <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase lg:text-[13px]">{t('home.ferramentas')}</h2>
               </div>
               <HorizontalCardList modules={materiais} />
             </section>
@@ -165,17 +168,17 @@ const Home: React.FC = () => {
               a aula levando pra oferta com a VSL — tudo dentro do app. */}
           {lang !== 'es' && (
           <section className="mb-4">
-            <div className="px-4 mb-3">
-              <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase">{t('home.ferramentasAvancadas')}</h2>
+            <div className="px-4 mb-3 lg:px-0 lg:mb-4">
+              <h2 className="font-black text-[11px] tracking-widest text-[#5B4041] uppercase lg:text-[13px]">{t('home.ferramentasAvancadas')}</h2>
             </div>
             <div
-              className="flex gap-3 overflow-x-auto pb-2 px-4"
+              className="flex gap-3 overflow-x-auto pb-2 px-4 lg:px-0"
               style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
             >
               <Link
                 to={localizedPath("/modulo/viral-em-1-minuto", variant)}
                 onClick={() => trackAscension('modulo')}
-                className="min-w-[148px] h-[200px] rounded-[1rem] border border-[#BE0D3E]/20 relative overflow-hidden shrink-0 shadow-[0_8px_20px_rgba(255,45,122,0.12)] bg-[#FFF9EE] cursor-pointer active:scale-[0.97] transition-transform block"
+                className="min-w-[148px] h-[200px] rounded-[1rem] border border-[#BE0D3E]/20 relative overflow-hidden shrink-0 shadow-[0_8px_20px_rgba(255,45,122,0.12)] bg-[#FFF9EE] cursor-pointer active:scale-[0.97] transition-transform block lg:min-w-[220px] lg:h-[296px] lg:rounded-2xl lg:hover:-translate-y-1"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 <img

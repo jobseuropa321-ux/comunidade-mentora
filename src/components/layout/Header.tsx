@@ -73,11 +73,13 @@ const Header: React.FC = () => {
 
   return (
     <>
+      {/* No desktop (lg) a logo e o perfil já estão no SideNav: sobra a barra
+          fina com Biblioteca e notificações, alinhada ao container largo. */}
       <header className="header-glass sticky top-0 z-40 w-full">
-        <div className="relative flex items-center justify-between px-4 pt-3 pb-3 max-w-lg mx-auto">
+        <div className="relative flex items-center justify-between px-4 pt-3 pb-3 max-w-lg mx-auto lg:max-w-6xl lg:px-8 lg:justify-end">
 
           {/* Esquerda: perfil */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 lg:hidden">
             <button
               onClick={() => navigate('/profile')}
               className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white shadow-[0_5px_14px_-4px_rgba(190,13,62,0.35)] hover:scale-105 active:scale-95 transition-transform"
@@ -90,7 +92,7 @@ const Header: React.FC = () => {
 
           {/* Logo — centralizada absolutamente. TROQUE /logo-app.webp pela sua logo */}
           <div
-            className="absolute left-1/2 -translate-x-1/2 pointer-events-none select-none"
+            className="absolute left-1/2 -translate-x-1/2 pointer-events-none select-none lg:hidden"
             aria-label={t('header.logoApp')}
           >
             <img
@@ -141,7 +143,7 @@ const Header: React.FC = () => {
             className="fixed inset-0 z-50 bg-[#1E1B11]/30 backdrop-blur-sm"
             onClick={closeNotifs}
           />
-          <div className="fixed top-[64px] left-4 z-50 w-[300px] max-w-[calc(100vw-2rem)] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(255,45,122,0.25)]"
+          <div className="fixed top-[64px] left-4 lg:left-auto lg:right-8 z-50 w-[300px] max-w-[calc(100vw-2rem)] rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(255,45,122,0.25)]"
             style={{
               background: 'rgba(255,255,255,0.97)',
               border: '1px solid rgba(255,45,122,0.2)',

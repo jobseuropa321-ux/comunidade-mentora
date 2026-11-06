@@ -35,6 +35,10 @@ export interface ChatDraft {
   skeletonId: string | null;
   lessonProgress: { current: number; total: number } | null;
   savedIdx: number[];
+  /** id da linha em saved_viral_outputs por índice do bubble — é o que
+   *  deixa abrir a nota salva no editor direto do chat. Opcional porque
+   *  rascunhos antigos não têm. */
+  savedIds?: Record<string, string>;
   saveStatuses: Record<string, DraftSaveStatus>;
   form: { step: number; answers: Record<string, string> } | null;
 }

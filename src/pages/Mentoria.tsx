@@ -230,17 +230,17 @@ const Mentoria: React.FC = () => {
   const resumo = [profissaoFinal, r.faturamento ? `faturo ${r.faturamento}` : ''].filter(Boolean).join(', ');
 
   return (
-    <div className="min-h-[100dvh] relative overflow-x-hidden text-white" style={{ background: PRETO }}>
+    <div className="min-h-[100dvh] relative overflow-x-hidden text-white bg-[#0B0B0C] lg:bg-[#FFF7E6]">
       {confete && <Confetti cores={CORES_OURO} />}
 
       {/* fundo: brilho dourado difuso + linhas finas */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      <div className="pointer-events-none absolute inset-0 overflow-hidden lg:hidden" aria-hidden>
         <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[560px] h-[560px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.16), transparent 62%)' }} />
         <div className="absolute bottom-[-180px] -right-24 w-[420px] h-[420px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.10), transparent 65%)' }} />
         <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'linear-gradient(rgba(212,175,55,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(212,175,55,0.6) 1px, transparent 1px)', backgroundSize: '56px 56px' }} />
       </div>
 
-      <div className="relative max-w-lg mx-auto px-4 pt-4 pb-32">
+      <div className="relative max-w-lg mx-auto px-4 pt-4 pb-32 lg:mt-10 lg:mb-10 lg:max-w-xl lg:rounded-3xl lg:bg-[#0B0B0C] lg:p-8 lg:pb-32 lg:shadow-[0_24px_70px_rgba(30,27,17,0.24)]">
         {/* topo */}
         <div className="flex items-center gap-3">
           {!(anonimo && typeof etapa !== 'number') && (
@@ -388,7 +388,7 @@ const Mentoria: React.FC = () => {
       {/* ação fixa embaixo */}
       {etapa !== 'fim' && (
         <div className="fixed bottom-0 inset-x-0 z-40 pointer-events-none">
-          <div className="max-w-lg mx-auto px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-6 pointer-events-auto"
+          <div className="max-w-lg mx-auto px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-6 pointer-events-auto lg:max-w-xl lg:px-8"
             style={{ background: `linear-gradient(180deg, rgba(11,11,12,0) 0%, ${PRETO} 40%)` }}>
             {etapa === 'capa' ? (
               <button onClick={() => ir(0, 1)}

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, Library as LibraryIcon, BookOpen, Search, Clock3,
-  ChevronRight, Layers3, Sparkles,
+  ChevronRight, Layers3, Sparkles, NotebookPen, Plus, FileText, FileType2,
 } from 'lucide-react';
 import NoteModal from '@/components/biblioteca/NoteModal';
+import { buildDocx, buildPdf, deliverFile, fileSlug } from '@/lib/noteExport';
 import { supabase, SUPABASE_READY } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -45,7 +46,60 @@ const makeTxt = (t: (k: string) => string) => ({
   load_error: t('biblioteca.load_error'),
   search_placeholder: t('biblioteca.search_placeholder'),
   no_results: t('biblioteca.no_results'),
+  anotacoes_nome: t('biblioteca.anotacoes_nome'),
+  nova_nota: t('biblioteca.nova_nota'),
+  anotacoes_vazio: t('biblioteca.anotacoes_vazio'),
+  erro_criar_nota: t('biblioteca.erro_criar_nota'),
+  baixar_pdf: t('biblioteca.nota.baixar_pdf'),
+  baixar_word: t('biblioteca.nota.baixar_word'),
 });
+
+/* ── ANOTAÇÕES LIVRES ──
+   A aluna também escreve do zero, sem agente: a nota é uma linha normal de
+   saved_viral_outputs com este slug (model_slug é NOT NULL e é o que agrupa
+   a Biblioteca). Nasce vazia e abre direto no editor, como no Notas. */
+export const NOTES_SLUG = 'anotacoes';
+
+/** Cria a nota vazia e devolve o id (ou null se falhou). */
+async function criarNota(userId: string, modelName: string, title: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('saved_viral_outputs')
+    .insert({ user_id: userId, model_slug: NOTES_SLUG, model_name: modelName, title, user_input: '', ai_response: '' })
+    .select('id')
+    .single();
+  if (error || !data) return null;
+  return (data as { id: string }).id;
+}
+
+/* Botões de download direto no card da lista — pra quem quer imprimir sem
+   abrir a nota. Mesmo PDF/Word do editor (src/lib/noteExport.ts). */
+const CardDownloads: React.FC<{ item: SavedItem; subtitle: string; onError: (msg: string) => void }> = ({ item, subtitle, onError }) => {
+  const { t } = useTranslation();
+  const [busy, setBusy] = useState<null | 'pdf' | 'docx'>(null);
+  const baixar = async (e: React.MouseEvent, kind: 'pdf' | 'docx') => {
+    e.stopPropagation();
+    setBusy(kind);
+    try {
+      const blob = kind === 'pdf'
+        ? await buildPdf(item.title, subtitle, item.ai_response)
+        : await buildDocx(item.title, subtitle, item.ai_response);
+      await deliverFile(blob, `${fileSlug(item.title)}.${kind}`);
+    } catch (err) {
+      onError((err as Error).message);
+    } finally { setBusy(null); }
+  };
+  const cls = 'flex items-center gap-1 rounded-lg border border-[#BE0D3E]/20 bg-[#FFF7E6] px-2 py-1 text-[9px] font-black uppercase tracking-wider text-[#BE0D3E] hover:bg-[#F6D6DC]/60 disabled:opacity-50';
+  return (
+    <div className="mt-2.5 flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+      <button type="button" onClick={e => void baixar(e, 'pdf')} disabled={!!busy} className={cls} title={t('biblioteca.nota.baixar_pdf_desc')}>
+        {busy === 'pdf' ? <Loader2 size={10} className="animate-spin" /> : <FileText size={10} />} {t('biblioteca.nota.baixar_pdf')}
+      </button>
+      <button type="button" onClick={e => void baixar(e, 'docx')} disabled={!!busy} className={cls} title={t('biblioteca.nota.baixar_word_desc')}>
+        {busy === 'docx' ? <Loader2 size={10} className="animate-spin" /> : <FileType2 size={10} />} Word
+      </button>
+    </div>
+  );
+};
 
 interface SavedItem {
   id: string;
@@ -71,6 +125,11 @@ interface LibraryGroup {
 }
 
 const LIBRARY_SECTIONS = [
+  {
+    id: 'anotacoes',
+    slugs: [NOTES_SLUG],
+    Icon: NotebookPen,
+  },
   {
     id: 'curso',
     slugs: ['agente-1', 'agente-2', 'agente-3'],
@@ -124,7 +183,8 @@ const ModelsOverview: React.FC = () => {
     const map = new Map<string, LibraryGroup>();
     for (const row of data ?? []) {
       const existing = map.get(row.model_slug);
-      const currentAgent = AGENTS.find(agent => agent.slug === row.model_slug);
+      const currentAgent = AGENTS.find(agent => agent.slug === row.model_slug)
+        ?? (row.model_slug === NOTES_SLUG ? { name: TXT.anotacoes_nome } : undefined);
       const latest = existing && new Date(existing.latest) > new Date(row.created_at)
         ? existing.latest
         : row.created_at;
@@ -164,8 +224,18 @@ const ModelsOverview: React.FC = () => {
   );
   const totalItems = groups.reduce((sum, group) => sum + group.count, 0);
 
+  const [criando, setCriando] = useState(false);
+  const novaNota = async () => {
+    if (!user || criando) return;
+    setCriando(true);
+    const id = await criarNota(user.id, TXT.anotacoes_nome, TXT.nova_nota);
+    setCriando(false);
+    if (!id) { toast({ title: TXT.erro_criar_nota, variant: 'destructive' }); return; }
+    navigate(`/biblioteca/${NOTES_SLUG}`, { state: { abrir: id } });
+  };
+
   return (
-    <div className="pb-28 pt-1">
+    <div className="pb-28 pt-1 lg:pb-10">
       <section className="mx-4 mt-3 overflow-hidden rounded-[26px] border border-white/70 bg-gradient-to-br from-[#94002D] via-[#BE0D3E] to-[#D94368] p-5 text-white shadow-[0_18px_45px_-20px_rgba(148,0,45,0.65)]">
         <div className="flex items-start gap-3">
           <button
@@ -191,6 +261,16 @@ const ModelsOverview: React.FC = () => {
             </div>
           )}
         </div>
+        {/* Nota livre: abre o editor em branco, estilo Notas. */}
+        <button
+          onClick={() => void novaNota()}
+          disabled={criando}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-[11px] font-black uppercase tracking-widest text-[#BE0D3E] shadow-[0_10px_24px_-14px_rgba(0,0,0,0.5)] hover:bg-[#FFF7E6] disabled:opacity-60 lg:w-auto"
+          style={{ WebkitTapHighlightColor: 'transparent' }}
+        >
+          {criando ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} strokeWidth={3} />}
+          {TXT.nova_nota}
+        </button>
       </section>
 
       {!loading && groups.length > 0 && (
@@ -299,13 +379,29 @@ const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
   const lang = useCurrentLang();
   const AGENTS = useAgents();
   const navigate = useLocalizedNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
+  const ehAnotacoes = modelSlug === NOTES_SLUG;
 
   const [items, setItems] = useState<SavedItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [openItemId, setOpenItemId] = useState<string | null>(null);
+  // Vindo do botão "Nova anotação" da capa, a nota recém-criada já abre.
+  const [openItemId, setOpenItemId] = useState<string | null>(
+    () => ((location.state as { abrir?: string } | null)?.abrir ?? null),
+  );
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [criando, setCriando] = useState(false);
+
+  const novaNota = async () => {
+    if (!user || criando) return;
+    setCriando(true);
+    const id = await criarNota(user.id, TXT.anotacoes_nome, TXT.nova_nota);
+    setCriando(false);
+    if (!id) { toast({ title: TXT.erro_criar_nota, variant: 'destructive' }); return; }
+    await load();
+    setOpenItemId(id);
+  };
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -375,10 +471,12 @@ const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
   const prettySlug = modelSlug
     ? modelSlug.replace(/-/g, ' ').replace(/(^|\s)\S/g, c => c.toUpperCase())
     : TXT.title;
-  const modelName = AGENTS.find(agent => agent.slug === modelSlug)?.name ?? items[0]?.model_name ?? prettySlug;
+  const modelName = ehAnotacoes
+    ? TXT.anotacoes_nome
+    : (AGENTS.find(agent => agent.slug === modelSlug)?.name ?? items[0]?.model_name ?? prettySlug);
 
   return (
-    <div className="pb-28 pt-1">
+    <div className="pb-28 pt-1 lg:pb-10">
       <div className="pl-2 pr-4 pt-3 mb-4 flex items-center gap-1">
         <button
           onClick={() => navigate('/biblioteca')}
@@ -394,27 +492,54 @@ const ModelItems: React.FC<{ modelSlug: string }> = ({ modelSlug }) => {
         </div>
       </div>
 
+      {ehAnotacoes && (
+        <div className="px-4 mb-3">
+          <button
+            onClick={() => void novaNota()}
+            disabled={criando}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#BE0D3E] to-[#E06B85] px-4 py-3 text-[11px] font-black uppercase tracking-widest text-white shadow-[0_6px_18px_rgba(190,13,62,0.3)] disabled:opacity-60 lg:w-auto"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            {criando ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} strokeWidth={3} />}
+            {TXT.nova_nota}
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <div className="flex items-center justify-center py-16">
           <Loader2 size={20} className="animate-spin text-[#BE0D3E]" />
         </div>
       ) : items.length === 0 ? (
         <div className="mx-4 bg-white border border-[#BE0D3E]/20 rounded-2xl p-6 text-center">
-          <p className="text-[#5B4041] text-[11px]">{TXT.model_empty}</p>
+          <p className="text-[#5B4041] text-[11px]">{ehAnotacoes ? TXT.anotacoes_vazio : TXT.model_empty}</p>
         </div>
       ) : (
-        <div className="px-4 space-y-2">
+        /* Desktop: cartões em grade (2–3 por linha) em vez da pilha. */
+        <div className="px-4 space-y-2 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-3 lg:space-y-0">
           {items.map(item => (
-            <button
+            <div
               key={item.id}
+              role="button"
+              tabIndex={0}
               onClick={() => setOpenItemId(item.id)}
-              className="w-full bg-white border border-[#BE0D3E]/15 rounded-2xl p-4 text-left shadow-[0_4px_12px_rgba(190,13,62,0.06)] hover:border-[#BE0D3E]/40 active:scale-[0.99] transition-all"
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenItemId(item.id); } }}
+              className="w-full bg-white border border-[#BE0D3E]/15 rounded-2xl p-4 text-left shadow-[0_4px_12px_rgba(190,13,62,0.06)] hover:border-[#BE0D3E]/40 active:scale-[0.99] transition-all cursor-pointer lg:flex lg:flex-col"
               style={{ WebkitTapHighlightColor: 'transparent' }}
             >
               <p className="text-[13px] font-black text-[#1E1B11] leading-tight mb-1.5 line-clamp-2">{item.title}</p>
-              <p className="text-[10px] text-[#5B4041]/70 line-clamp-2 mb-2">{previewText(item.ai_response)}…</p>
+              <p className="text-[10px] text-[#5B4041]/70 line-clamp-2 mb-2 lg:flex-1 lg:line-clamp-3">
+                {item.ai_response.trim() ? <>{previewText(item.ai_response)}…</> : t('biblioteca.nota.placeholder')}
+              </p>
               <p className="text-[9px] text-[#5B4041]/50">{formatDate(item.created_at, lang)}</p>
-            </button>
+              {item.ai_response.trim() && (
+                <CardDownloads
+                  item={item}
+                  subtitle={`${modelName} · ${formatDate(item.created_at, lang)}`}
+                  onError={msg => toast({ title: t('biblioteca.nota.erro_exportar'), description: msg, variant: 'destructive' })}
+                />
+              )}
+            </div>
           ))}
         </div>
       )}

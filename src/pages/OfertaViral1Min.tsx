@@ -175,6 +175,11 @@ const OfertaViral1Min: React.FC = () => {
           animation:v1mFadeUp 1s ease-out forwards;
         }
         @media (max-width:780px){ .oferta-v1m .vsl-wrap{max-width:min(320px,40vh)} }
+        @media (min-width:1024px){
+          .oferta-v1m .container{max-width:896px;padding:0 32px}
+          .oferta-v1m .vsl-wrap{max-width:896px}
+          .oferta-v1m .hero{padding:40px 0 80px}
+        }
         .oferta-v1m .vsl-frame{
           border-radius:20px; overflow:hidden; background:#000;
           box-shadow:0 16px 48px rgba(0,0,0,.22);

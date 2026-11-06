@@ -544,6 +544,10 @@
   .safe-bottom {
     padding-bottom: calc(env(safe-area-inset-bottom) + 90px);
   }
+  /* Desktop: sem a pílula flutuante, não precisa da folga de 90px. */
+  @media (min-width: 1024px) {
+    .safe-bottom { padding-bottom: 2.5rem; }
+  }
 }
 
 @layer utilities {

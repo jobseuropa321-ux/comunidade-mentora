@@ -89,7 +89,7 @@ const Suporte: React.FC = () => {
         <div className="absolute bottom-[-120px] -left-24 w-72 h-72 rounded-full" style={{ background: 'radial-gradient(circle, rgba(246,180,58,0.22), transparent 65%)' }} />
       </div>
 
-      <div className="relative max-w-lg mx-auto px-4 pt-4 pb-12">
+      <div className="relative max-w-lg mx-auto px-4 pt-4 pb-12 lg:my-10 lg:max-w-xl lg:rounded-3xl lg:bg-white/80 lg:p-8 lg:shadow-[0_24px_70px_rgba(190,13,62,0.12)]">
         <div className="flex items-center gap-3">
           {user && (
             <button onClick={() => navigate('/modulo/boas-vindas-a-comunidade/aula/1')} aria-label="Voltar"
@@ -144,7 +144,7 @@ const Suporte: React.FC = () => {
                     const ativo = assunto === o;
                     return (
                       <button key={o} type="button" onClick={() => setAssunto(ativo ? '' : o)}
-                        className="rounded-full px-3.5 py-2 text-[12px] font-bold transition-all active:scale-95"
+                        className="rounded-full px-3.5 py-2 text-[12px] font-bold transition-all hover:-translate-y-0.5 active:scale-95"
                         style={{
                           background: ativo ? 'linear-gradient(135deg, #BE0D3E, #94002D)' : 'white',
                           color: ativo ? 'white' : '#5B4041',
@@ -166,7 +166,7 @@ const Suporte: React.FC = () => {
               </div>
 
               <button onClick={enviar} disabled={!valido || salvando}
-                className="glass-btn-pink w-full rounded-2xl py-4 text-[14px] font-black text-white flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-45">
+                className="glass-btn-pink w-full rounded-2xl py-4 text-[14px] font-black text-white flex items-center justify-center gap-2 hover:brightness-105 active:scale-[0.98] transition-transform disabled:opacity-45">
                 {salvando ? <Loader2 size={17} className="animate-spin" /> : <Send size={17} strokeWidth={2.5} />}
                 Enviar e entrar no grupo de suporte
               </button>

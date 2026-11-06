@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { usePlan } from '@/contexts/PlanContext';
 import UpgradeModal from '@/components/UpgradeModal';
 import { useLiveStatus } from '@/hooks/useLiveStatus';
-import { useLocalizedNavigate, useCurrentLang, useCurrentVariant, unlocalizedPath, type SupportedLang } from '@/i18n/LanguageProvider';
+import { useLocalizedNavigate, useCurrentLang, useCurrentVariant, unlocalizedPath } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 
 /* ── Ícones (SVG do design "A Mentora", herdam a cor via currentColor) ── */
@@ -92,11 +92,9 @@ const WhatsAppIcon: React.FC = () => (
   </svg>
 );
 
-/* Convite do grupo do WhatsApp da comunidade — um grupo por idioma. */
-const WHATSAPP_GROUP_URL: Record<SupportedLang, string> = {
-  pt: 'https://chat.whatsapp.com/JUUOZVbvbLh1vMvDTC4D7P?mode=gi_t',
-  es: 'https://chat.whatsapp.com/BlR0LA49cxVE4uPlY9XUPm?mode=gi_t',
-};
+/* Convite do grupo do WhatsApp da comunidade — um grupo por idioma.
+   A URL vive no SideNav (desktop usa a mesma). */
+import { WHATSAPP_GROUP_URL } from './SideNav';
 
 const BottomNav: React.FC = () => {
   const location = useLocation();
@@ -136,7 +134,7 @@ const BottomNav: React.FC = () => {
 
   return (
     <>
-      <nav className="bottom-nav">
+      <nav className="bottom-nav lg:hidden">
         <div className="w-full flex justify-center px-4 pb-5 pt-2">
           <div className="w-[95%] max-w-[400px] bg-white border border-[#F6D6DC] rounded-full flex justify-between items-center p-1 shadow-[0_12px_32px_-8px_rgba(190,13,62,0.20)]">
             {navItems.map(({ path, kind, label, title, locked }, i) => {

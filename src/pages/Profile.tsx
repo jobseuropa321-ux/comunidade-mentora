@@ -132,9 +132,9 @@ const Profile: React.FC = () => {
   const planColor = hasFullAccess ? '#F6B43A' : '#BE0D3E';
 
   return (
-    <div className="pb-28">
+    <div className="pb-28 lg:pt-8">
       {/* ═══ HERO — vermelho com avatar ═══ */}
-      <section className="relative pt-6 pb-20 px-4 overflow-hidden">
+      <section className="relative pt-6 pb-20 px-4 overflow-hidden lg:max-w-5xl lg:mx-auto lg:rounded-3xl lg:pb-16">
         {/* Fundo gradiente vermelho forte (segura a cor pra texto ficar legível) */}
         <div
           className="absolute inset-0 -z-10"
@@ -238,10 +238,10 @@ const Profile: React.FC = () => {
       </section>
 
       {/* ═══ Conteúdo ═══ */}
-      <div className="px-4 max-w-lg mx-auto -mt-12 space-y-4">
+      <div className="px-4 max-w-lg mx-auto -mt-12 space-y-4 lg:max-w-5xl lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
 
         {/* CARD — Informações da conta */}
-        <section className="card-glass-liquid rounded-2xl p-5">
+        <section className="card-glass-liquid rounded-2xl p-5 lg:row-span-4 lg:p-6">
           <header className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-[#BE0D3E]/10 flex items-center justify-center">
@@ -346,7 +346,7 @@ const Profile: React.FC = () => {
         </section>
 
         {/* CARD — Plano */}
-        <section className={`${hasFullAccess ? 'card-glass-liquid-lime' : 'card-glass-liquid'} rounded-2xl p-5`}>
+        <section className={`${hasFullAccess ? 'card-glass-liquid-lime' : 'card-glass-liquid'} rounded-2xl p-5 lg:col-start-2 lg:p-6`}>
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
               <div className="flex items-center gap-1.5 mb-1">
@@ -369,7 +369,7 @@ const Profile: React.FC = () => {
         </section>
 
         {/* CARD — Ações */}
-        <section className="card-glass-liquid rounded-2xl overflow-hidden">
+        <section className="card-glass-liquid rounded-2xl overflow-hidden lg:col-start-2">
           {isExpert && (
             <>
               <ActionRow
@@ -399,14 +399,14 @@ const Profile: React.FC = () => {
         {/* Logout */}
         <button
           onClick={handleLogout}
-          className="card-glass-liquid-danger w-full flex items-center justify-center gap-2 h-12 text-[#BE0D3E] font-black text-[11px] uppercase tracking-widest rounded-2xl hover:scale-[1.01] active:scale-[0.99] transition-transform"
+          className="card-glass-liquid-danger w-full flex items-center justify-center gap-2 h-12 text-[#BE0D3E] font-black text-[11px] uppercase tracking-widest rounded-2xl hover:scale-[1.01] active:scale-[0.99] transition-transform lg:col-start-2"
         >
           <LogOut className="w-4 h-4" strokeWidth={2.5} />
           {t('profile.sairConta')}
         </button>
 
         {/* Versão */}
-        <p className="text-center text-[10px] text-[#5B4041]/50 font-medium pt-2">
+        <p className="text-center text-[10px] text-[#5B4041]/50 font-medium pt-2 lg:col-start-2">
           {t('common.marca')} · {APP_VERSION}
         </p>
       </div>

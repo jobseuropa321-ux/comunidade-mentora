@@ -5,6 +5,7 @@ import { useModuleBySlug, useLessonProgress, lessonVideoUrl, moduleVisible, LIVE
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 import { dbNivel, dbTag, dbInstructor, dbDuracao, dbText } from '@/lib/dbText';
+import { moduleCover } from '@/lib/moduleCover';
 import { useCurrentLang, useCurrentVariant, localizedPath } from '@/i18n/LanguageProvider';
 import { esToolUrl } from '@/i18n/esCatalog';
 import { Navigate } from 'react-router-dom';
@@ -130,15 +131,34 @@ const ModuleDetail: React.FC = () => {
   // Módulo de aulas TAMBÉM pode ter uma ferramenta interna (ex.: Caderno do
   // Desafio no Do Zero aos 10K) — aparece como card junto das aulas.
   const ferramentaDoModulo = !isMateriais && modulo.material_url?.startsWith('/') ? modulo.material_url : null;
+  // Desktop: a capa (arte vertical 3:4) vira o fundo desfocado do hero
+  // widescreen + pôster nítido à direita. É a "versão desktop" da capa sem
+  // precisar de uma segunda arte.
+  const capa = moduleCover(modulo, lang);
 
   return (
-    <div className="pb-28 max-w-lg mx-auto">
+    <div className="pb-28 max-w-lg mx-auto lg:max-w-none lg:pb-12">
 
       {/* ── HERO ── */}
-      <div className={`relative bg-gradient-to-br ${modulo.cor_fundo} overflow-hidden`} style={{ minHeight: 220 }}>
+      <div className={`relative bg-gradient-to-br ${modulo.cor_fundo} overflow-hidden lg:mt-4 lg:rounded-3xl lg:min-h-[340px]`} style={{ minHeight: 220 }}>
+        {capa && (
+          <div
+            className="hidden lg:block absolute inset-0 bg-cover bg-center scale-110 opacity-55"
+            style={{ backgroundImage: `url(${capa})`, filter: 'blur(28px)' }}
+            aria-hidden
+          />
+        )}
         {/* Overlay escurecedor só no topo pra garantir contraste do texto branco
             independente de qual gradiente o módulo tem (claro ou escuro) */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/20 to-transparent lg:bg-gradient-to-r lg:from-black/60 lg:via-black/35 lg:to-black/10" />
+        {capa && (
+          <img
+            src={capa}
+            alt=""
+            className="hidden lg:block absolute right-10 top-1/2 -translate-y-1/2 h-[280px] w-[210px] object-cover rounded-2xl shadow-[0_24px_50px_rgba(0,0,0,0.45)] border border-white/20"
+            draggable={false}
+          />
+        )}
 
         <button
           onClick={() => navigate(modulo.slug === LIVE_MODULE_SLUG ? '/ao-vivo' : '/home')}
@@ -154,9 +174,9 @@ const ModuleDetail: React.FC = () => {
           </span>
         )}
 
-        <div className="relative z-10 pt-14 pb-4 px-5">
+        <div className="relative z-10 pt-14 pb-4 px-5 lg:pt-20 lg:pb-10 lg:px-12 lg:pr-[300px]">
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 mb-1">{isFerramenta ? t('modulo.badgeFerramenta') : isMateriais ? t('modulo.badgeMaterial') : t('modulo.badgeModulo')}</p>
-          <h1 className="text-[42px] font-black leading-[0.85] tracking-tighter text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+          <h1 className="text-[42px] font-black leading-[0.85] tracking-tighter text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] lg:text-[64px]">
             {dbText(modulo.title1, modulo.title1_es, lang)}<br />{dbText(modulo.title2, modulo.title2_es, lang)}
           </h1>
           <p className="text-[11px] text-white/60 mt-3">{dbInstructor(modulo.instructor, t)}</p>
@@ -170,52 +190,18 @@ const ModuleDetail: React.FC = () => {
         </div>
       </div>
 
-      <div className="px-4 pt-5 space-y-5">
+      {/* Desktop: coluna fixa à esquerda (sobre + progresso + ferramenta) e as
+          aulas ocupando o resto. No celular continua tudo empilhado. */}
+      <div className="px-4 pt-5 space-y-5 lg:px-0 lg:pt-8 lg:grid lg:grid-cols-[340px_1fr] lg:gap-8 lg:space-y-0 lg:items-start">
 
+        <div className="space-y-5 lg:sticky lg:top-6">
         {/* DESCRIÇÃO */}
         <div className="bg-[#FFFFFF] border border-[#BE0D3E]/15 rounded-2xl p-5">
           <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">{t('modulo.sobreEsteModulo')}</h3>
-          <p className="text-[12px] text-[#5B4041]/80 leading-relaxed">{dbText(modulo.descricao, modulo.descricao_es, lang)}</p>
+          <p className="text-[12px] text-[#5B4041]/80 leading-relaxed lg:text-[13px]">{dbText(modulo.descricao, modulo.descricao_es, lang)}</p>
         </div>
 
-        {isMateriais ? (
-          /* MATERIAIS/FERRAMENTAS — abre o link (Drive) ou a ferramenta interna */
-          <div>
-            <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">{isFerramenta ? t('modulo.badgeFerramenta') : t('modulo.badgeMaterial')}</h3>
-            {modulo.material_url ? (
-              <a
-                href={esToolUrl(modulo.material_url, lang) ?? undefined}
-                target={isFerramenta ? undefined : '_blank'}
-                rel={isFerramenta ? undefined : 'noopener noreferrer'}
-                className="flex items-center gap-3 rounded-2xl p-4 text-white"
-                style={{ background: `linear-gradient(135deg, #BE0D3E, ${modulo.cor_acento})`, boxShadow: `0 8px 24px ${modulo.cor_acento}33` }}
-              >
-                <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
-                  {isFerramenta
-                    ? <Sparkles size={20} className="text-white" />
-                    : <FolderOpen size={20} className="text-white" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-black leading-tight">{isFerramenta ? t('modulo.editarFotoIA') : t('modulo.verBaixarMaterial')}</p>
-                  <p className="text-[10px] text-white/75 mt-0.5">{isFerramenta ? t('modulo.editarFotoIASub') : t('modulo.abreNoDrive')}</p>
-                </div>
-                {isFerramenta
-                  ? <ChevronRight size={16} className="text-white/80 shrink-0" />
-                  : <ExternalLink size={16} className="text-white/80 shrink-0" />}
-              </a>
-            ) : (
-              <div className="rounded-2xl border-2 border-dashed border-[#BE0D3E]/20 bg-[#FFF7E6]/40 p-6 flex items-center gap-4">
-                <div className="shrink-0 w-12 h-12 rounded-xl bg-white border border-[#BE0D3E]/15 flex items-center justify-center">
-                  <Download size={18} className="text-[#BE0D3E]/60" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-black text-[#1E1B11] mb-0.5">{t('modulo.materialEmBreve')}</p>
-                  <p className="text-[10px] text-[#5B4041] leading-relaxed">{t('modulo.materialEmBreveSub')}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
+        {!isMateriais && (
           <>
             {/* PROGRESSO */}
             <div className="bg-[#FFFFFF] border border-[#BE0D3E]/15 rounded-2xl p-5">
@@ -257,7 +243,50 @@ const ModuleDetail: React.FC = () => {
                 </a>
               </div>
             )}
+          </>
+        )}
+        </div>
 
+        <div className="space-y-5">
+        {isMateriais ? (
+          /* MATERIAIS/FERRAMENTAS — abre o link (Drive) ou a ferramenta interna */
+          <div>
+            <h3 className="text-[9px] font-black uppercase tracking-widest text-[#5B4041]/50 mb-3">{isFerramenta ? t('modulo.badgeFerramenta') : t('modulo.badgeMaterial')}</h3>
+            {modulo.material_url ? (
+              <a
+                href={esToolUrl(modulo.material_url, lang) ?? undefined}
+                target={isFerramenta ? undefined : '_blank'}
+                rel={isFerramenta ? undefined : 'noopener noreferrer'}
+                className="flex items-center gap-3 rounded-2xl p-4 text-white"
+                style={{ background: `linear-gradient(135deg, #BE0D3E, ${modulo.cor_acento})`, boxShadow: `0 8px 24px ${modulo.cor_acento}33` }}
+              >
+                <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                  {isFerramenta
+                    ? <Sparkles size={20} className="text-white" />
+                    : <FolderOpen size={20} className="text-white" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-black leading-tight">{isFerramenta ? t('modulo.editarFotoIA') : t('modulo.verBaixarMaterial')}</p>
+                  <p className="text-[10px] text-white/75 mt-0.5">{isFerramenta ? t('modulo.editarFotoIASub') : t('modulo.abreNoDrive')}</p>
+                </div>
+                {isFerramenta
+                  ? <ChevronRight size={16} className="text-white/80 shrink-0" />
+                  : <ExternalLink size={16} className="text-white/80 shrink-0" />}
+              </a>
+            ) : (
+              <div className="rounded-2xl border-2 border-dashed border-[#BE0D3E]/20 bg-[#FFF7E6]/40 p-6 flex items-center gap-4">
+                <div className="shrink-0 w-12 h-12 rounded-xl bg-white border border-[#BE0D3E]/15 flex items-center justify-center">
+                  <Download size={18} className="text-[#BE0D3E]/60" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-black text-[#1E1B11] mb-0.5">{t('modulo.materialEmBreve')}</p>
+                  <p className="text-[10px] text-[#5B4041] leading-relaxed">{t('modulo.materialEmBreveSub')}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
             {/* AULAS */}
             <div>
               <div className="flex items-center justify-between mb-3">
@@ -279,6 +308,7 @@ const ModuleDetail: React.FC = () => {
             </div>
           </>
         )}
+        </div>
 
       </div>
     </div>

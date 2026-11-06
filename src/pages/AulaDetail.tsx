@@ -88,8 +88,39 @@ const AulaDetail: React.FC = () => {
     navigate(`/modulo/${moduleId}/aula/${idx + 1}`);
   };
 
+  /* Lista de aulas: no celular vive na gaveta (botão da lista); no desktop
+     fica sempre à vista na coluna da direita. Mesmo markup nos dois. */
+  const listaAulas = (aoEscolher?: () => void) => lessons.map((a, i) => (
+    <button
+      key={a.id}
+      onClick={() => { goToAula(i); aoEscolher?.(); }}
+      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+        i === aulaIndex
+          ? 'bg-[#BE0D3E]/10 border border-[#BE0D3E]/30'
+          : 'bg-white/50 border border-[#BE0D3E]/10 hover:bg-[#BE0D3E]/5'
+      }`}
+      style={{ WebkitTapHighlightColor: 'transparent' }}
+    >
+      <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+        style={{ background: `${modulo.cor_acento}18` }}>
+        <Play size={11} style={{ color: modulo.cor_acento }} fill={modulo.cor_acento} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className={`text-[11px] font-bold truncate ${i === aulaIndex ? 'text-[#1E1B11]' : 'text-[#1E1B11]/80'}`}>
+          {String(i + 1).padStart(2, '0')}. {dbText(a.titulo, a.titulo_es, lang)}
+        </p>
+        <p className="text-[9px] text-[#5B4041] mt-0.5">{a.duracao}</p>
+      </div>
+      {i === aulaIndex && (
+        <span className="text-[8px] font-black uppercase tracking-widest shrink-0 px-2 py-1 rounded-md bg-[#BE0D3E] text-white">
+          {t('aula.atual')}
+        </span>
+      )}
+    </button>
+  ));
+
   return (
-    <div className="min-h-screen bg-[#FFF9EE] max-w-lg mx-auto">
+    <div className="min-h-screen bg-[#FFF9EE] max-w-lg mx-auto lg:max-w-none lg:min-h-0 lg:pb-10">
 
       {/* TOP BAR */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
@@ -110,16 +141,19 @@ const AulaDetail: React.FC = () => {
 
         <button
           onClick={() => setListOpen(o => !o)}
-          className="glass-btn-lime shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-[#1E1B11] hover:scale-105 active:scale-95 transition-transform"
+          className="glass-btn-lime shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-[#1E1B11] hover:scale-105 active:scale-95 transition-transform lg:hidden"
           title={t('aula.listaDeAulas')}
         >
           <List size={17} strokeWidth={2.5} />
         </button>
       </div>
 
+      {/* Desktop: player e conteúdo à esquerda, lista de aulas fixa à direita. */}
+      <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-8 lg:items-start lg:px-4">
+      <div className="min-w-0">
       {/* PLAYER */}
       <div
-        className="mx-4 rounded-2xl overflow-hidden relative bg-[#1E1B11]"
+        className="mx-4 rounded-2xl overflow-hidden relative bg-[#1E1B11] lg:mx-0 lg:rounded-3xl lg:shadow-[0_24px_50px_-24px_rgba(0,0,0,0.5)]"
         style={{ aspectRatio: '16/9' }}
       >
         {embedSrc(videoUrl) ? (
@@ -182,7 +216,7 @@ const AulaDetail: React.FC = () => {
       </div>
 
       {/* MARCAR COMO CONCLUÍDA */}
-      <div className="px-4 mt-3">
+      <div className="px-4 mt-3 lg:px-0 lg:mt-4">
         <button
           onClick={() => lessonId && toggle(lessonId, !isCompleted)}
           disabled={!lessonId}
@@ -216,7 +250,7 @@ const AulaDetail: React.FC = () => {
       {/* FICHA DE MATRÍCULA — só na 1ª aula de "Boas-vindas à comunidade", em PT
           (campanha do ingresso do evento é em português). */}
       {lang !== 'es' && modulo.slug === 'boas-vindas-a-comunidade' && aulaIndex === 0 && (
-        <div className="px-4 mt-3 space-y-2.5">
+        <div className="px-4 mt-3 space-y-2.5 lg:px-0">
           <MatriculaCta />
           <MentoriaCta />
           <SuporteCta />
@@ -224,7 +258,7 @@ const AulaDetail: React.FC = () => {
       )}
 
       {/* NAVEGAÇÃO */}
-      <div className="flex items-center gap-3 px-4 mt-3">
+      <div className="flex items-center gap-3 px-4 mt-3 lg:px-0">
         <button
           onClick={() => prevAula && goToAula(aulaIndex - 1)}
           disabled={!prevAula}
@@ -254,9 +288,9 @@ const AulaDetail: React.FC = () => {
       </div>
 
       {/* CONTEÚDO */}
-      <div className="px-4 mt-5 space-y-4 pb-12">
+      <div className="px-4 mt-5 space-y-4 pb-12 lg:px-0 lg:pb-0">
         <div>
-          <h2 className="text-[18px] font-black text-[#1E1B11] leading-tight">{dbText(aula.titulo, aula.titulo_es, lang)}</h2>
+          <h2 className="text-[18px] font-black text-[#1E1B11] leading-tight lg:text-[26px]">{dbText(aula.titulo, aula.titulo_es, lang)}</h2>
           {aula.descricao && (
             <p className="text-[12px] text-[#5B4041]/60 mt-1 leading-relaxed" dangerouslySetInnerHTML={{
               __html: dbText(aula.descricao, aula.descricao_es, lang).replace(
@@ -307,13 +341,28 @@ const AulaDetail: React.FC = () => {
         {/* FÓRUM */}
         {lessonId && <LessonForum lessonId={lessonId} />}
       </div>
+      </div>
 
-      {/* DRAWER LISTA */}
+      {/* LISTA FIXA (desktop) */}
+      <aside className="hidden lg:block lg:sticky lg:top-6 rounded-3xl border border-[#BE0D3E]/15 bg-white overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-[#BE0D3E]/15">
+          <p className="text-[10px] font-black uppercase tracking-widest text-[#BE0D3E] truncate">
+            {dbText(modulo.title1, modulo.title1_es, lang)} {dbText(modulo.title2, modulo.title2_es, lang)}
+          </p>
+          <p className="text-[10px] text-[#5B4041]/60 mt-0.5">{t('modulo.contagemAulas', { count: lessons.length })}</p>
+        </div>
+        <div className="overflow-y-auto p-3 space-y-1.5" style={{ maxHeight: 'calc(100vh - 160px)' }}>
+          {listaAulas()}
+        </div>
+      </aside>
+      </div>
+
+      {/* DRAWER LISTA (celular) */}
       {listOpen && (
         <>
-          <div className="fixed inset-0 z-40 bg-[#1E1B11]/40 backdrop-blur-sm" onClick={() => setListOpen(false)} />
+          <div className="fixed inset-0 z-40 bg-[#1E1B11]/40 backdrop-blur-sm lg:hidden" onClick={() => setListOpen(false)} />
           <div
-            className="fixed bottom-0 inset-x-0 z-50 max-w-lg mx-auto rounded-t-3xl overflow-hidden"
+            className="fixed bottom-0 inset-x-0 z-50 max-w-lg mx-auto rounded-t-3xl overflow-hidden lg:hidden"
             style={{
               background: 'linear-gradient(180deg, #FFFFFF 0%, #FFF9EE 100%)',
               border: '1px solid rgba(255,45,122,0.2)',
@@ -335,34 +384,7 @@ const AulaDetail: React.FC = () => {
               </button>
             </div>
             <div className="overflow-y-auto p-3 space-y-1.5" style={{ maxHeight: 'calc(75vh - 72px)' }}>
-              {lessons.map((a, i) => (
-                <button
-                  key={a.id}
-                  onClick={() => { goToAula(i); setListOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                    i === aulaIndex
-                      ? 'bg-[#BE0D3E]/10 border border-[#BE0D3E]/30'
-                      : 'bg-white/50 border border-[#BE0D3E]/10 hover:bg-[#BE0D3E]/5'
-                  }`}
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
-                >
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ background: `${modulo.cor_acento}18` }}>
-                    <Play size={11} style={{ color: modulo.cor_acento }} fill={modulo.cor_acento} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-[11px] font-bold truncate ${i === aulaIndex ? 'text-[#1E1B11]' : 'text-[#1E1B11]/80'}`}>
-                      {String(i + 1).padStart(2, '0')}. {dbText(a.titulo, a.titulo_es, lang)}
-                    </p>
-                    <p className="text-[9px] text-[#5B4041] mt-0.5">{a.duracao}</p>
-                  </div>
-                  {i === aulaIndex && (
-                    <span className="text-[8px] font-black uppercase tracking-widest shrink-0 px-2 py-1 rounded-md bg-[#BE0D3E] text-white">
-                      {t('aula.atual')}
-                    </span>
-                  )}
-                </button>
-              ))}
+              {listaAulas(() => setListOpen(false))}
             </div>
           </div>
         </>
