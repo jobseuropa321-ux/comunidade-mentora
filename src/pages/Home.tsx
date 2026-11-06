@@ -26,6 +26,11 @@ const BANNERS_PT: BannerDef[] = [
   // a admin passar; sem ele o banner é só arte.
   { src: '/covers/banner-3.webp', altKey: 'home.bannerAlt4' },
 ];
+// A Amanda usa os banners do PT, só o 1º troca pela arte com ela e o Thaylor.
+const BANNERS_AMANDA: BannerDef[] = [
+  { src: '/covers/amanda/banner-1.webp', altKey: 'home.bannerAlt1' },
+  ...BANNERS_PT.slice(1),
+];
 // O espanhol tem arte por dispositivo: mobile (1600x720), tablet (1024x768)
 // e desktop (1920x864). Quem não tem variante cai na arte mobile.
 const BANNERS_ES: BannerDef[] = [
@@ -122,7 +127,7 @@ const Home: React.FC = () => {
       {/* Banner — placeholder vazio por enquanto (full bleed).
           Pra reativar o carrossel real, troque pela linha comentada abaixo. */}
       <section className="mb-5 -mt-1 lg:mb-8 lg:mt-2 lg:rounded-3xl lg:overflow-hidden lg:shadow-[0_18px_40px_-24px_rgba(148,0,45,0.45)]">
-        <BannerCarousel banners={(lang === 'es' ? BANNERS_ES : BANNERS_PT).map(({ altKey, ...b }) => ({ ...b, alt: t(altKey) }))} autoRotateMs={6000} height={180} heightDesktop={360} />
+        <BannerCarousel banners={(lang === 'es' ? BANNERS_ES : variant === 'amanda' ? BANNERS_AMANDA : BANNERS_PT).map(({ altKey, ...b }) => ({ ...b, alt: t(altKey) }))} autoRotateMs={6000} height={180} heightDesktop={360} />
       </section>
 
       {loading ? (
