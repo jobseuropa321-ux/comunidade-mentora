@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Lock, Mail, ArrowLeft, CheckCircle2, Loader2, Inbox } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
+import { useLocalizedNavigate, useCurrentLang, useCurrentVariant, localizedPath } from '@/i18n/LanguageProvider';
 import { useTranslation, Trans } from 'react-i18next';
 
 /* ── Recuperação de senha REAL (antes era mock do blueprint: fingia sucesso
@@ -27,6 +27,7 @@ const btnStyle: React.CSSProperties = { background: 'linear-gradient(135deg, #BE
 const ResetPassword: React.FC = () => {
   const navigate = useLocalizedNavigate();
   const lang = useCurrentLang();
+  const variant = useCurrentVariant();
   const { t } = useTranslation();
   const [stage, setStage] = useState<Stage>('request');
   const [email, setEmail] = useState('');
@@ -58,7 +59,7 @@ const ResetPassword: React.FC = () => {
       // Sem localizedPath aqui, a aluna espanhola clica no link do e-mail e
       // cai na tela em português — o link vive fora do app, o prefixo tem que
       // ir cravado nele.
-      redirectTo: `${window.location.origin}${localizedPath('/reset-password', lang)}`,
+      redirectTo: `${window.location.origin}${localizedPath('/reset-password', variant)}`,
     });
     setLoading(false);
     if (err) {

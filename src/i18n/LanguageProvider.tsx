@@ -2,44 +2,76 @@ import { useCallback, useEffect } from "react";
 import { useLocation, useNavigate, type NavigateOptions } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
+/* ══════════════════════════════════════════════════════════════
+   VARIANTE x IDIOMA
+
+   O primeiro segmento da URL decide a VARIANTE do app:
+     /home        → 'pt'     (português, base)
+     /es/home     → 'es'     (espanhol)
+     /amanda/home → 'amanda' (português, catálogo próprio de módulos/aulas)
+
+   Idioma (SupportedLang) é só pt|es e continua sendo o que vai pro i18n,
+   pro banco (locale dos posts, lang das lives, push) e pra IA. A Amanda é
+   uma variante em PORTUGUÊS: muda o que aparece (módulos/aulas), não a
+   língua nem a marca. Por isso quem monta caminho usa a variante
+   (localizedPath/useLocalizedNavigate) e quem manda dado pra fora usa o
+   idioma (useCurrentLang).
+   ══════════════════════════════════════════════════════════════ */
+
 const SUPPORTED_LANGS = ["pt", "es"] as const;
 export type SupportedLang = (typeof SUPPORTED_LANGS)[number];
 
-/** O idioma vem do primeiro segmento da URL — e só de lá. Sem localStorage,
- *  sem detecção de navegador, sem seletor. `/es/home` = espanhol, `/home` = português. */
-export function getLangFromPath(pathname: string): SupportedLang {
+const APP_VARIANTS = ["pt", "es", "amanda"] as const;
+export type AppVariant = (typeof APP_VARIANTS)[number];
+
+/** A variante vem do primeiro segmento da URL — e só de lá. Sem localStorage,
+ *  sem detecção de navegador, sem seletor. */
+export function getVariantFromPath(pathname: string): AppVariant {
   const first = pathname.split("/")[1];
-  return SUPPORTED_LANGS.includes(first as SupportedLang) && first !== "pt"
-    ? (first as SupportedLang)
+  return APP_VARIANTS.includes(first as AppVariant) && first !== "pt"
+    ? (first as AppVariant)
     : "pt";
 }
 
-export function useCurrentLang(): SupportedLang {
+/** Idioma de uma variante: a Amanda é em português. */
+export function variantLang(variant: AppVariant): SupportedLang {
+  return variant === "es" ? "es" : "pt";
+}
+
+export function getLangFromPath(pathname: string): SupportedLang {
+  return variantLang(getVariantFromPath(pathname));
+}
+
+export function useCurrentVariant(): AppVariant {
   const { pathname } = useLocation();
-  return getLangFromPath(pathname);
+  return getVariantFromPath(pathname);
 }
 
-/** Adiciona o prefixo de idioma a um path absoluto. pt não recebe prefixo. */
-export function localizedPath(path: string, lang: SupportedLang): string {
-  if (lang === "pt") return path;
+export function useCurrentLang(): SupportedLang {
+  return variantLang(useCurrentVariant());
+}
+
+/** Adiciona o prefixo da variante a um path absoluto. pt não recebe prefixo. */
+export function localizedPath(path: string, variant: AppVariant): string {
+  if (variant === "pt") return path;
   // Evita duplicar: /es/es/home
-  if (path.startsWith(`/${lang}/`) || path === `/${lang}`) return path;
-  return `/${lang}${path.startsWith("/") ? "" : "/"}${path}`;
+  if (path.startsWith(`/${variant}/`) || path === `/${variant}`) return path;
+  return `/${variant}${path.startsWith("/") ? "" : "/"}${path}`;
 }
 
-/** Remove o prefixo de idioma. Use para comparar rota ativa (nav, tabs). */
-export function unlocalizedPath(pathname: string, lang: SupportedLang): string {
-  if (lang === "pt") return pathname;
-  if (pathname === `/${lang}`) return "/";
-  if (pathname.startsWith(`/${lang}/`)) return pathname.slice(lang.length + 1);
+/** Remove o prefixo da variante. Use para comparar rota ativa (nav, tabs). */
+export function unlocalizedPath(pathname: string, variant: AppVariant): string {
+  if (variant === "pt") return pathname;
+  if (pathname === `/${variant}`) return "/";
+  if (pathname.startsWith(`/${variant}/`)) return pathname.slice(variant.length + 1);
   return pathname;
 }
 
-/** Wrapper de useNavigate que preserva o prefixo de idioma.
+/** Wrapper de useNavigate que preserva o prefixo da variante.
  *  Aceita number (navigate(-1)) e repassa direto, sem prefixar. */
 export function useLocalizedNavigate() {
   const navigate = useNavigate();
-  const lang = useCurrentLang();
+  const variant = useCurrentVariant();
 
   return useCallback(
     (to: string | number, options?: NavigateOptions) => {
@@ -47,9 +79,9 @@ export function useLocalizedNavigate() {
         navigate(to);
         return;
       }
-      navigate(localizedPath(to, lang), options);
+      navigate(localizedPath(to, variant), options);
     },
-    [navigate, lang],
+    [navigate, variant],
   );
 }
 

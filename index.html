@@ -36,11 +36,15 @@
          ═══════════════════════════════════════════════════════════════ -->
     <script>
       (function () {
-        var isEs = location.pathname.split('/')[1] === 'es';
+        var prefixo = location.pathname.split('/')[1];
+        var isEs = prefixo === 'es';
+        // /amanda: variante em português com catálogo próprio. Mesma marca,
+        // manifest próprio só pra o PWA instalado abrir em /amanda/home.
+        var isAmanda = prefixo === 'amanda';
 
         var link = document.createElement('link');
         link.rel = 'manifest';
-        link.href = isEs ? '/manifest-es.webmanifest' : '/manifest.webmanifest';
+        link.href = isEs ? '/manifest-es.webmanifest' : isAmanda ? '/manifest-amanda.webmanifest' : '/manifest.webmanifest';
         document.head.appendChild(link);
 
         if (isEs) {

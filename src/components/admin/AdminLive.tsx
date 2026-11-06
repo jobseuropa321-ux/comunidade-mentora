@@ -19,7 +19,7 @@ import { Loader2, Power, Save, ExternalLink, Plus, Pencil, Trash2, X, Video, Cal
    do topo da administração. */
 const AdminLive: React.FC = () => {
   const { user } = useAuth();
-  const { adminLang: lang } = useAdminLang();
+  const { contentLang: lang } = useAdminLang();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toggling, setToggling] = useState(false);
@@ -185,7 +185,7 @@ interface DraftReplay {
 const EMPTY_DRAFT: DraftReplay = { titulo: '', descricao: '', video_url: '', duracao: '', recorded_at: '' };
 
 const AdminLiveReplays: React.FC = () => {
-  const { adminLang: lang } = useAdminLang();
+  const { adminLang, contentLang: lang } = useAdminLang();
   const [moduleId, setModuleId] = useState<string | null>(null);
   const [items, setItems] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
@@ -203,9 +203,9 @@ const AdminLiveReplays: React.FC = () => {
       .order('position', { ascending: false });
     if (error) toast.error('Erro ao carregar gravações', { description: error.message });
     // Troca de idioma no topo filtra a lista: cada versão tem as suas gravações.
-    else setItems(((data ?? []) as Lesson[]).filter(l => lessonVisible(l, lang)));
+    else setItems(((data ?? []) as Lesson[]).filter(l => lessonVisible(l, adminLang)));
     setLoading(false);
-  }, [lang]);
+  }, [lang, adminLang]);
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const startNew = () => setDraft({ ...EMPTY_DRAFT });

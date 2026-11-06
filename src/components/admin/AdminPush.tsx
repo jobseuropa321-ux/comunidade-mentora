@@ -23,7 +23,7 @@ interface Resultado {
 }
 
 const AdminPush: React.FC = () => {
-  const { adminLang: lang, isEs } = useAdminLang();
+  const { contentLang: lang, isEs } = useAdminLang();
   const versao = isEs ? 'espanhol' : 'português';
 
   const [inscritos, setInscritos] = useState<number | null>(null);

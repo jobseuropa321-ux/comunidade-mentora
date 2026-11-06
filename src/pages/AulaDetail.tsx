@@ -3,7 +3,7 @@ import { useParams, Navigate } from 'react-router-dom';
 import { ArrowLeft, Play, ChevronLeft, ChevronRight, CheckCircle2, Clock, List, Download, FileText, BookOpen, X, Loader2 } from 'lucide-react';
 import { useLesson, useLessonProgress, lessonVideoUrl, LIVE_MODULE_SLUG } from '@/hooks/useCourses';
 import LessonForum from '@/components/LessonForum';
-import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
+import { useLocalizedNavigate, useCurrentLang, useCurrentVariant, localizedPath } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 import { dbText } from '@/lib/dbText';
 import { toEmbedSrc } from '@/lib/youtube';
@@ -40,6 +40,7 @@ const AulaDetail: React.FC = () => {
   const { moduleId, aulaId } = useParams<{ moduleId: string; aulaId: string }>();
   const navigate = useLocalizedNavigate();
   const lang = useCurrentLang();
+  const variant = useCurrentVariant();
   const { t } = useTranslation();
   const [playing, setPlaying] = useState(false);
   const [listOpen, setListOpen] = useState(false);
@@ -74,7 +75,7 @@ const AulaDetail: React.FC = () => {
   // caminho virar src de iframe. O ModuleDetail já navega direto pra lá.
   const videoUrl = lessonVideoUrl(data.lesson, lang);
   if (videoUrl?.startsWith('/')) {
-    return <Navigate to={localizedPath(videoUrl, lang)} replace />;
+    return <Navigate to={localizedPath(videoUrl, variant)} replace />;
   }
 
   const { module: modulo, lessons, lesson: aula } = data;

@@ -19,7 +19,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { checkSubscription, AccessDeniedError, type SubStatus } from '@/lib/subscription';
-import { getLangFromPath, localizedPath } from '@/i18n/LanguageProvider';
+import { getVariantFromPath, localizedPath } from '@/i18n/LanguageProvider';
 import i18n from '@/i18n';
 import { clearAllChatDrafts } from '@/lib/chatDraft';
 
@@ -158,7 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         emailRedirectTo:
           typeof window !== 'undefined'
             ? window.location.origin +
-              localizedPath('/', getLangFromPath(window.location.pathname)).replace(/\/$/, '')
+              localizedPath('/', getVariantFromPath(window.location.pathname)).replace(/\/$/, '')
             : undefined,
       },
     });

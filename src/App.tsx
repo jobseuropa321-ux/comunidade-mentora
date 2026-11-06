@@ -15,7 +15,7 @@ import InstallPrompt from "@/components/InstallPrompt";
 import CoinReward from "@/components/CoinReward";
 import UpdateBanner from "@/components/UpdateBanner";
 import "@/i18n";
-import { LanguageSync, localizedPath, useCurrentLang } from "@/i18n/LanguageProvider";
+import { LanguageSync, localizedPath, useCurrentVariant } from "@/i18n/LanguageProvider";
 
 // Rotas carregadas sob demanda (code-split)
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
@@ -65,14 +65,14 @@ const Spinner: React.FC = () => (
    ficar presa numa tela que não consegue salvar. */
 const ProtectedRoute: React.FC<{ children: React.ReactNode; onboarding?: boolean }> = ({ children, onboarding = false }) => {
   const { user, loading, profile, profileLoading } = useAuth();
-  const lang = useCurrentLang();
+  const variant = useCurrentVariant();
 
   if (loading) return <Spinner />;
-  if (!user) return <Navigate to={localizedPath("/auth", lang)} replace />;
+  if (!user) return <Navigate to={localizedPath("/auth", variant)} replace />;
   // Só na 1ª carga: em refresh de sessão o perfil já está na mão.
   if (profileLoading && !profile) return <Spinner />;
   if (!onboarding && profile && !profile.onboarding_concluido_em) {
-    return <Navigate to={localizedPath("/onboarding", lang)} replace />;
+    return <Navigate to={localizedPath("/onboarding", variant)} replace />;
   }
 
   return (
@@ -85,17 +85,18 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; onboarding?: boolean
 
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
-  const lang = useCurrentLang();
+  const variant = useCurrentVariant();
 
   if (loading) return <Spinner />;
-  if (user) return <Navigate to={localizedPath("/home", lang)} replace />;
+  if (user) return <Navigate to={localizedPath("/home", variant)} replace />;
 
   return <>{children}</>;
 };
 
 /* Rotas de DENTRO do AppLayout, com paths RELATIVOS (sem barra inicial).
-   Este mesmo bloco é montado duas vezes: em "/" (português) e em "/es" (espanhol).
-   Mexeu aqui, vale para os dois idiomas automaticamente. */
+   Este mesmo bloco é montado três vezes: em "/" (português), em "/es" (espanhol)
+   e em "/amanda" (variante em português com catálogo próprio).
+   Mexeu aqui, vale para as três automaticamente. */
 const layoutRoutes = (
   <>
     <Route index element={<Navigate to="home" replace />} />
@@ -121,9 +122,9 @@ const layoutRoutes = (
 );
 
 /* Rotas de FORA do AppLayout (tela cheia). Estas NÃO são um bloco relativo:
-   precisam ser declaradas nas duas árvores na mão. Esquecer a variante /es
+   precisam ser declaradas nas três árvores na mão. Esquecer a variante /es
    dá 404 silencioso para a aluna espanhola — foi o erro nº 1 do app original. */
-const fullscreenRoutes = (prefix: "" | "/es") => (
+const fullscreenRoutes = (prefix: "" | "/es" | "/amanda") => (
   <>
     <Route path={`${prefix}/auth`} element={<PublicRoute><Auth /></PublicRoute>} />
     <Route path={`${prefix}/reset-password`} element={<ResetPassword />} />
@@ -152,9 +153,13 @@ const AppRoutes = () => (
   <Suspense fallback={<Spinner />}>
     <Routes>
       {fullscreenRoutes("/es")}
+      {fullscreenRoutes("/amanda")}
       {fullscreenRoutes("")}
 
       <Route path="/es" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+        {layoutRoutes}
+      </Route>
+      <Route path="/amanda" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
         {layoutRoutes}
       </Route>
       <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>

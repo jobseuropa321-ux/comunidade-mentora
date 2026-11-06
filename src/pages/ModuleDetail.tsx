@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ArrowLeft, Play, Clock, ChevronDown, ChevronUp, Loader2, CheckCircle2, FolderOpen, ExternalLink, Download, Sparkles, ChevronRight, NotebookPen } from 'lucide-react';
-import { useModuleBySlug, useLessonProgress, lessonVideoUrl, LIVE_MODULE_SLUG, type Lesson } from '@/hooks/useCourses';
+import { useModuleBySlug, useLessonProgress, lessonVideoUrl, moduleVisible, LIVE_MODULE_SLUG, type Lesson } from '@/hooks/useCourses';
 import { useLocalizedNavigate } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 import { dbNivel, dbTag, dbInstructor, dbDuracao, dbText } from '@/lib/dbText';
-import { useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
-import { isInEsCatalog, esToolUrl } from '@/i18n/esCatalog';
+import { useCurrentLang, useCurrentVariant, localizedPath } from '@/i18n/LanguageProvider';
+import { esToolUrl } from '@/i18n/esCatalog';
 import { Navigate } from 'react-router-dom';
 
 /* ── AULA ROW ── */
@@ -87,6 +87,7 @@ const ModuleDetail: React.FC = () => {
   const navigate = useLocalizedNavigate();
   const { t } = useTranslation();
   const lang = useCurrentLang();
+  const variant = useCurrentVariant();
   const { data: modulo, loading } = useModuleBySlug(moduleId);
 
   const lessonIds = useMemo(() => modulo?.lessons.map(l => l.id) ?? [], [modulo]);
@@ -100,10 +101,11 @@ const ModuleDetail: React.FC = () => {
     );
   }
 
-  // Link direto para módulo que não existe em espanhol volta pra home ES.
-  // Sem isto, a aluna espanhola chega por URL num módulo inteiro em português.
-  if (modulo && lang === 'es' && !isInEsCatalog(modulo)) {
-    return <Navigate to={localizedPath('/home', lang)} replace />;
+  // Link direto para módulo que não existe nesta variante volta pra home dela.
+  // Sem isto, a aluna espanhola chega por URL num módulo inteiro em português,
+  // e a aluna do PT abre módulo que é só da Amanda.
+  if (modulo && !moduleVisible(modulo, variant)) {
+    return <Navigate to={localizedPath('/home', variant)} replace />;
   }
 
   if (!modulo) {

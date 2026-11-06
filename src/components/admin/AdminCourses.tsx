@@ -7,7 +7,7 @@ import {
   Loader2, Video, FileText, BookOpen, CheckSquare, ExternalLink, Upload, X, Film,
 } from 'lucide-react';
 import PandaVideoPicker from '@/components/admin/PandaVideoPicker';
-import type { Module, Lesson, LessonMaterial } from '@/hooks/useCourses';
+import type { Module, Lesson, LessonMaterial, AmandaFlag } from '@/hooks/useCourses';
 
 /* ══════════════════════════════════════════════════════════════
    ADMIN · CURSOS — módulos → aulas → materiais (escreve no Supabase).
@@ -70,6 +70,36 @@ const Confirm: React.FC<{ title: string; desc: string; onCancel: () => void; onC
   </div>
 );
 
+/* ── Versão da Amanda (/amanda) — vale pra módulo e pra aula ──
+   'herda' segue o PT (padrão de tudo que já existia), 'so' aparece só na
+   Amanda (some do PT e do ES), 'nao' fica fora da Amanda. */
+const AMANDA_OPCOES: { value: AmandaFlag; label: string }[] = [
+  { value: 'herda', label: 'Igual ao PT' },
+  { value: 'so', label: 'Só Amanda' },
+  { value: 'nao', label: 'Fora da Amanda' },
+];
+const AmandaField: React.FC<{ value: AmandaFlag | undefined; onChange: (v: AmandaFlag) => void; tipo: 'módulo' | 'aula' }> = ({ value, onChange, tipo }) => (
+  <div>
+    <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">Versão da Amanda (/amanda)</label>
+    <div className="grid grid-cols-3 gap-1 mt-1.5">
+      {AMANDA_OPCOES.map(opt => (
+        <button key={opt.value} type="button" onClick={() => onChange(opt.value)}
+          className={`text-[9px] font-bold uppercase tracking-wider py-2 rounded-lg transition-colors ${(value ?? 'herda') === opt.value ? 'bg-[#7C0026] text-white' : 'bg-[#F6D6DC] text-[#5B4041]'}`}>
+          {opt.label}
+        </button>
+      ))}
+    </div>
+    <p className="text-[9px] text-[#5B4041]/60 mt-0.5">
+      "Igual ao PT" aparece na Amanda se aparece no português · "Só Amanda" some do PT e do ES · "Fora da Amanda" tira {tipo === 'aula' ? 'esta aula' : 'este módulo'} só de lá. Lembre de salvar.
+    </p>
+  </div>
+);
+const AmandaBadge: React.FC<{ value: AmandaFlag | undefined }> = ({ value }) => {
+  if (value === 'so') return <span className="ml-1.5 text-[8px] font-black uppercase tracking-wider text-white bg-[#7C0026] rounded px-1 py-0.5 align-middle">só Amanda</span>;
+  if (value === 'nao') return <span className="ml-1.5 text-[8px] font-black uppercase tracking-wider text-[#7C0026] bg-[#F6D6DC] rounded px-1 py-0.5 align-middle">fora da Amanda</span>;
+  return null;
+};
+
 const primaryBtn = 'w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-[#BE0D3E] to-[#E06B85] text-white text-[11px] font-black uppercase tracking-widest py-3 rounded-xl shadow-[0_6px_18px_rgba(190,13,62,0.35)] hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:hover:scale-100 transition-transform';
 const accentBtn = 'flex items-center gap-1 bg-[#F6B43A] text-[#1E1B11] text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-lg hover:brightness-105 active:scale-95 transition-all';
 
@@ -106,7 +136,7 @@ const AdminCourses: React.FC = () => {
 
 /* ── NÍVEL 1 · LISTA DE MÓDULOS ── */
 const ModuleList: React.FC<{ onEdit: (m: Module) => void }> = ({ onEdit }) => {
-  const { isEs } = useAdminLang();
+  const { isEs, isAmanda } = useAdminLang();
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -151,9 +181,13 @@ const ModuleList: React.FC<{ onEdit: (m: Module) => void }> = ({ onEdit }) => {
          admin publicava, a lista mostrava "Publicado" e mesmo assim ele
          não aparecia pra ninguém na Home. */
       home_section: 'modulos',
+      /* Com o seletor na Amanda o módulo nasce só dela — não vaza pro PT
+         nem pro ES. O campo "Versão da Amanda" do editor muda depois. */
+      amanda: isAmanda ? 'so' : 'herda',
     }).select('*').single();
     setCreating(false);
     if (error || !data) { toast.error('Erro', { description: error?.message ?? 'Falha ao criar módulo' }); return; }
+    if (isAmanda) toast.success('Módulo criado só para a Amanda', { description: 'Dá pra mudar no campo "Versão da Amanda".' });
     onEdit(data as Module);
   };
 
@@ -187,6 +221,7 @@ const ModuleList: React.FC<{ onEdit: (m: Module) => void }> = ({ onEdit }) => {
           <div className="flex-1 min-w-0">
             <p className="text-[12px] font-black text-[#1E1B11] truncate">
               {isEs ? `${m.title1_es ?? m.title1} ${m.title2_es ?? m.title2}` : `${m.title1} ${m.title2}`}
+              <AmandaBadge value={m.amanda} />
             </p>
             <p className="text-[10px] text-[#5B4041] truncate">
               /{m.slug} · {m.is_published ? 'Publicado' : 'Em breve'}
@@ -221,7 +256,7 @@ const ModuleList: React.FC<{ onEdit: (m: Module) => void }> = ({ onEdit }) => {
 const ModuleEditor: React.FC<{
   module: Module; onBack: () => void; onEditLesson: (l: Lesson) => void; onModuleChanged: (m: Module) => void;
 }> = ({ module: mod, onBack, onEditLesson, onModuleChanged }) => {
-  const { adminLang, isEs } = useAdminLang();
+  const { isEs, isAmanda } = useAdminLang();
   const [draft, setDraft] = useState<Module>(mod);
   const [saving, setSaving] = useState(false);
   const [lessons, setLessons] = useState<Lesson[]>([]);
@@ -253,6 +288,7 @@ const ModuleEditor: React.FC<{
       cover_url_es: draft.cover_url_es ?? null,
       title1_es: draft.title1_es ?? null, title2_es: draft.title2_es ?? null,
       descricao_es: draft.descricao_es ?? null,
+      amanda: draft.amanda ?? 'herda',
     }).eq('id', mod.id).select('*').single();
     setSaving(false);
     if (error) { toast.error('Erro', { description: error.message }); return; }
@@ -300,9 +336,10 @@ const ModuleEditor: React.FC<{
   const createLesson = async () => {
     const maxPos = lessons.length ? Math.max(...lessons.map(x => x.position)) : -1;
     const { data, error } = await supabase.from('lessons')
-      .insert({ module_id: mod.id, titulo: 'Nova aula', duracao: '— min', position: maxPos + 1, lang: isEs ? 'es' : 'both' }).select('*').single();
+      .insert({ module_id: mod.id, titulo: 'Nova aula', duracao: '— min', position: maxPos + 1, lang: isEs ? 'es' : 'both', amanda: isAmanda ? 'so' : 'herda' }).select('*').single();
     if (error || !data) { toast.error('Erro', { description: error?.message ?? 'Falha ao criar aula' }); return; }
     if (isEs) toast.success('Aula criada só para o espanhol', { description: 'Dá pra mudar no campo "Onde a aula aparece".' });
+    if (isAmanda) toast.success('Aula criada só para a Amanda', { description: 'Dá pra mudar no campo "Versão da Amanda".' });
     onEditLesson(data as Lesson);
   };
 
@@ -375,7 +412,7 @@ const ModuleEditor: React.FC<{
         {!isEs && (
         <div>
           <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">Capa do módulo</label>
-          <input ref={coverFileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={e => uploadCover(e, adminLang)} />
+          <input ref={coverFileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={e => uploadCover(e, isEs ? 'es' : 'pt')} />
           {draft.cover_url ? (
             <div className="mt-1.5 relative rounded-xl overflow-hidden border border-[#BE0D3E]/15 max-w-[180px]" style={{ aspectRatio: '3/4' }}>
               <img src={draft.cover_url} alt="Capa" className="w-full h-full object-cover" />
@@ -404,7 +441,7 @@ const ModuleEditor: React.FC<{
         {isEs && (
         <div>
           <label className="text-[10px] font-black uppercase tracking-widest text-[#5B4041]">Capa do módulo <span className="text-[#5B4041]/50">· em branco usa a capa em português</span></label>
-          <input ref={coverEsFileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={e => uploadCover(e, adminLang)} />
+          <input ref={coverEsFileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={e => uploadCover(e, isEs ? 'es' : 'pt')} />
           {draft.cover_url_es ? (
             <div className="mt-1.5 relative rounded-xl overflow-hidden border border-[#BE0D3E]/15 max-w-[180px]" style={{ aspectRatio: '3/4' }}>
               <img src={draft.cover_url_es} alt="Capa em espanhol" className="w-full h-full object-cover" />
@@ -440,6 +477,8 @@ const ModuleEditor: React.FC<{
             ))}
           </div>
         </div>
+
+        <AmandaField value={draft.amanda} onChange={v => setDraft({ ...draft, amanda: v })} tipo="módulo" />
 
         {/* Link do material/ferramenta. Na seção Ferramentas substitui as aulas;
             em módulo com aulas vira o card "Ferramenta" junto delas (ex.: Caderno do Desafio). */}
@@ -488,6 +527,7 @@ const ModuleEditor: React.FC<{
                 {i + 1}. {l.titulo}
                 {l.lang === 'es' && <span className="ml-1.5 text-[8px] font-black uppercase tracking-wider text-white bg-[#F6B43A] rounded px-1 py-0.5 align-middle">só ES</span>}
                 {l.lang === 'pt' && <span className="ml-1.5 text-[8px] font-black uppercase tracking-wider text-white bg-[#5B4041] rounded px-1 py-0.5 align-middle">só PT</span>}
+                <AmandaBadge value={l.amanda} />
               </p>
               <p className="text-[9px] text-[#5B4041] truncate">{l.duracao}{(l.video_url || l.video_url_es) ? ' · vídeo OK' : ' · sem vídeo'}</p>
             </div>
@@ -534,6 +574,7 @@ const LessonEditor: React.FC<{
       titulo: draft.titulo, duracao: draft.duracao, descricao: draft.descricao, conteudo: draft.conteudo, video_url: draft.video_url,
       titulo_es: draft.titulo_es ?? null, descricao_es: draft.descricao_es ?? null, conteudo_es: draft.conteudo_es ?? null,
       video_url_es: draft.video_url_es ?? null, lang: draft.lang ?? 'both',
+      amanda: draft.amanda ?? 'herda',
     }).eq('id', lesson.id).select('*').single();
     setSaving(false);
     if (error) { toast.error('Erro', { description: error.message }); return; }
@@ -605,6 +646,8 @@ const LessonEditor: React.FC<{
           </div>
           <p className="text-[9px] text-[#5B4041]/60 mt-0.5">"Só ES" some do app em português (e vice-versa). Lembre de salvar.</p>
         </div>
+
+        <AmandaField value={draft.amanda} onChange={v => setDraft({ ...draft, amanda: v })} tipo="aula" />
 
         {/* URL do vídeo do idioma selecionado no topo: em ES grava video_url_es
             — antes era um campo só e trocar o vídeo em ES trocava o PT junto. */}

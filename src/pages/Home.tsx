@@ -1,14 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2, Image as ImageIcon } from 'lucide-react';
-import { useAllModules, type Module } from '@/hooks/useCourses';
+import { useAllModules, moduleVisible, type Module } from '@/hooks/useCourses';
 import BannerCarousel from '@/components/BannerCarousel';
 import { trackAscension } from '@/lib/ascension';
-import { useLocalizedNavigate, useCurrentLang, localizedPath } from '@/i18n/LanguageProvider';
+import { useLocalizedNavigate, useCurrentLang, useCurrentVariant, localizedPath } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 import { moduleCover, coverFallback } from '@/lib/moduleCover';
 import { dbTag, dbText } from '@/lib/dbText';
-import { isInEsCatalog } from '@/i18n/esCatalog';
 
 // Pra adicionar/trocar banner: jogue o .webp em `public/covers/` e adicione aqui.
 // Slots sem arquivo somem do carrossel (BannerCarousel filtra 404).
@@ -104,11 +103,12 @@ const Home: React.FC = () => {
   const { modules, loading } = useAllModules();
   const { t } = useTranslation();
   const lang = useCurrentLang();
+  const variant = useCurrentVariant();
 
-  // A versão espanhola mostra só os módulos que têm capa em espanhol
-  // (src/i18n/esCatalog.ts, gerado da pasta de capas). Módulo sem versão
-  // própria fica de fora em vez de aparecer com a capa em português.
-  const visiveis = lang === 'es' ? modules.filter(isInEsCatalog) : modules;
+  // Catálogo por variante (moduleVisible): o espanhol mostra só os módulos
+  // com capa em espanhol; a Amanda segue o PT mais/menos o que a coluna
+  // `amanda` do módulo manda; o PT esconde o que é só da Amanda.
+  const visiveis = modules.filter(m => moduleVisible(m, variant));
 
   const inicio = visiveis.filter(m => m.home_section === 'inicio');
   const main = visiveis.filter(m => m.home_section === 'modulos');
@@ -173,7 +173,7 @@ const Home: React.FC = () => {
               style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
             >
               <Link
-                to={localizedPath("/modulo/viral-em-1-minuto", lang)}
+                to={localizedPath("/modulo/viral-em-1-minuto", variant)}
                 onClick={() => trackAscension('modulo')}
                 className="min-w-[148px] h-[200px] rounded-[1rem] border border-[#BE0D3E]/20 relative overflow-hidden shrink-0 shadow-[0_8px_20px_rgba(255,45,122,0.12)] bg-[#FFF9EE] cursor-pointer active:scale-[0.97] transition-transform block"
                 style={{ WebkitTapHighlightColor: 'transparent' }}

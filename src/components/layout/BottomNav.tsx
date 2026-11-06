@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { usePlan } from '@/contexts/PlanContext';
 import UpgradeModal from '@/components/UpgradeModal';
 import { useLiveStatus } from '@/hooks/useLiveStatus';
-import { useLocalizedNavigate, useCurrentLang, unlocalizedPath, type SupportedLang } from '@/i18n/LanguageProvider';
+import { useLocalizedNavigate, useCurrentLang, useCurrentVariant, unlocalizedPath, type SupportedLang } from '@/i18n/LanguageProvider';
 import { useTranslation } from 'react-i18next';
 
 /* ── Ícones (SVG do design "A Mentora", herdam a cor via currentColor) ── */
@@ -104,9 +104,10 @@ const BottomNav: React.FC = () => {
   const { t } = useTranslation();
   const { hasFullAccess, canUseChatTrial } = usePlan();
   const lang = useCurrentLang();
+  const variant = useCurrentVariant();
   // Desprefixa antes de comparar: em /es/home o pathname é '/es/home',
   // e sem isso nenhum item do menu jamais fica ativo no espanhol.
-  const pathname = unlocalizedPath(location.pathname, lang);
+  const pathname = unlocalizedPath(location.pathname, variant);
   const [upgradeModal, setUpgradeModal] = useState<string | null>(null);
   const { status: liveStatus } = useLiveStatus();
   const isLiveActive = liveStatus.is_active && !!liveStatus.stream_url;

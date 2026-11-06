@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCurrentLang } from '@/i18n/LanguageProvider';
+import { useCurrentVariant, type AppVariant } from '@/i18n/LanguageProvider';
+import { isInEsCatalog } from '@/i18n/esCatalog';
 
 /* ─────────────────────────────────────────────────────────────
    Camada de dados dos CURSOS (área de membros) — lê do Supabase.
@@ -10,6 +11,8 @@ import { useCurrentLang } from '@/i18n/LanguageProvider';
    telas Home / ModuleDetail / AulaDetail / Admin não mudam.
    Segurança real = RLS (membro vê publicado; expert vê/escreve tudo).
    ───────────────────────────────────────────────────────────── */
+
+export type AmandaFlag = 'herda' | 'so' | 'nao';
 
 export interface Module {
   id: string;
@@ -38,6 +41,9 @@ export interface Module {
   cover_url_es?: string | null;
   material_url: string | null;
   home_section: 'inicio' | 'modulos' | 'materiais' | null;
+  /** Relação com a variante /amanda: 'herda' (padrão: segue o PT),
+   *  'so' (só na Amanda, some do PT/ES) ou 'nao' (fora da Amanda). */
+  amanda?: AmandaFlag;
   created_at?: string;
   updated_at?: string;
 }
@@ -59,6 +65,8 @@ export interface Lesson {
    *  Diferente dos campos _es (que só traduzem texto), isto decide se a aula
    *  APARECE — aula criada no painel em modo ES nasce 'es' e não vaza pro PT. */
   lang?: 'both' | 'pt' | 'es';
+  /** Igual ao do módulo: 'herda' | 'so' | 'nao' em relação à variante /amanda. */
+  amanda?: AmandaFlag;
   /** Data em que a aula foi ao vivo (só as do módulo de lives usam). */
   recorded_at?: string | null;
   position: number;
@@ -71,9 +79,24 @@ export interface Lesson {
  *  na tela de aula normal, então "voltar" de lá leva pro Ao Vivo. */
 export const LIVE_MODULE_SLUG = 'aulas-ao-vivo';
 
-/** A aula entra na versão deste idioma? (aula antiga sem `lang` = 'both') */
-export const lessonVisible = (l: Pick<Lesson, 'lang'>, lang: string): boolean =>
+const langMatches = (l: Pick<Lesson, 'lang'>, lang: string): boolean =>
   !l.lang || l.lang === 'both' || l.lang === lang;
+
+/** A aula entra nesta variante? (aula antiga sem `lang` = 'both', sem `amanda` = 'herda')
+ *  Amanda: o que é 'so' dela entra sempre; o resto segue o PT, menos o marcado 'nao'.
+ *  PT/ES: o que é 'so' da Amanda fica de fora; o resto segue o idioma. */
+export const lessonVisible = (l: Pick<Lesson, 'lang' | 'amanda'>, variant: AppVariant): boolean => {
+  if (variant === 'amanda') return l.amanda === 'so' || (l.amanda !== 'nao' && langMatches(l, 'pt'));
+  return l.amanda !== 'so' && langMatches(l, variant);
+};
+
+/** O módulo entra nesta variante? Mesma regra da aula; no espanhol ainda
+ *  precisa ter capa em espanhol (esCatalog). Não olha is_published/home_section. */
+export const moduleVisible = (m: Pick<Module, 'slug' | 'cover_url_es' | 'amanda'>, variant: AppVariant): boolean => {
+  if (variant === 'amanda') return m.amanda !== 'nao';
+  if (m.amanda === 'so') return false;
+  return variant === 'es' ? isInEsCatalog(m) : true;
+};
 
 /** Aula já lançada? Só o módulo de lives usa `recorded_at`: uma live com data
  *  no futuro (ou de hoje — a transmissão ainda não aconteceu/terminou) fica
@@ -144,7 +167,7 @@ export function useAllModules(includeUnpublished = false) {
  *  As aulas vêm filtradas pelo idioma da URL — MESMO filtro do useLesson,
  *  porque a URL da aula é o índice na lista (mudar um sem o outro desalinha). */
 export function useModuleBySlug(slug: string | undefined, opts: { includeUpcoming?: boolean } = {}) {
-  const lang = useCurrentLang();
+  const variant = useCurrentVariant();
   const includeUpcoming = !!opts.includeUpcoming;
   const [data, setData] = useState<ModuleWithLessons | null>(null);
   const [loading, setLoading] = useState(true);
@@ -164,12 +187,12 @@ export function useModuleBySlug(slug: string | undefined, opts: { includeUpcomin
         .order('position', { ascending: true });
       if (cancel) return;
       const visiveis = ((lessons ?? []) as Lesson[])
-        .filter(l => lessonVisible(l, lang) && (includeUpcoming || lessonReleased(l)));
+        .filter(l => lessonVisible(l, variant) && (includeUpcoming || lessonReleased(l)));
       setData({ ...(mod as Module), lessons: visiveis });
       setLoading(false);
     })();
     return () => { cancel = true; };
-  }, [slug, lang, includeUpcoming]);
+  }, [slug, variant, includeUpcoming]);
 
   return { data, loading };
 }
@@ -231,7 +254,7 @@ export function useLessonProgress(lessonIds: string[]) {
  *  Filtra as aulas pelo idioma da URL igual ao useModuleBySlug: o índice da
  *  URL (aula/1, aula/2...) conta só as aulas visíveis neste idioma. */
 export function useLesson(moduleSlug: string | undefined, lessonIndex: number | undefined) {
-  const lang = useCurrentLang();
+  const variant = useCurrentVariant();
   const [data, setData] = useState<{ module: Module; lessons: Lesson[]; lesson: LessonWithMaterials } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -248,7 +271,7 @@ export function useLesson(moduleSlug: string | undefined, lessonIndex: number | 
         .eq('module_id', (mod as Module).id)
         .order('position', { ascending: true });
       if (cancel) { return; }
-      const lessons = ((allLessons ?? []) as Lesson[]).filter(l => lessonVisible(l, lang) && lessonReleased(l));
+      const lessons = ((allLessons ?? []) as Lesson[]).filter(l => lessonVisible(l, variant) && lessonReleased(l));
       if (lessons.length === 0) { setData(null); setLoading(false); return; }
       const lesson = lessons[lessonIndex];
       if (!lesson) { setData(null); setLoading(false); return; }
@@ -266,7 +289,7 @@ export function useLesson(moduleSlug: string | undefined, lessonIndex: number | 
       setLoading(false);
     })();
     return () => { cancel = true; };
-  }, [moduleSlug, lessonIndex]);
+  }, [moduleSlug, lessonIndex, variant]);
 
   return { data, loading };
 }
